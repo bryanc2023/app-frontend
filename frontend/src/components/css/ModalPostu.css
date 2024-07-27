@@ -1,0 +1,9 @@
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.modal-content {
+    max-height: calc(100vh - 100px); /* Ajusta el valor según sea necesario */
+    overflow-y: auto;
+    padding: 20px;
+}

@@ -1,0 +1,77 @@
+/* ModalOfer.css */
+.fixed {
+    position: fixed;
+}
+.inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+.bg-gray-600 {
+    background-color: rgba(75, 85, 99, 1);
+}
+.bg-opacity-50 {
+    background-opacity: 0.5;
+}
+.flex {
+    display: flex;
+}
+.items-center {
+    align-items: center;
+}
+.justify-center {
+    justify-content: center;
+}
+.z-50 {
+    z-index: 50;
+}
+.bg-white {
+    background-color: rgba(255, 255, 255, 1);
+}
+.rounded-lg {
+    border-radius: 0.5rem;
+}
+.shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+.p-6 {
+    padding: 1.5rem;
+}
+.w-full {
+    width: 100%;
+}
+.max-w-2xl {
+    max-width: 42rem;
+}
+.relative {
+    position: relative;
+}
+.overflow-hidden {
+    overflow: hidden;
+}
+.absolute {
+    position: absolute;
+}
+.top-0 {
+    top: 0;
+}
+.right-0 {
+    right: 0;
+}
+.mt-2 {
+    margin-top: 0.5rem;
+}
+.mr-2 {
+    margin-right: 0.5rem;
+}
+.text-gray-700 {
+    color: rgba(55, 65, 81, 1);
+}
+.modal-content {
+    overflow-y: auto;
+    max-height: 80vh; /* Adjusted to fit within the screen */
+}
+.p-4 {
+    padding: 1rem;
+}

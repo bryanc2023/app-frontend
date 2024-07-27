@@ -1,0 +1,8 @@
+.footer {
+    padding: 1rem 0;
+    background-color: #1f2937; /* Un tono más claro de gris para el fondo */
+    color: #a0aec0; /* Un gris claro para el texto */
+    text-align: center;
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
