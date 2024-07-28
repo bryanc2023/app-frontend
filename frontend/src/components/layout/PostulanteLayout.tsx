@@ -186,7 +186,7 @@ function PostulanteLayout() {
     const debouncedQueryEmpresa = useDebounce(queryEmpresa, 300);
 
     const [notificaciones, setNotificaciones] = useState<dataNotificable[]>([]);
-    const [loadNotificaciones, setLoadNotificaciones] = useState(false);
+    const [, setLoadNotificaciones] = useState(false);
     const [isModalNotify, setIsModalNotify] = useState(false);
     const notifyRef = useRef<HTMLDivElement>(null);
 

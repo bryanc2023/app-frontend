@@ -170,7 +170,7 @@ function EmpresaLayout() {
     const [dataEmpresa, setDataEmpresa] = useState<EmpresaData>(initialEmpresaData);
 
     const [notificaciones, setNotificaciones] = useState<dataNotificable[]>([]);
-    const [loadNotificaciones, setLoadNotificaiones] = useState(false);
+    const [, setLoadNotificaiones] = useState(false);
     const [isModalNotify, setIsModalNotify] = useState(false);
 
     const dispatch = useDispatch();
@@ -211,9 +211,6 @@ function EmpresaLayout() {
         // No cerrar la barra lateral al hacer clic fuera de ella
     };
 
-    const closeSidebar = () => {
-        setSidebarOpen(false);
-    };
 
     useEffect(() => {
         const fetchEmpresa = async () => {
