@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from '../../services/axios';
 import Swal from 'sweetalert2';
 interface Postulante {
@@ -26,7 +25,6 @@ interface PostulanteDetailProps {
 }
 
 const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOferta, onClose }) => {
-    const navigate = useNavigate();
     const [showComentarioModal, setShowComentarioModal] = useState(false);
     const [comentario, setComentario] = useState('');
     const [hayAprobado, setHayAprobado] = useState(false);
@@ -44,9 +42,7 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
 
         verificarPostulacionAprobada(idOferta);
     }, [idOferta]);
-    const verPerfil = () => {
-        navigate(`/perfildet/${postulante.id_postulante}`);
-    };
+    
 
     const handleOpenComentarioModal = () => {
         setShowComentarioModal(true);

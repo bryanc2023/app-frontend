@@ -14,7 +14,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 
 const RegisterP = () => {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading] = useState(false);
     const navigate = useNavigate();
     const { isLogged, role } = useSelector((state: RootState) => state.auth);
 

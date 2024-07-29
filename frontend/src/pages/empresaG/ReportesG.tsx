@@ -36,6 +36,9 @@ interface ReportData {
   estado_civil?: string;
   provincia?: string;
   canton?: string;
+  num_postulaciones?: number;
+  detalles_postulaciones?: { cargo: string }[];
+  vigencia?: string;
 }
 
 const Reportes: React.FC = () => {
@@ -255,7 +258,7 @@ const Reportes: React.FC = () => {
         item.email,
         item.created_at,
         item.num_postulaciones,
-        item.detalles_postulaciones?.map(detalle => detalle.cargo).join(', '),
+        item.detalles_postulaciones?.map((detalle: { cargo: string }) => detalle.cargo).join(', '),
         item.vigencia,
         item.genero,
         item.estado_civil,
@@ -315,7 +318,7 @@ const Reportes: React.FC = () => {
         item.email,
         item.created_at,
         item.num_postulaciones,
-        item.detalles_postulaciones?.map(detalle => detalle.cargo).join(', '),
+        item.detalles_postulaciones?.map((detalle: { cargo: string }) => detalle.cargo).join(', '),
         item.vigencia,
         item.genero,
         item.estado_civil,
@@ -686,7 +689,7 @@ const Reportes: React.FC = () => {
                               <td className="border px-4 py-2">{item.email}</td>
                               <td className="border px-4 py-2">{item.created_at}</td>
                               <td className="border px-4 py-2">{item.num_postulaciones}</td>
-                              <td className="border px-4 py-2">{item.detalles_postulaciones?.map(detalle => detalle.cargo).join(', ')}</td>
+                              <td className="border px-4 py-2">{item.detalles_postulaciones?.map((detalle: { cargo: string }) => detalle.cargo).join(', ')}</td>
                               <td className="border px-4 py-2">{item.vigencia}</td>
                               <td className="border px-4 py-2">{item.genero}</td>
                               <td className="border px-4 py-2">{item.estado_civil}</td>

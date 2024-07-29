@@ -1,19 +1,22 @@
 // types.ts
+export interface TituloDetalle {
+  id: number;
+  titulo: string;
+  nivel_educacion: string;
+  campo_amplio: string;
+}
+
 export interface Formacion {
-    id_postulante: number;
-    id_titulo: number;
-    institucion: string;
-    titulo_acreditado: string;
-    estado: string;
-    fechaini: string;
-    fechafin: string;
-    titulo: {
-      id: number;
-      titulo: string;
-      nivel_educacion: string;
-      campo_amplio: string;
-    };
-  }
+  id: number;
+  id_postulante: number;
+  id_titulo: number;
+  institucion: string;
+  estado: string;
+  fechaini: string;
+  fechafin: string;
+  titulo: TituloDetalle;
+  titulo_acreditado: string;
+}
   
   export interface ProfileData {
     postulante: {
@@ -34,3 +37,11 @@ export interface Formacion {
     cursos: Curso[]; 
   }
   
+  export interface Curso {
+   id_certificado: number;
+  titulo: string;
+  institucion: string;
+  fechaini: string;
+  fechafin: string;
+  certificado: string;
+  }

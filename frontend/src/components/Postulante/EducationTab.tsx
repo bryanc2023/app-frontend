@@ -70,6 +70,7 @@ const EducationTab: React.FC<EducationTabProps> = ({ formaciones, openEditFormac
         timer: 3000,
         timerProgressBar: true,
     });
+    
       setFormaciones(prevFormaciones => prevFormaciones.filter(f => !(f.id_postulante === id_postulante && f.titulo.id === id_titulo)));
     } catch (error) {
       if (isAxiosError(error) && error.response) {

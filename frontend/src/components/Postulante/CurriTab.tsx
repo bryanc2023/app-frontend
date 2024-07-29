@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaEye, FaDownload } from 'react-icons/fa';
 import axios from '../../services/axios';
 import { useSelector } from 'react-redux';
@@ -7,15 +7,23 @@ import jsPDF from 'jspdf';
 import { storage } from '../../config/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Swal from 'sweetalert2';
-import { useNavigate } from 'react-router-dom';
+
 import { format } from 'date-fns';
-import logoImg from '../../assets/images/marca.png';
+
+interface CurriTabProps {
+  cvs: CV[];
+  handleViewCV: (id: number) => void;
+  handleDownloadCV: (url: string) => void;
+}
 
 interface CV {
   id: number;
   nombre: string;
+  imagen: string;
   url: string;
 }
+
+
 
 interface Ubicacion {
   id: number;
@@ -147,16 +155,13 @@ interface PostulanteData {
   };
 }
 
-const CurriTab: React.FC = () => {
+const CurriTab: React.FC<CurriTabProps> = ({  }) => {
   const { user } = useSelector((state: RootState) => state.auth);
-  const navigate = useNavigate();
   const [cvs, setCvs] = useState<CV[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [profileData, setProfileData] = useState<PostulanteData | null>(null);
-  const [imageLoaded, setImageLoaded] = useState<boolean>(false);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
-  const photoRef = useRef<HTMLImageElement>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -166,7 +171,7 @@ const CurriTab: React.FC = () => {
           setLoading(true);
           const response = await axios.get(`/postulante/${user.id}/cv`);
           const data = response.data;
-          setCvs([{ id: user.id, nombre: user.name, url: data.cv_url }]);
+          setCvs([{ id: user.id, nombre: user.name, url: data.cv_url ,imagen: data.imagen}]);
           const [profileResponse, imageResponse] = await Promise.all([
             axios.get(`/curri/${user.id}`),
             axios.get(`/foto/${user.id}`, { responseType: 'blob' }),
@@ -384,7 +389,7 @@ const CurriTab: React.FC = () => {
           }
 
 
-          profileData.postulante.formaciones.forEach((formacion, index) => {
+          profileData.postulante.formaciones.forEach((formacion) => {
             const requiredSpace = 40; // Ajusta este valor según el espacio necesario para cada iteración
             if (yOffset + requiredSpace > doc.internal.pageSize.height - 10) {
               doc.addPage();

@@ -8,7 +8,6 @@ const VerifyEmail = () => {
     const { id, token } = useParams();
     const navigate = useNavigate();
     const [message, setMessage] = useState('');
-    const [error, setError] = useState(false);
     const [bgColor, setBgColor] = useState('#FFA500');
 
     useEffect(() => {

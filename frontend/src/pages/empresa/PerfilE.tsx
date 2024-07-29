@@ -177,7 +177,7 @@ const EmpresaDetails: React.FC = () => {
                 setEditedEmpresa({
                     ...editedEmpresa,
                     [mainKey]: {
-                        ...editedEmpresa[mainKey as keyof Empresa],
+                        ...(editedEmpresa[mainKey as keyof Empresa] as any),
                         [subKey]: value,
                     },
                 });
@@ -191,24 +191,26 @@ const EmpresaDetails: React.FC = () => {
     };
 
     const reloadProfile = async () => {
-        try {
-            const response = await axios.get(`/empresaById/${user.id}`);
-            const empresaData = response.data;
+        if (user) {
+            try {
+                const response = await axios.get(`/empresaById/${user.id}`);
+                const empresaData = response.data;
 
-            const redesResponse = await axios.get(`/empresa-red/${empresaData.id_empresa}`);
-            empresaData.red = redesResponse.data;
+                const redesResponse = await axios.get(`/empresa-red/${empresaData.id_empresa}`);
+                empresaData.red = redesResponse.data;
 
-            setEmpresa(empresaData);
-        } catch (error) {
-            console.error('Error fetching profile data:', error);
-            setError('Error fetching profile data');
+                setEmpresa(empresaData);
+            } catch (error) {
+                console.error('Error fetching profile data:', error);
+                setError('Error fetching profile data');
+            }
         }
     };
 
     const handleSave = async () => {
-        if (editedEmpresa) {
+        if (editedEmpresa && user) {
             try {
-                const response = await axios.put(`/updateEmpresaById/${user.id}`, editedEmpresa);
+                await axios.put(`/updateEmpresaById/${user.id}`, editedEmpresa);
                 setSuccessMessage("Datos guardados con éxito!");
                 setTimeout(() => {
                     setSuccessMessage(null);
@@ -219,12 +221,10 @@ const EmpresaDetails: React.FC = () => {
 
                 setModalIsOpen(false);
                 setError(null);
-            } catch (err) {
-                if (axios.isAxiosError(err)) {
+            } catch (err: any) {
+               
                     setError(`Axios error: ${err.response?.data?.message || err.message}`);
-                } else {
-                    setError(`General error: ${(err as Error).message}`);
-                }
+               
             }
         }
     };

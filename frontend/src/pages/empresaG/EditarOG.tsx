@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from "react-hook-form";
 import Swal from 'sweetalert2';
 import axios from '../../services/axios';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiEdit } from 'react-icons/fi';
 
@@ -15,27 +13,6 @@ interface Experiencia {
   titulo: string;
 }
 
-interface Oferta {
-  // Define aquí todas las propiedades de la oferta que necesitas
-  cargo: string;
-  id_area: number;
-  experiencia: number;
-  objetivo_cargo: string;
-  sueldo: number;
-  funciones: string;
-  fecha_max_pos: string;
-  carga_horaria: string;
-  modalidad: string;
-  detalles_adicionales: string;
-  correo_contacto: string | null;
-  numero_contacto: string | null;
-  expe: Experiencia[];
-  criterios: any[]; // Define mejor el tipo de los criterios si puedes
-  areas: {
-    id: number;
-    nombre_area: string;
-  };
-}
 
 interface Titulo {
   id: number;
@@ -83,14 +60,13 @@ interface canton {
 function EditarOG() {
   const { id } = useParams<{ id: string }>(); // Obtener el ID de la oferta de los parámetros de la URL
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm();
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm();
   const [niveles, setNiveles] = useState([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [campos, setCampos] = useState([]);
   const [titulos, setTitulos] = useState<Titulo[]>([]);
   const [selectedNivel, setSelectedNivel] = useState('');
   const [selectedCampo, setSelectedCampo] = useState('');
-  const [selectedTitulo, setSelectedTitulo] = useState('');
   const [selectedTituloId, setSelectedTituloId] = useState<number>();
   const [requireEducation, setRequireEducation] = useState(false);
   const [soliSueldo, setSolicitarSueldo] = useState(false);
@@ -103,7 +79,6 @@ function EditarOG() {
   const [selectedCriterioId, setSelectedCriterioId] = useState<number | null>(null);
   const [valorCriterio, setValorCriterio] = useState<string>('');
   const [prioridadCriterio, setPrioridadCriterio] = useState<number | null>(null);
-  const { user } = useSelector((state: RootState) => state.auth);
   const [languages, setLanguages] = useState<idioma[]>([]);
   const [showExperiencia, setShowExperiencia] = useState(false);
   const [provinces, setProvinces] = useState<string[]>([]);
@@ -282,13 +257,11 @@ function EditarOG() {
 
   const handleNivelChange = (event: any) => {
     setSelectedNivel(event.target.value);
-    setSelectedTitulo('');
     setSelectedTituloId(0);
   };
 
   const handleCampoChange = (event: any) => {
     setSelectedCampo(event.target.value);
-    setSelectedTitulo('');
     setSelectedTituloId(0);
   };
 
@@ -349,12 +322,7 @@ function EditarOG() {
     const selectedTituloId = parseInt(event.target.value, 10);
     setSelectedTituloId(selectedTituloId);
 
-    const selectedTituloObject = titulos.find(titulo => titulo.id === selectedTituloId);
-    if (selectedTituloObject) {
-      setSelectedTitulo(selectedTituloObject.titulo);
-    } else {
-      setSelectedTitulo('');
-    }
+   
   };
 
   const handleAgregarTitulo = () => {
@@ -403,14 +371,14 @@ function EditarOG() {
         experiencia: showExperiencia ? values.experiencia : 0,
         correo_contacto: showCorreo ? values.correo_contacto : null,
         numero_contacto: showNumeroContacto ? values.numero_contacto : null,
-        mostrar_sueldo: values.mostrar_sueldo ? 1 : 0,
+        mostrar_sueldo: soliSueldo ? 1 : 0,
         titulos: selectedTitles,
         criterios: criteriosValidos,
       };
   
       console.log('Datos del formulario:', dataToSend);
   
-      const response = await axios.put(`update-oferta/${id}`, dataToSend, {
+      await axios.put(`update-oferta/${id}`, dataToSend, {
         headers: {
           'Content-Type': 'application/json',
         },

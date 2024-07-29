@@ -11,13 +11,7 @@ interface Criterio {
 
 const CatalogoRegistro: React.FC = () => {
   const [criterios, setCriterios] = useState<Criterio[]>([]);
-  const [nuevoCriterio, setNuevoCriterio] = useState<Criterio>({
-    id_criterio: 0,
-    criterio: '',
-    descripcion: '',
-    vigencia: 1,
-    valor:'',
-  });
+
 
   useEffect(() => {
     const fetchCriterios = async () => {
@@ -37,30 +31,10 @@ const CatalogoRegistro: React.FC = () => {
     fetchCriterios();
   }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setNuevoCriterio({ ...nuevoCriterio, [name]: value });
-  };
 
-  const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const { value } = e.target;
-    setNuevoCriterio({ ...nuevoCriterio, valor: value });
-  };
 
-  const agregarCriterio = () => {
-    setCriterios([...criterios, nuevoCriterio]);
-    setNuevoCriterio({ id_criterio: 0, criterio: '', descripcion: '', vigencia: 1 , valor:''});
-  };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      await axios.post('/api/criterios', nuevoCriterio); // Asegúrate de que esta URL sea correcta
-      agregarCriterio();
-    } catch (error) {
-      console.error('Error registering criterio:', error);
-    }
-  };
+
 
 
   const handleEdit = (id_criterio: number) => {

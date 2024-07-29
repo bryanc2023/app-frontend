@@ -151,13 +151,16 @@ const EmpresaDetails: React.FC = () => {
             const { name, value } = e.target;
             const [mainKey, subKey] = name.split('.');
             if (subKey) {
-                setEditedEmpresa({
-                    ...editedEmpresa,
-                    [mainKey]: {
-                        ...editedEmpresa[mainKey as keyof Empresa],
-                        [subKey]: value,
-                    },
-                });
+                const mainKeyValue = editedEmpresa[mainKey as keyof Empresa];
+                if (typeof mainKeyValue === 'object' && mainKeyValue !== null) {
+                    setEditedEmpresa({
+                        ...editedEmpresa,
+                        [mainKey]: {
+                            ...mainKeyValue,
+                            [subKey]: value,
+                        },
+                    });
+                }
             } else {
                 setEditedEmpresa({
                     ...editedEmpresa,
@@ -166,10 +169,13 @@ const EmpresaDetails: React.FC = () => {
             }
         }
     };
+    
+    
+    
 
     const reloadProfile = async () => {
         try {
-            const response = await axios.get(`/empresaById/${user.id}`);
+            const response = await axios.get(`/empresaById/${user?.id}`);
             const empresaData = response.data;
 
             const redesResponse = await axios.get(`/empresa-red/${empresaData.id_empresa}`);
@@ -185,7 +191,7 @@ const EmpresaDetails: React.FC = () => {
     const handleSave = async () => {
         if (editedEmpresa) {
             try {
-                const response = await axios.put(`/updateEmpresaById/${user.id}`, editedEmpresa);
+                await axios.put(`/updateEmpresaById/${user?.id}`, editedEmpresa);
                 setSuccessMessage("Datos guardados con éxito!");
                 setTimeout(() => {
                     setSuccessMessage(null);
@@ -197,11 +203,9 @@ const EmpresaDetails: React.FC = () => {
                 setModalIsOpen(false);
                 setError(null);
             } catch (err) {
-                if (axios.isAxiosError(err)) {
-                    setError(`Axios error: ${err.response?.data?.message || err.message}`);
-                } else {
-                    setError(`General error: ${(err as Error).message}`);
-                }
+              
+                setError(`General error: ${(err as Error).message}`);
+               
             }
         }
     };

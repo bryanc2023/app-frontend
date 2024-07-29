@@ -1,18 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { FaPencilAlt, FaTrash } from 'react-icons/fa';
-import AddIdiomaModal from './AddIdiomaModal';
-import EditIdiomaModal from './EditIdiomaModal';
 import axios from '../../services/axios';
 import { useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { RootState } from '../../store';
-import AddHabilidadModal from './AddHabilidadModal';
-import EditHabilidadModal from './EditHabilidadModal';
 import AddCompetenciadModal from './AddCompetenciaModal';
 import EditCompetenciaModal from './EditCompetenciaModal';
 
 interface CompetenciasTabProps {
+  // Elimina competencias si no se usa en el componente
   competencias: Competencia[];
+  openEditCompetenciaModal?: (Competencia: Competencia) => void;
+  openModal: (content: string) => void;
 }
 
 interface Competencia {
@@ -27,7 +26,7 @@ interface Competencia {
   };
 }
 
-const CompetenciaTab: React.FC<CompetenciasTabProps> = ({ competencias }) => {
+const CompetenciaTab: React.FC<CompetenciasTabProps> = () => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { reset } = useForm<Competencia>();
@@ -45,9 +44,7 @@ const CompetenciaTab: React.FC<CompetenciasTabProps> = ({ competencias }) => {
     const fetchProfileData = async () => {
       try {
         if (user) {
-         
           const response = await axios.get(`/perfil/${user.id}`);
-        
           setProfileData(response.data);
           fetchUserHabilidades(response.data.postulante.id_postulante);
         }
@@ -81,9 +78,7 @@ const CompetenciaTab: React.FC<CompetenciasTabProps> = ({ competencias }) => {
 
   const fetchUserHabilidades = async (id_postulante: number) => {
     try {
-     
       const response = await axios.get('/competencias', { params: { id_postulante } });
-     
       if (response.data && Array.isArray(response.data.competencias)) {
         setUserHabilidades(response.data.competencias);
       } else {
@@ -143,7 +138,7 @@ const CompetenciaTab: React.FC<CompetenciasTabProps> = ({ competencias }) => {
       if (profileData) {
         await fetchUserHabilidades(profileData.postulante.id_postulante);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error eliminando la competencia:', error.response ? error.response.data : error);
       setDeleteMessage('Error al eliminar la competencia');
       setTimeout(() => setDeleteMessage(null), 3000);
@@ -211,6 +206,7 @@ const CompetenciaTab: React.FC<CompetenciasTabProps> = ({ competencias }) => {
         onRequestClose={() => setIsAddModalOpen(false)}
         onHabilidadAdded={handleHabilidadAdded}
         habilidades={generalHabilidades}
+        userId={profileData ? profileData.postulante.id_postulante : 0} // Añadir userId
       />
       {selectedHabilidad && (
         <EditCompetenciaModal

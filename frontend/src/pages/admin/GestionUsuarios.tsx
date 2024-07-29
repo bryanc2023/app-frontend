@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import axios from "../../services/axios";
 import Modal from '../../components/Admin/CargaModal'; 
 
@@ -21,14 +21,9 @@ interface Role {
 const GestionUsuarios = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [roles, setRoles] = useState<Role[]>([]);
-    const [form, setForm] = useState<User>({
-        name: '',
-        email: '',
-        role: { id: 0, name: '' },
-        created_at: '',
-    });
+
     const [modalOpen, setModalOpen] = useState(false);
-    const [modalContent, setModalContent] = useState({ title: '', message: '', success: false });
+    const [modalContent] = useState({ title: '', message: '', success: false });
  
     useEffect(() => {
         fetchUsers();
@@ -39,6 +34,7 @@ const GestionUsuarios = () => {
         try {
             const response = await axios.get('/users');
             setUsers(response.data);
+           
         } catch (error) {
             console.error('Error fetching users:', error);
         }
@@ -48,18 +44,13 @@ const GestionUsuarios = () => {
         try {
             const response = await axios.get('/roles');
             setRoles(response.data);
+            console.log(roles);
         } catch (error) {
             console.error('Error fetching roles:', error);
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        const { name, value } = e.target;
-        setForm((prevForm) => ({
-            ...prevForm,
-            [name]: name === 'role_id' ? { ...prevForm.role, id: Number(value) } : value,
-        }));
-    };
+ 
 
   
 

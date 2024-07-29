@@ -9,8 +9,11 @@ import { es } from 'date-fns/locale';
 import Swal from 'sweetalert2';
 import { Experiencia } from '../../types/ExperienciaType';
 import { isAxiosError } from 'axios';
+interface ExperienceTabProps {
+  openModal: (content: string) => void;
+}
 
-const ExperienceTab: React.FC = () => {
+const ExperienceTab: React.FC<ExperienceTabProps> = ({ openModal }) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [experiencias, setExperiencias] = useState<Experiencia[]>([]);
@@ -42,10 +45,7 @@ const ExperienceTab: React.FC = () => {
     fetchExperiencia();
   }, [fetchExperiencia, user]);
 
-  const openModal = (experience: Experiencia | null = null) => {
-    setSelectedExperience(experience);
-    setIsModalOpen(true);
-  };
+
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -112,7 +112,7 @@ const ExperienceTab: React.FC = () => {
     <div className="mt-6 bg-gray-800 p-4 rounded-lg shadow-inner text-gray-200">
       <div className="flex justify-between items-center">
         <h3 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 pb-2">Experiencia Profesional</h3>
-        <button onClick={() => openModal()} className="text-orange-400 hover:underline">
+        <button onClick={() => openModal('experience')} className="text-orange-400 hover:underline">
           + Agregar experiencia
         </button>
       </div>
@@ -126,7 +126,7 @@ const ExperienceTab: React.FC = () => {
           <div key={index} className="mb-4 p-4 border rounded-lg bg-gray-700 relative">
             <div className="flex justify-end space-x-2 mb-2">
               <button
-                onClick={() => openModal(experiencia)}
+                onClick={() => openModal('editExperience')}
                 className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
               >
                 <FaPencilAlt className="w-4 h-4" />
@@ -159,7 +159,7 @@ const ExperienceTab: React.FC = () => {
       ) : (
         <p className="text-gray-400">No hay experiencia disponible en este momento.</p>
       )}
-      <div className="border border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer" onClick={() => openModal()}>
+      <div className="border border-dashed border-gray-600 rounded-lg p-4 text-center cursor-pointer" onClick={() => openModal('experience')}>
         <span className="text-gray-400">Agrega tu experiencia</span>
       </div>
 

@@ -6,6 +6,17 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import Swal from 'sweetalert2';
 import { isAxiosError } from 'axios';
+interface Habilidad{
+  id: number;
+  grupo: string;
+  nombre: string;
+  descripcion: string;
+  pivot?: {
+    id_postulante: number;
+    id_competencia: number;
+    nivel: string;
+  };
+}
 
 interface EditCompetenciaModalProps {
   isOpen: boolean;

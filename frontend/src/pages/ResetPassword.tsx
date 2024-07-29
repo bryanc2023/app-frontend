@@ -13,7 +13,7 @@ type DataForm = {
 }
 
 const PasswordResetForm = () => {
-    const [status, setStatus] = useState<string | null>(null);
+    const [status] = useState<string | null>(null);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const navigate = useNavigate();

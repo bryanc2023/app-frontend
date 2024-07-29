@@ -24,7 +24,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<Experiencia>();
   const [areas, setAreas] = useState<Area[]>([]);
   const [profileData, setProfileData] = useState<any>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+ 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -63,9 +63,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
-      } finally {
-        setLoading(false);
-      }
+      } 
     };
 
     fetchProfileData();

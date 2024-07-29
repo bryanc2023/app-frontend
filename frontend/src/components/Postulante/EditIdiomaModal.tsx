@@ -19,6 +19,20 @@ interface FormValues {
   nivel_escrito: string;
 }
 
+interface Idioma {
+  nivel_oral: string;
+  nivel_escrito: string;
+  id: number;
+  nombre: string;
+  pivot?: {
+    id_postulante: number;
+    id_idioma: number;
+    nivel_oral: string;
+    nivel_escrito: string;
+  };
+}
+
+
 const EditIdiomaModal: React.FC<EditIdiomaModalProps> = ({ isOpen, onRequestClose, idioma, onIdiomaUpdated }) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [profileData, setProfileData] = useState<any>(null);

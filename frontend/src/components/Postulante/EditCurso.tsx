@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../../services/axios';
 import { useSelector } from 'react-redux';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { RootState } from '../../store';
 import Swal from 'sweetalert2';
@@ -10,8 +10,8 @@ import { isAxiosError } from 'axios';
 interface EditCursoProps {
   isOpen: boolean;
   closeModal: () => void;
+  curso?: Curso | null ;
   reloadCursos: () => void;
-  curso: Curso | null;
 }
 
 interface Curso {
@@ -46,20 +46,10 @@ const EditCurso: React.FC<EditCursoProps> = ({ isOpen, closeModal, reloadCursos,
   }, [user]);
 
   const [nombre, setNombre] = useState(curso ? curso.titulo : '');
-  const [institucion, setInstitucion] = useState(curso ? curso.institucion : '');
-  const [fechaini, setFechaini] = useState(curso ? curso.fechaini : '');
-  const [fechafin, setFechafin] = useState(curso ? curso.fechafin : '');
+
   const [certificado, setCertificado] = useState(curso ? curso.certificado : '');
 
-  useEffect(() => {
-    if (curso) {
-      setNombre(curso.titulo || '');
-      setInstitucion(curso.institucion || '');
-      setFechaini(curso.fechaini || '');
-      setFechafin(curso.fechafin || '');
-      setCertificado(curso.certificado || '');
-    }
-  }, [curso]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

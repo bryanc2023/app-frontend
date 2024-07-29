@@ -215,8 +215,7 @@ function Modal({ oferta, onClose, userId }: ModalProps) {
 function InicioP() {
     const [ofertas, setOfertas] = useState<Oferta[]>([]);
     const { user } = useSelector((state: RootState) => state.auth);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+    const [searchTerm] = useState('');
     const [selectedOferta, setSelectedOferta] = useState<Oferta | null>(null);
 
     useEffect(() => {
