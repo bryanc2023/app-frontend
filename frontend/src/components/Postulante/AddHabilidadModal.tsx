@@ -20,7 +20,7 @@ interface FormValues {
     nivel:string;
 }
 
-const AddHabilidadModal: React.FC<AddHabilidadModalProps> = ({ isOpen, onRequestClose, onHabilidadAdded, habilidades, userId }) => {
+const AddHabilidadModal: React.FC<AddHabilidadModalProps> = ({ isOpen, onRequestClose, onHabilidadAdded, habilidades}) => {
     const { register, handleSubmit, formState: { errors } } = useForm<FormValues>();
     const { user } = useSelector((state: RootState) => state.auth);
 

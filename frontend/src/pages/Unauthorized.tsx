@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { Icon } from '@iconify/react';
 import policeIcon from '@iconify-icons/mdi/police-badge';
@@ -6,9 +6,7 @@ import policeIcon from '@iconify-icons/mdi/police-badge';
 
 const Unauthorized = () => {
   const navigate = useNavigate();
-    const redirectToHome = () => {
-        navigate('/');
-    };
+  
 
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-blue-900 text-white">

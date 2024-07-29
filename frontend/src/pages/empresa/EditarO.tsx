@@ -2,8 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from "react-hook-form";
 import Swal from 'sweetalert2';
 import axios from '../../services/axios';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiEdit } from 'react-icons/fi';
 
@@ -15,27 +13,7 @@ interface Experiencia {
   titulo: string;
 }
 
-interface Oferta {
-  // Define aquí todas las propiedades de la oferta que necesitas
-  cargo: string;
-  id_area: number;
-  experiencia: number;
-  objetivo_cargo: string;
-  sueldo: number;
-  funciones: string;
-  fecha_max_pos: string;
-  carga_horaria: string;
-  modalidad: string;
-  detalles_adicionales: string;
-  correo_contacto: string | null;
-  numero_contacto: string | null;
-  expe: Experiencia[];
-  criterios: any[]; // Define mejor el tipo de los criterios si puedes
-  areas: {
-    id: number;
-    nombre_area: string;
-  };
-}
+
 
 interface Titulo {
   id: number;
@@ -83,17 +61,15 @@ interface canton {
 function EditarO() {
   const { id } = useParams<{ id: string }>(); // Obtener el ID de la oferta de los parámetros de la URL
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm();
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm();
   const [niveles, setNiveles] = useState([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [campos, setCampos] = useState([]);
   const [titulos, setTitulos] = useState<Titulo[]>([]);
   const [selectedNivel, setSelectedNivel] = useState('');
   const [selectedCampo, setSelectedCampo] = useState('');
-  const [selectedTitulo, setSelectedTitulo] = useState('');
   const [selectedTituloId, setSelectedTituloId] = useState<number>();
   const [requireEducation, setRequireEducation] = useState(false);
-  const [soliSueldo, setSolicitarSueldo] = useState(false);
   const [requireCriterio, setRequireCriterio] = useState(false);
   const [selectedTitles, setSelectedTitles] = useState<Titulo[]>([]);
   const [showCorreo, setShowCorreo] = useState(false);
@@ -103,7 +79,6 @@ function EditarO() {
   const [selectedCriterioId, setSelectedCriterioId] = useState<number | null>(null);
   const [valorCriterio, setValorCriterio] = useState<string>('');
   const [prioridadCriterio, setPrioridadCriterio] = useState<number | null>(null);
-  const { user } = useSelector((state: RootState) => state.auth);
   const [languages, setLanguages] = useState<idioma[]>([]);
   const [showExperiencia, setShowExperiencia] = useState(false);
   const [provinces, setProvinces] = useState<string[]>([]);
@@ -282,13 +257,11 @@ function EditarO() {
 
   const handleNivelChange = (event: any) => {
     setSelectedNivel(event.target.value);
-    setSelectedTitulo('');
     setSelectedTituloId(0);
   };
 
   const handleCampoChange = (event: any) => {
     setSelectedCampo(event.target.value);
-    setSelectedTitulo('');
     setSelectedTituloId(0);
   };
 
@@ -296,11 +269,7 @@ function EditarO() {
     const id = parseInt(event.target.value);
     setSelectedCriterioId(id);
     setValorCriterio('');
-    if (id === 3) {
-      setSolicitarSueldo(true);
-    } else {
-      setSolicitarSueldo(false);
-    }
+   
   };
 
   const handleAgregarCriterio = () => {
@@ -338,23 +307,15 @@ function EditarO() {
   const handleEliminarCriterio = (id: number) => {
     const updatedCriterios = selectedCriterios.filter(c => c.id_criterio !== id);
     setSelectedCriterios(updatedCriterios);
-    if (id === 3) {
-      setSolicitarSueldo(false);
-    } else {
-      setSolicitarSueldo(true);
-    }
+ 
   };
 
   const handleTituloChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedTituloId = parseInt(event.target.value, 10);
     setSelectedTituloId(selectedTituloId);
 
-    const selectedTituloObject = titulos.find(titulo => titulo.id === selectedTituloId);
-    if (selectedTituloObject) {
-      setSelectedTitulo(selectedTituloObject.titulo);
-    } else {
-      setSelectedTitulo('');
-    }
+    
+  
   };
 
   const handleAgregarTitulo = () => {
@@ -410,7 +371,7 @@ function EditarO() {
   
       console.log('Datos del formulario:', dataToSend);
   
-      const response = await axios.put(`update-oferta/${id}`, dataToSend, {
+      await axios.put(`update-oferta/${id}`, dataToSend, {
         headers: {
           'Content-Type': 'application/json',
         },

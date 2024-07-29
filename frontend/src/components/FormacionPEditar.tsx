@@ -90,7 +90,6 @@ const EditFormacionModal: React.FC<EditFormacionModalProps> = ({ isOpen, closeMo
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
   const [isEnCurso, setIsEnCurso] = useState(false);
 
   const fechaini = watch('fechaini');
@@ -120,9 +119,7 @@ const EditFormacionModal: React.FC<EditFormacionModalProps> = ({ isOpen, closeMo
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
-      } finally {
-        setLoading(false);
-      }
+      } 
     };
 
     fetchProfileData();

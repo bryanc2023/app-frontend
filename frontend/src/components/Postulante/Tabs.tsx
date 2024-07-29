@@ -9,11 +9,13 @@ import CompetenciaTab from './CompetenciaTab';
 
 interface TabsProps {
   profileData: ProfileData;
-  openEditFormacionModal: (formacion: Formacion | null) => void;
+  openEditFormacionModal: (formacion: Formacion| null) => void;
   handleDeleteFormacion: (id: number) => void;
   openModal: (content: string) => void;
   openEditLanguageModal: (idioma: Idioma) => void;
-  openEditCursoModal: (curso: Curso | null) => void;
+  openEditHabilidadModal?: (habilidad: Habilidad) => void;
+  openEditCompetenciadModal?: (competencia: Competencia) => void;
+  openEditCursoModal: (curso: Curso | null | undefined) => void;
   handleDeleteCurso: (id: number) => void;
   handleViewCV: (id: number) => void;
   handleDownloadCV: (url: string) => void;
@@ -21,6 +23,8 @@ interface TabsProps {
 
 interface ProfileData {
   postulante: {
+    id:number;
+    id_postulante:number;
     foto: string;
     nombres: string;
     apellidos: string;
@@ -31,6 +35,8 @@ interface ProfileData {
     genero: string;
     informacion_extra: string;
     idiomas: Idioma[];
+    habilidades: Habilidad[];
+    competencias:Competencia[];
     cv: string;
   };
   ubicacion: {
@@ -40,53 +46,75 @@ interface ProfileData {
   formaciones: Formacion[];
   cursos: Curso[];
   redes: Red[];
+  habilidades: Habilidad[];
+  cvs: cvs[];
+
+}
+interface Competencia {
+  id: number;
+  grupo: string;
+  nombre: string;
+  descripcion: string;
+  pivot?: {
+    id_postulante: number;
+    id_competencia: number;
+    nivel: string;
+  };
 }
 
 interface Formacion {
   id: number;
+  id_postulante: number;
+  id_titulo: number;
   institucion: string;
   estado: string;
   fechaini: string;
   fechafin: string;
-  titulo: {
-    titulo: string;
-    nivel_educacion: string;
-    campo_amplio: string;
-  };
+  titulo: TituloDetalle;
+  titulo_acreditado: string;
 }
 
+interface TituloDetalle {
+  id: number;
+  titulo: string;
+  nivel_educacion: string;
+  campo_amplio: string;
+
+}
 interface Idioma {
   nivel_oral: string;
   nivel_escrito: string;
-  idioma: {
-    id: number;
-    nombre: string;
-  } | null;
+  id: number;
+  nombre: string;
+  pivot?: {
+    id_postulante: number;
+    id_idioma: number;
+    nivel_oral: string;
+    nivel_escrito: string;
+  };
 }
 
 interface Habilidad{
+  id: number;
+  habilidad: string;
   nivel: string;
-  habilidad: {
-    id: number;
-    habilidad: string;
-  } | null;
+  pivot?: {
+    id_postulante: number;
+    id_habilidad: number;
+    nivel: string;
+  };
 }
 
 interface Curso {
-  id: number;
-  nombre: string;
+  id_certificado: number;
+  titulo: string;
   institucion: string;
   fechaini: string;
   fechafin: string;
   certificado: string;
 }
 
-interface CV {
-  id: number;
-  nombre: string;
-  imagen: string;
-  url: string;
-}
+
 
 interface Red{
   id: number;
@@ -94,28 +122,37 @@ interface Red{
   enlace:string;
 }
 
+interface cvs {
+  id: number;
+  nombre: string;
+  imagen: string;
+  url: string;
+}
+
 const Tabs: React.FC<TabsProps> = ({
   profileData,
   openEditFormacionModal,
-  handleDeleteFormacion,
   openModal,
   openEditLanguageModal,
-  openEditHabilidadModal,
   openEditCursoModal,
+  openEditHabilidadModal,
+  openEditCompetenciadModal,
   handleDeleteCurso,
   handleViewCV,
   handleDownloadCV,
 }) => {
   const [activeTab, setActiveTab] = useState('education');
+  const [formaciones, setFormaciones] = useState<Formacion[]>(profileData.formaciones);
 
   const renderContent = () => {
     switch (activeTab) {
       case 'education':
         return (
           <EducationTab
-            formaciones={profileData.formaciones}
-            openEditFormacionModal={openEditFormacionModal}
-            setFormaciones={handleDeleteFormacion}
+          formaciones={formaciones}
+          openEditFormacionModal={openEditFormacionModal}
+          setFormaciones={setFormaciones}
+            
           />
         );
       case 'experience':
@@ -162,8 +199,8 @@ const Tabs: React.FC<TabsProps> = ({
         case 'competencias':
           return (
             <CompetenciaTab
-            habilidades={profileData.postulante.competencias}
-            openEditHabilidadModal={openEditHabilidadModal}
+            competencias={profileData.postulante.competencias}
+            openEditCompetenciaModal={openEditCompetenciadModal}
             openModal={openModal}
           />
           );

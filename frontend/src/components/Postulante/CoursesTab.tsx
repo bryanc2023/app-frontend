@@ -10,8 +10,22 @@ import { RootState } from '../../store';
 import { Curso } from '../../types/CursoType';
 
 interface CoursesTabProps {
-  openEditCursoModal: (curso: Curso | null) => void;
+  handleDeleteCurso: (id: number) => void;  // Añadir esta línea
+  openEditCursoModal: (curso: Curso | null |undefined) => void;
+  cursos: Cursos[];
 }
+
+interface Cursos{
+  id_certificado: number;
+  titulo: string;
+  institucion: string;
+  fechaini: string;
+  fechafin: string;
+  certificado: string;
+}
+
+
+
 
 const CoursesTab: React.FC<CoursesTabProps> = () => {
   const { user } = useSelector((state: RootState) => state.auth);
@@ -21,7 +35,7 @@ const CoursesTab: React.FC<CoursesTabProps> = () => {
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState<boolean>(false);
   const [cursoToDelete, setCursoToDelete] = useState<Curso | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
-  const [cursoToEdit, setCursoToEdit] = useState<Curso | null>(null);
+  const [cursoToEdit, setCursoToEdit] = useState<Curso | null|undefined>(null);
   const [profileData, setProfileData] = useState<any>(null);
 
   const fetchProfileData = async () => {

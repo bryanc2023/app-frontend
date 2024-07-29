@@ -15,10 +15,27 @@ interface Area {
     nombre_area: string;
 }
 
+interface Postulacion {
+    fecha: string;
+    area_id: number;
+    estado: string;
+    num_postulantes: number;
+    cargo: string;
+    estado_count: {
+        [key: string]: number;
+    };
+}
+
+interface GroupedData {
+    month: string;
+    postulantes: number;
+    applications: number;
+}
+
 const RecruitmentDashboard = () => {
-    const [postulaciones, setPostulaciones] = useState([]);
-    const [filteredPostulaciones, setFilteredPostulaciones] = useState([]);
-    const [filteredData, setFilteredData] = useState([]);
+    const [postulaciones, setPostulaciones] = useState<Postulacion[]>([]);
+    const [filteredPostulaciones, setFilteredPostulaciones] = useState<Postulacion[]>([]);
+    const [filteredData, setFilteredData] = useState<GroupedData[]>([]);
     const [fechaInicio, setFechaInicio] = useState('');
     const [fechaFin, setFechaFin] = useState('');
     const { user } = useSelector((state: RootState) => state.auth);
@@ -60,7 +77,7 @@ const RecruitmentDashboard = () => {
             acc[month].postulantes += curr.num_postulantes;
             acc[month].applications += 1;
             return acc;
-        }, {});
+        }, {} as { [key: string]: GroupedData });
 
         setFilteredData(Object.values(groupedData));
     }, [postulaciones, fechaInicio, fechaFin, selectedArea, selectedEstado]);
@@ -222,8 +239,9 @@ const RecruitmentDashboard = () => {
                                             <Tooltip />
                                             <Legend />
                                             <Bar dataKey="postulantes" fill="#8884d8">
-                                                {data.map((entry, index) => (
+                                                {data.map((_, index) => (
                                                     <Cell key={`cell-${index}`} fill={COLORS2[index % COLORS2.length]} />
+                                                   
                                                 ))}
                                             </Bar>
                                         </BarChart>
@@ -252,7 +270,7 @@ const RecruitmentDashboard = () => {
                                                 dataKey="value"
                                                 nameKey="name"
                                             >
-                                                {pieData.map((entry, index) => (
+                                                {pieData.map((_,index) => (
                                                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                                 ))}
                                             </Pie>
@@ -284,7 +302,7 @@ const RecruitmentDashboard = () => {
                                             <Tooltip />
                                             <Legend />
                                             <Bar dataKey="postulantes" fill="#8884d8">
-                                                {filteredData.map((entry, index) => (
+                                                {filteredData.map((_, index) => (
                                                     <Cell key={`cell-${index}`} fill={COLORS2[index % COLORS2.length]} />
                                                 ))}
                                             </Bar>

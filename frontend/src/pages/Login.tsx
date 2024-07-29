@@ -1,7 +1,5 @@
 import { Formik } from 'formik';
-import React, { useEffect, useState } from 'react';
-import InputLabel from '../components/input/InputLabel';
-import Button from '../components/input/Button';
+import { useEffect, useState } from 'react';
 import * as Yup from 'yup';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { useAppDispatch, RootState } from '../store';
@@ -12,7 +10,7 @@ import Swal from 'sweetalert2';
 import Navbar from '../components/layout/Navbar';
 
 const Login = () => {
-    const [idEmpresa, setIdEmpresa] = useState(null);
+ 
     const [showPassword, setShowPassword] = useState(false);
     const dispatch = useAppDispatch();
     const initialValues = {
@@ -64,7 +62,7 @@ const Login = () => {
                     text: 'El usuario o contraseña ingresado no es correcto',
                 });
             } else if (response.type === 'auth/loginUser/fulfilled') {
-                const { user, token, role } = response.payload;
+                const { user, role } = response.payload;
 
                 if (role === 'admin') {
                     navigate("/configuracion");
@@ -75,8 +73,7 @@ const Login = () => {
                         navigate("/verOfertasAll");
                     }
                 } else if (role === 'empresa_oferente') {
-                    setIdEmpresa(user.id);
-                    localStorage.setItem("idEmpresa", user.id);
+                   
 
                     if (user.first_login_at === null) {
                         navigate("/completare");
@@ -84,9 +81,12 @@ const Login = () => {
                         navigate("/verOfertasE");
                     }
                 } else if (role === 'empresa_gestora') {
-                    setIdEmpresa(user.id);
-                    localStorage.setItem("idEmpresa", user.id);
-                    navigate("/inicioG");
+                    if (user.first_login_at === null) {
+                        navigate("/completare");
+                    } else {
+                        navigate("/inicioG");
+                    }
+                    
                 }
             }
         });

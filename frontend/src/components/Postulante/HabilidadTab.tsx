@@ -12,6 +12,8 @@ import { isAxiosError } from 'axios';
 
 interface HabilidadesTabProps {
   habilidades: Habilidad[];
+  openEditHabilidadModal?: (habilidad: Habilidad) => void;
+  openModal: (content: string) => void;
 }
 
 export interface Habilidad {
@@ -25,10 +27,10 @@ export interface Habilidad {
   };
 }
 
-const HabilidadTab: React.FC<HabilidadesTabProps> = ({ habilidades }) => {
+const HabilidadTab: React.FC<HabilidadesTabProps> = ({ }) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const { reset } = useForm<Idioma>();
+  const { reset } = useForm<Habilidad>();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedHabilidad, setSelectedHabilidad] = useState<Habilidad | null>(null);
   const [generalHabilidades, setGeneralHabilidades] = useState<Habilidad[]>([]);
@@ -223,6 +225,7 @@ const HabilidadTab: React.FC<HabilidadesTabProps> = ({ habilidades }) => {
         onRequestClose={() => setIsAddModalOpen(false)}
         onHabilidadAdded={handleHabilidadAdded}
         habilidades={generalHabilidades}
+        userId={profileData ? profileData.postulante.id_postulante : 0} // Añadir userId
       />
       {selectedHabilidad && (
         <EditHabilidadModal

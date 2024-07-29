@@ -100,6 +100,7 @@ const CompletarE: React.FC = () => {
 
   const handleSectorChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = event.target.value;
+    console.log(selectedSector);
     setSelectedSector(selected);
     setIsDivisionEnabled(false);
     if (selected) {

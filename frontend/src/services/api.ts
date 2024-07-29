@@ -1,7 +1,7 @@
 export class Api {
     static baseUrl = "http://localhost:8000/api";
   
-    static async get<T>(url: string): Promise<any> {
+    static async get(url: string): Promise<any> {
         const response = await fetch(`${Api.baseUrl}${url}`);
       
         const dataResponse = await response.json();
@@ -11,7 +11,7 @@ export class Api {
         };
     }
     
-    static async post<T>(url: string, data?: any): Promise<any> {
+    static async post(url: string, data?: any): Promise<any> {
       const response = await fetch(`${Api.baseUrl}${url}`, {
         method: "POST",
         headers: {

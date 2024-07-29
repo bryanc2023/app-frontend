@@ -11,70 +11,85 @@ interface Area {
     nombre_area: string;
 }
 
+interface Oferta {
+    month: number;
+    year: number;
+    total: number;
+}
+
+interface Usuario {
+    month: number;
+    year: number;
+    total: number;
+}
+
+interface Postulacion {
+    month: number;
+    year: number;
+    total: number;
+}
+
 const Estadisticas: React.FC = () => {
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-    const [selectedArea, setSelectedArea] = useState('');
-    const [selectedUbicacion, setSelectedUbicacion] = useState('');
+    const [selectedArea, setSelectedArea] = useState<string>('');
     const [areas, setAreas] = useState<Area[]>([]);
-    const [ubicaciones, setUbicaciones] = useState([]);
-    const [barData, setBarData] = useState({ labels: [], datasets: [] });
-    const [lineData, setLineData] = useState({ labels: [], datasets: [] });
-    const [horizontalBarData, setHorizontalBarData] = useState({ labels: [], datasets: [] });
-    const [locationData, setLocationData] = useState({ labels: [], datasets: [] });
-    const [areaData, setAreaData] = useState({ labels: [], datasets: [] });
-    const [genderData, setGenderData] = useState({ labels: [], datasets: [] });
+    const [barData, setBarData] = useState({ labels: [] as string[], datasets: [] as any[] });
+    const [lineData, setLineData] = useState({ labels: [] as string[], datasets: [] as any[] });
+    const [horizontalBarData, setHorizontalBarData] = useState({ labels: [] as string[], datasets: [] as any[] });
+    const [areaData, setAreaData] = useState({ labels: [] as string[], datasets: [] as any[] });
+    const [genderData, setGenderData] = useState({ labels: [] as string[], datasets: [] as any[] });
     const [provinces, setProvinces] = useState<string[]>([]);
     const [cantons, setCantons] = useState<string[]>([]);
-    const [selectedProvince, setSelectedProvince] = useState('');
-    const [selectedCanton, setSelectedCanton] = useState('');
-    const [ubicacionData, setUbicacionData] = useState({ labels: [], datasets: [] });
-  
+    const [selectedProvince, setSelectedProvince] = useState<string>('');
+    const [selectedCanton, setSelectedCanton] = useState<string>('');
+    const [ubicacionData, setUbicacionData] = useState({ labels: [] as string[], datasets: [] as any[] });
+
     const [summary, setSummary] = useState({
         totalOfertas: 0,
         totalUsuarios: 0,
         totalPostulaciones: 0,
-        detallesOfertas: [],
-        detallesUsuarios: [],
-        detallesPostulaciones: []
+        detallesOfertas: [] as Oferta[],
+        detallesUsuarios: [] as Usuario[],
+        detallesPostulaciones: [] as Postulacion[]
     });
 
     useEffect(() => {
         const fetchData = async () => {
-          try {
-            const response = await axios.get('ubicaciones');
-            setProvinces(response.data.provinces);
-            setCantons(response.data.cantons);
-          } catch (error) {
-            console.error('Error fetching data:', error);
-          }
-        };
-    
-        fetchData();
-      }, []);
-    
-      useEffect(() => {
-        const fetchCantons = async () => {
-          if (selectedProvince) {
             try {
-              const response = await axios.get(`ubicaciones/cantones/${selectedProvince}`);
-              setCantons(response.data);
+                const response = await axios.get('ubicaciones');
+                setProvinces(response.data.provinces);
+                setCantons(response.data.cantons);
             } catch (error) {
-              console.error('Error fetching cantons:', error);
+                console.error('Error fetching data:', error);
             }
-          }
         };
-    
+
+        fetchData();
+    }, []);
+
+    useEffect(() => {
+        const fetchCantons = async () => {
+            if (selectedProvince) {
+                try {
+                    const response = await axios.get(`ubicaciones/cantones/${selectedProvince}`);
+                    setCantons(response.data);
+                } catch (error) {
+                    console.error('Error fetching cantons:', error);
+                }
+            }
+        };
+
         fetchCantons();
-      }, [selectedProvince]);
-    
-      const handleProvinceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    }, [selectedProvince]);
+
+    const handleProvinceChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedProvince(event.target.value);
         setSelectedCanton('');
-      };
-    
-      const handleCantonChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    };
+
+    const handleCantonChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setSelectedCanton(event.target.value);
-      };
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -82,41 +97,35 @@ const Estadisticas: React.FC = () => {
             await fetchUsuariosRegistradosPorMes();
             await fetchPostulacionesPorMes();
             await fetchAreas();
-            await fetchUbicaciones();
         };
 
         fetchData();
-    }, [selectedYear, selectedArea, selectedUbicacion]);
+    }, [selectedYear, selectedArea]);
 
     const fetchAreas = async () => {
         try {
-            const response2 = await axios.get('areas');
-            setAreas(response2.data.areas);
+            const response = await axios.get('areas');
+            setAreas(response.data.areas);
         } catch (error) {
             console.error('Error fetching areas', error);
-        }
-    };
-
-    const fetchUbicaciones = async () => {
-        try {
-            const response = await axios.get('/ubicaciones');
-            setUbicaciones(response.data);
-        } catch (error) {
-            console.error('Error fetching ubicaciones', error);
         }
     };
 
     const fetchOfertasPorMes = async () => {
         try {
             const response = await axios.get(`/ofertas-por-mes?id_empresa=1&year=${selectedYear}`);
-            const ofertas = response.data;
+            const ofertas: Oferta[] = response.data;
 
-            const labels = ofertas.map(oferta => `${monthNames[oferta.month - 1]} ${oferta.year}`);
-            const data = ofertas.map(oferta => oferta.total);
-            const totalOfertas = data.reduce((acc, curr) => acc + curr, 0);
+            const labels = ofertas.map((oferta: Oferta) => `${monthNames[oferta.month - 1]} ${oferta.year}`);
+            const data = ofertas.map((oferta: Oferta) => oferta.total);
+            const totalOfertas = data.reduce((acc: number, curr: number) => acc + curr, 0);
 
             const sortedData = labels.map((label, index) => ({ label, data: data[index] }))
-                .sort((a, b) => new Date(a.label.split(' ')[1], monthNames.indexOf(a.label.split(' ')[0])) - new Date(b.label.split(' ')[1], monthNames.indexOf(b.label.split(' ')[0])));
+                .sort((a, b) => {
+                    const [aMonth, aYear] = a.label.split(' ');
+                    const [bMonth, bYear] = b.label.split(' ');
+                    return new Date(parseInt(aYear), monthNames.indexOf(aMonth)).getTime() - new Date(parseInt(bYear), monthNames.indexOf(bMonth)).getTime();
+                });
 
             setBarData({
                 labels: sortedData.map(item => item.label),
@@ -140,14 +149,18 @@ const Estadisticas: React.FC = () => {
     const fetchUsuariosRegistradosPorMes = async () => {
         try {
             const response = await axios.get(`/usuarios-registrados-por-mes?year=${selectedYear}`);
-            const usuarios = response.data;
+            const usuarios: Usuario[] = response.data;
 
-            const labels = usuarios.map(usuario => `${monthNames[usuario.month - 1]} ${usuario.year}`);
-            const data = usuarios.map(usuario => usuario.total);
-            const totalUsuarios = data.reduce((acc, curr) => acc + curr, 0);
+            const labels = usuarios.map((usuario: Usuario) => `${monthNames[usuario.month - 1]} ${usuario.year}`);
+            const data = usuarios.map((usuario: Usuario) => usuario.total);
+            const totalUsuarios = data.reduce((acc: number, curr: number) => acc + curr, 0);
 
             const sortedData = labels.map((label, index) => ({ label, data: data[index] }))
-                .sort((a, b) => new Date(a.label.split(' ')[1], monthNames.indexOf(a.label.split(' ')[0])) - new Date(b.label.split(' ')[1], monthNames.indexOf(b.label.split(' ')[0])));
+                .sort((a, b) => {
+                    const [aMonth, aYear] = a.label.split(' ');
+                    const [bMonth, bYear] = b.label.split(' ');
+                    return new Date(parseInt(aYear), monthNames.indexOf(aMonth)).getTime() - new Date(parseInt(bYear), monthNames.indexOf(bMonth)).getTime();
+                });
 
             setLineData({
                 labels: sortedData.map(item => item.label),
@@ -171,14 +184,18 @@ const Estadisticas: React.FC = () => {
     const fetchPostulacionesPorMes = async () => {
         try {
             const response = await axios.get(`/postulaciones-por-mes?year=${selectedYear}`);
-            const postulaciones = response.data;
+            const postulaciones: Postulacion[] = response.data;
 
-            const labels = postulaciones.map(postulacion => `${monthNames[postulacion.month - 1]} ${postulacion.year}`);
-            const data = postulaciones.map(postulacion => postulacion.total);
-            const totalPostulaciones = data.reduce((acc, curr) => acc + curr, 0);
+            const labels = postulaciones.map((postulacion: Postulacion) => `${monthNames[postulacion.month - 1]} ${postulacion.year}`);
+            const data = postulaciones.map((postulacion: Postulacion) => postulacion.total);
+            const totalPostulaciones = data.reduce((acc: number, curr: number) => acc + curr, 0);
 
             const sortedData = labels.map((label, index) => ({ label, data: data[index] }))
-                .sort((a, b) => new Date(a.label.split(' ')[1], monthNames.indexOf(a.label.split(' ')[0])) - new Date(b.label.split(' ')[1], monthNames.indexOf(b.label.split(' ')[0])));
+                .sort((a, b) => {
+                    const [aMonth, aYear] = a.label.split(' ');
+                    const [bMonth, bYear] = b.label.split(' ');
+                    return new Date(parseInt(aYear), monthNames.indexOf(aMonth)).getTime() - new Date(parseInt(bYear), monthNames.indexOf(bMonth)).getTime();
+                });
 
             setHorizontalBarData({
                 labels: sortedData.map(item => item.label),

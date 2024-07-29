@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../../services/axios';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
 import { RootState } from '../../store';
 import Modal from 'react-modal';
 import Tabs from './../../components/Postulante/Tabs';
@@ -11,12 +10,13 @@ import EditCurso from '../../components/Postulante/EditCurso';
 import AddRedModal from '../../components/Postulante/AddRedModal';
 import AddIdiomaModal from '../../components/Postulante/AddIdiomaModal'; // Importa el modal
 import { FaLinkedin, FaFacebook, FaInstagram, FaXTwitter, FaGlobe } from 'react-icons/fa6'; // Importar íconos
+import  {ProfileData,Formacion,Idioma,Curso} from '../../types/PostulanteType'; 
 
 
 Modal.setAppElement('#root');
 
 const Profile: React.FC = () => {
-    const navigate = useNavigate();
+    
     const { user } = useSelector((state: RootState) => state.auth);
     const [profileData, setProfileData] = useState<ProfileData | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
@@ -24,7 +24,7 @@ const Profile: React.FC = () => {
     const [modalContent, setModalContent] = useState<string>('');
     const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
     const [selectedFormacion, setSelectedFormacion] = useState<Formacion | Idioma | null>(null);
-    const [selectedCurso, setSelectedCurso] = useState<Curso | null>(null);
+    const [selectedCurso, setSelectedCurso] = useState<Curso | null| undefined>(null);
     const [cedulaError, setCedulaError] = useState<string | null>(null);
     const [isAddRedModalOpen, setIsAddRedModalOpen] = useState<boolean>(false); // Estado para el modal de agregar red
     const [isAddIdiomaModalOpen, setIsAddIdiomaModalOpen] = useState<boolean>(false); // Estado para el modal de agregar idioma
@@ -45,6 +45,7 @@ const Profile: React.FC = () => {
                     }
                     if (!data.idiomas) {
                         data.idiomas = [];
+                        setLanguages(data.idiomas);
                     }
                    
                     setProfileData(data);
@@ -149,23 +150,28 @@ const Profile: React.FC = () => {
         setIsEditModalOpen(false);
     };
 
-    const openEditFormacionModal = (formacion: Formacion) => {
+    const openEditFormacionModal = (formacion: Formacion | null) => {
         setSelectedFormacion(formacion);
         setModalContent('formacion');
         setIsModalOpen(true);
-    };
+      };
 
-    const openEditCursoModal = (curso: Curso) => {
+    const openEditCursoModal = (curso: Curso | null | undefined) => {
         setSelectedCurso(curso);
         setModalContent('curso');
         setIsModalOpen(true);
     };
+
 
     const openEditLanguageModal = (idioma: Idioma) => {
         setSelectedFormacion(idioma);
         setModalContent('editIdioma');
         setIsModalOpen(true);
     };
+
+   
+
+
 
     const handleProfileUpdate = (updatedProfile: ProfileData) => {
         setProfileData(updatedProfile);
@@ -179,9 +185,7 @@ const Profile: React.FC = () => {
         setIsAddRedModalOpen(false);
     };
 
-    const openAddIdiomaModal = () => {
-        setIsAddIdiomaModalOpen(true);
-    };
+
 
     const closeAddIdiomaModal = () => {
         setIsAddIdiomaModalOpen(false);
@@ -293,8 +297,8 @@ const Profile: React.FC = () => {
                 openEditLanguageModal={openEditLanguageModal}
                 openEditCursoModal={openEditCursoModal}
                 handleDeleteCurso={reloadProfile}
-                handleViewCV={(id: number) => { }} // Implementa según tu lógica
-                handleDownloadCV={(url: string) => { }} // Implementa según tu lógica
+                handleViewCV={(id: number) => { console.log(id)}} // Implementa según tu lógica
+                handleDownloadCV={(url: string) => { console.log(url)}} // Implementa según tu lógica
             />
 
             <Modal
@@ -312,15 +316,15 @@ const Profile: React.FC = () => {
                         isOpen={isModalOpen}
                         closeModal={closeModal}
                         reloadProfile={reloadProfile}
-                        formacion={selectedFormacion}
+                        formacion={selectedFormacion as Formacion}
                     />
                 )}
                 {modalContent === 'curso' && (
                     <EditCurso
                         isOpen={isModalOpen}
                         closeModal={closeModal}
-                        reloadProfile={reloadProfile}
-                        curso={selectedCurso}
+                        reloadCursos={reloadProfile}
+                        curso={selectedCurso as Curso}
                     />
                 )}
                 {/* Agrega el contenido de los otros modales aquí */}

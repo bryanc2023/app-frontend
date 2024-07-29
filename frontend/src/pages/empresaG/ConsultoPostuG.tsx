@@ -7,7 +7,6 @@ import { RootState } from '../../store';
 import jszip from 'jszip';
 import FileSaver from 'file-saver';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
-import { storage } from '../../config/firebaseConfig';
 import { FaInfoCircle, FaUserTie, FaFileAlt, FaCheckCircle } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 
@@ -70,7 +69,7 @@ const PostulantesList: React.FC = () => {
     const [showSteps, setShowSteps] = useState(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const postulantesPerPage = 5; // Cantidad de postulantes por página
-    const [selectedFecha, setSelectedFecha] = useState<string>('');
+  
     const [showDescargaModal, setShowDescargaModal] = useState(false);
     const [selectedFechaInicio, setSelectedFechaInicio] = useState<string>('');
     const [selectedFechaFin, setSelectedFechaFin] = useState<string>('');
@@ -140,7 +139,7 @@ const PostulantesList: React.FC = () => {
         const postulacionesArray: Postulacion[] = [];
 
         Object.keys(data).forEach((key) => {
-            const ofertaId = parseInt(key);
+          
             const ofertaData = data[key];
             const postulacion: Postulacion = {
                 id_oferta: ofertaData.id_oferta,

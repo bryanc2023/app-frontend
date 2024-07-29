@@ -43,7 +43,7 @@ interface canton {
 
 function AgregarO() {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+  const { register, handleSubmit, formState: { errors } } = useForm();
   const [niveles, setNiveles] = useState([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [campos, setCampos] = useState([]);
@@ -171,6 +171,7 @@ function AgregarO() {
   const handleCampoChange = (event: any) => {
     setSelectedCampo(event.target.value);
     setSelectedTitulo('');
+    console.log(selectedTitulo);
     setSelectedTituloId(0);
   };
 
@@ -298,7 +299,7 @@ function AgregarO() {
         console.log('Títulos seleccionados:', selectedTitles);
         console.log('Criterios seleccionados:', selectedCriterios);
 
-        const response = await axios.post('add-oferta', dataToSend, {
+        await axios.post('add-oferta', dataToSend, {
           headers: {
             'Content-Type': 'application/json',
           },

@@ -10,7 +10,7 @@ import { useState } from 'react';
 import Navbar from '../components/layout/Navbar';
 
 function RegistroE() {
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading] = useState(false);
     const initialValues={
         name: '',
         email: '',

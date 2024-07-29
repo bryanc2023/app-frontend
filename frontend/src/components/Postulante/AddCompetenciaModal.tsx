@@ -20,7 +20,7 @@ interface FormValues {
     nivel:string;
 }
 
-const AddCompetenciadModal: React.FC<AddCompetenciaModalProps> = ({ isOpen, onRequestClose, onHabilidadAdded, habilidades, userId }) => {
+const AddCompetenciadModal: React.FC<AddCompetenciaModalProps> = ({ isOpen, onRequestClose, onHabilidadAdded, habilidades }) => {
     const { register, handleSubmit, formState: { errors },reset } = useForm<FormValues>();
     const { user } = useSelector((state: RootState) => state.auth);
     const [selectedGrupo, setSelectedGrupo] = useState<string>('');

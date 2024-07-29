@@ -31,7 +31,7 @@ const CompletarP: React.FC = () => {
   const [cantons, setCantons] = useState<string[]>([]);
   const [selectedProvince, setSelectedProvince] = useState('');
   const [selectedCanton, setSelectedCanton] = useState('');
-  const { isLogged, role } = useSelector((state: RootState) => state.auth);
+  const { isLogged } = useSelector((state: RootState) => state.auth);
   useEffect(() => {
     const getFirstLoginDate = async () => {
       try {

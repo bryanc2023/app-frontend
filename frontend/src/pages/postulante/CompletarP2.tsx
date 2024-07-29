@@ -48,7 +48,7 @@ interface Area {
 function CompletarP2() {
   const navigate = useNavigate();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { register, handleSubmit, formState: { errors }, watch, setValue, clearErrors } = useForm<IFormInput>();
+  const { register, handleSubmit, formState: { errors }, setValue, clearErrors } = useForm<IFormInput>();
   const [niveles, setNiveles] = useState<string[]>([]);
   const [campos, setCampos] = useState<string[]>([]);
   const [titulos, setTitulos] = useState<Titulo[]>([]);
@@ -63,7 +63,7 @@ function CompletarP2() {
   const [hasRed, setHasRed] = useState(false);
   const [nombreRed, setNombreRed] = useState('');
   const [enlace, setEnlace] = useState('');
-  const { isLogged, role } = useSelector((state: RootState) => state.auth);
+  const { isLogged } = useSelector((state: RootState) => state.auth);
   useEffect(() => {
     const getFirstLoginDate = async () => {
       try {

@@ -43,14 +43,13 @@ interface canton {
 
 function AgregarO() {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors }, reset } = useForm();
+  const { register, handleSubmit, formState: { errors } } = useForm();
   const [niveles, setNiveles] = useState([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [campos, setCampos] = useState([]);
   const [titulos, setTitulos] = useState<Titulo[]>([]);
   const [selectedNivel, setSelectedNivel] = useState('');
   const [selectedCampo, setSelectedCampo] = useState('');
-  const [selectedTitulo, setSelectedTitulo] = useState('');
   const [selectedTituloId, setSelectedTituloId] = useState<number>();
   const [requireEducation, setRequireEducation] = useState(false);
   const [soliSueldo, setSolicitarSueldo] = useState(false);
@@ -164,13 +163,11 @@ function AgregarO() {
 
   const handleNivelChange = (event: any) => {
     setSelectedNivel(event.target.value);
-    setSelectedTitulo('');
     setSelectedTituloId(0);
   };
 
   const handleCampoChange = (event: any) => {
     setSelectedCampo(event.target.value);
-    setSelectedTitulo('');
     setSelectedTituloId(0);
   };
 
@@ -232,12 +229,8 @@ function AgregarO() {
     const selectedTituloId = parseInt(event.target.value, 10);
     setSelectedTituloId(selectedTituloId);
 
-    const selectedTituloObject = titulos.find(titulo => titulo.id === selectedTituloId);
-    if (selectedTituloObject) {
-      setSelectedTitulo(selectedTituloObject.titulo);
-    } else {
-      setSelectedTitulo('');
-    }
+ 
+ 
   };
 
   const handleAgregarTitulo = () => {
@@ -298,7 +291,7 @@ function AgregarO() {
         console.log('Títulos seleccionados:', selectedTitles);
         console.log('Criterios seleccionados:', selectedCriterios);
 
-        const response = await axios.post('add-oferta', dataToSend, {
+         await axios.post('add-oferta', dataToSend, {
           headers: {
             'Content-Type': 'application/json',
           },

@@ -11,6 +11,8 @@ import { isAxiosError } from 'axios';
 
 interface LanguagesTabProps {
   idiomas: Idioma[];
+  openEditLanguageModal: (idioma: Idioma) => void;
+  openModal: (content: string) => void;
 }
 
 interface Idioma {
@@ -26,7 +28,7 @@ interface Idioma {
   };
 }
 
-const LanguagesTab: React.FC<LanguagesTabProps> = ({ idiomas }) => {
+const LanguagesTab: React.FC<LanguagesTabProps> = ({  }) => {
   const { user } = useSelector((state: RootState) => state.auth);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const { reset } = useForm<Idioma>();
@@ -225,6 +227,7 @@ const LanguagesTab: React.FC<LanguagesTabProps> = ({ idiomas }) => {
         onRequestClose={() => setIsAddModalOpen(false)}
         onIdiomaAdded={handleIdiomaAdded}
         languages={generalLanguages}
+        userId={profileData ? profileData.postulante.id_postulante : 0} // Añadir userId
       />
       {selectedIdioma && (
         <EditIdiomaModal

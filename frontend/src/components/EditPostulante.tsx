@@ -3,12 +3,13 @@ import Modal from 'react-modal';
 import axios from '../services/axios';
 import Swal from 'sweetalert2';
 import { isAxiosError } from 'axios';
+import { ProfileData,Postulante } from '../types/PostulanteType';
 
 interface EditPostulanteModalProps {
   isOpen: boolean;
   closeModal: () => void;
   postulante: Postulante;
-  onProfileUpdate: (updatedProfile: Postulante) => void;
+  onProfileUpdate: (updatedProfile: ProfileData) => void;
 }
 
 const validarCedulaEcuatoriana = (cedula: string): boolean => {
