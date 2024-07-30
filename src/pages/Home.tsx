@@ -1,6 +1,6 @@
 import '../components/css/Footer.css';
 import  { useEffect} from 'react';
-import { useInView } from 'react-intersection-observer';
+
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserPlus, faUserTie, faBriefcase, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import Navbar from "../components/layout/Navbar";
@@ -10,9 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import {RootState} from '../store';
 
 const Home: React.FC = () => {
-  const { ref: section1Ref, inView: section1InView } = useInView({ triggerOnce: true });
-  const { ref: section2Ref, inView: section2InView } = useInView({ triggerOnce: true });
-  const { ref: section3Ref, inView: section3InView } = useInView({ triggerOnce: true });
+
   const navigate = useNavigate();
   const { isLogged, role } = useSelector((state: RootState) => state.auth);
   useEffect(() => {
@@ -40,7 +38,7 @@ const Home: React.FC = () => {
 
         </div>
       </header>
-      <section ref={section1Ref} className={`flex flex-col justify-around items-center py-20 px-10 bg-white mx-10 my-10 rounded-lg flex-grow transition-opacity duration-1000 ${section1InView ? 'opacity-100' : 'opacity-0'}`}>
+      <section  className={`flex flex-col justify-around items-center py-20 px-10 bg-white mx-10 my-10 rounded-lg flex-grow transition-opacity duration-1000 $`}>
         <div className="flex flex-col md:flex-row justify-around items-center gap-8 w-full">
           <div className="bg-gray-50 rounded-lg shadow-md p-16 flex-1 max-w-2xl text-left flex flex-col justify-center">
             <h2 className="text-3xl mb-5">Acerca de Proasetel S.A</h2>
@@ -76,7 +74,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       </section>
-      <section ref={section2Ref} className={`flex flex-col md:flex-row justify-around items-center py-16 px-5 bg-blue-900 mx-10 my-10 rounded-lg flex-grow transition-opacity duration-1000 ${section2InView ? 'opacity-100' : 'opacity-0'}`}>
+      <section className={`flex flex-col md:flex-row justify-around items-center py-16 px-5 bg-blue-900 mx-10 my-10 rounded-lg flex-grow transition-opacity duration-1000 $`}>
         <div className="bg-white rounded-lg shadow-md p-10 flex-1 max-w-md text-center flex flex-col justify-center">
           <FontAwesomeIcon icon={faUserTie} size="3x" className="text-indigo-600 mb-4" />
           <h3 className="text-2xl mb-4">Iniciar Sesión como Postulante</h3>
@@ -91,7 +89,7 @@ const Home: React.FC = () => {
 
         </div>
       </section>
-      <footer ref={section3Ref} className={`bg-gray-800 text-white py-4 text-center transition-opacity duration-1000 ${section3InView ? 'opacity-100' : 'opacity-0'}`}>
+      <footer  className={`bg-gray-800 text-white py-4 text-center transition-opacity duration-1000 $`}>
         &copy; 2024 ProaJob. Todos los derechos reservados.
       </footer>
     </div>
