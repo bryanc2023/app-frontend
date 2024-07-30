@@ -16,7 +16,7 @@ const CurriTab: React.FC = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
-  const [imageSrc, /*setImageSrc*/] = useState<string | null>(null);
+  const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -26,16 +26,16 @@ const CurriTab: React.FC = () => {
           setLoading(true);
           const response = await axios.get(`/postulante/${user.id}/cv`);
           const data = response.data;
-          setCvs([{ id: user.id, nombre: user.name, url: data.cv_url }]);
-          const [profileResponse, /*imageResponse*/] = await Promise.all([
+          setCvs([{ id: user.id, nombre: user.name, url: data.cv_url, image:data.image_url }]);
+          const [profileResponse, imageResponse] = await Promise.all([
             axios.get(`/curri/${user.id}`),
-            //axios.get(`/foto/${user.id}`, { responseType: 'blob' }),
+            axios.get(`/foto/${user.id}`, { responseType: 'blob' }),
           ]);
 
-          //const imageURL = URL.createObjectURL(imageResponse.data);
+          const imageURL = URL.createObjectURL(imageResponse.data);
 
           setProfileData(profileResponse.data);
-          //setImageSrc(imageURL);
+          setImageSrc(imageURL);
           setLoading(false);
         }
       } catch (error) {

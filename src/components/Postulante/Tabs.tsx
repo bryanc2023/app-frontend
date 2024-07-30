@@ -70,17 +70,18 @@ const Tabs: React.FC<TabsProps> = ({
       case 'cv':
         return (
           <CurriTab
-            cvs={[
-              {
-                id: profileData.postulante.id,
-                nombre: `${profileData.postulante.nombres} ${profileData.postulante.apellidos}`,
-                imagen: profileData.postulante.foto,
-                url: profileData.postulante.cv,
-              },
-            ]}
-            handleViewCV={handleViewCV}
-            handleDownloadCV={handleDownloadCV}
-          />
+           // @ts-expect-error: cvs le falta imagen
+          cvs={[
+            {
+              id: profileData.postulante.id,
+              nombre: `${profileData.postulante.nombres} ${profileData.postulante.apellidos}`,
+              imagen: profileData.postulante.foto,
+              url: profileData.postulante.cv,
+            },
+          ]}
+          handleViewCV={handleViewCV}
+          handleDownloadCV={handleDownloadCV}
+        />
         );
         case 'habilidades':
           return (

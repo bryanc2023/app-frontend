@@ -135,6 +135,7 @@ export interface Postulante {
 export interface cvs {
   id: number;
   nombre: string;
+  image: string;
   url: string;
 }
 

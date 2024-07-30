@@ -216,7 +216,7 @@ function EmpresaLayout() {
         const fetchEmpresa = async () => {
             if (user) {
                 try {
-                    const response = await axios.get<Empresa>(`http://localhost:8000/api/empresaById/${user.id}`);
+                    const response = await axios.get<Empresa>(`/empresaById/${user.id}`);
                     setEmpresa(response.data);
                 } catch (err) {
                     console.error('Error fetching empresa data:', err);
