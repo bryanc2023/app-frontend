@@ -1,5 +1,5 @@
 export class Api {
-    static baseUrl = import.meta.env.VITE_API_URL;
+    static baseUrl = import.meta.env.VITE_API_URL2;
   
     static async get(url: string): Promise<any> {
         const response = await fetch(`${Api.baseUrl}${url}`);
