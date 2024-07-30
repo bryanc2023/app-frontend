@@ -26,16 +26,12 @@ const CurriTab: React.FC = () => {
           setLoading(true);
           const response = await axios.get(`/postulante/${user.id}/cv`);
           const data = response.data;
-          setCvs([{ id: user.id, nombre: user.name, url: data.cv_url, image:data.image_url }]);
-          const [profileResponse, imageResponse] = await Promise.all([
-            axios.get(`/curri/${user.id}`),
-            axios.get(`/foto/${user.id}`, { responseType: 'blob' }),
-          ]);
-
-          const imageURL = URL.createObjectURL(imageResponse.data);
-
+          setCvs([{ id: user.id, nombre: user.name, url: data.cv_url, image: data.image_url }]);
+  
+          // Solo necesitamos una llamada para obtener todos los datos necesarios, incluida la foto
+          const profileResponse = await axios.get(`/curri/${user.id}`);
           setProfileData(profileResponse.data);
-          setImageSrc(imageURL);
+          setImageSrc(profileResponse.data.image_url); // Asumiendo que `image_url` está en `profileData`
           setLoading(false);
         }
       } catch (error) {
@@ -44,9 +40,10 @@ const CurriTab: React.FC = () => {
         setLoading(false);
       }
     };
-
+  
     fetchCVs();
   }, [user]);
+  
 
   const getModifiedEstadoCivil = (estadoCivil: string, genero: string) => {
     if (genero.toLowerCase() === 'femenino') {

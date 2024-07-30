@@ -1,5 +1,5 @@
 export class Api {
-    static baseUrl = "http://localhost:8000/api";
+    static baseUrl = import.meta.env.VITE_API_URL;
   
     static async get(url: string): Promise<any> {
         const response = await fetch(`${Api.baseUrl}${url}`);
