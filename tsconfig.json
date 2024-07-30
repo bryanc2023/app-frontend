@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,  // Omite la verificación de tipos en los archivos de declaración
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": false,  // Desactiva el modo estricto (no recomendado para producción)
+    "noUnusedLocals": false,  // Permite locales sin usar
+    "noUnusedParameters": false,  // Permite parámetros sin usar
+    "noFallthroughCasesInSwitch": false  // Permite fallthrough en switch
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
