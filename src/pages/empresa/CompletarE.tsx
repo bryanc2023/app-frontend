@@ -98,7 +98,7 @@ const CompletarE: React.FC = () => {
     fetchSectores();
   }, []);
 
-  const handleSectorChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleSectorChange = async (event: any) => {
     const selected = event.target.value;
     console.log(selectedSector);
     setSelectedSector(selected);
@@ -178,7 +178,7 @@ const CompletarE: React.FC = () => {
     }
   };
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleLogoChange = (e: any) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
