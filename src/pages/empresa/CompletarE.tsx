@@ -40,6 +40,11 @@ const CompletarE: React.FC = () => {
   const [selectedProvince, setSelectedProvince] = useState('');
   const [selectedCanton, setSelectedCanton] = useState('');
   const [hasSocialLinks, setHasSocialLinks] = useState(false);
+  const [sectores, setSectores] = useState<string[]>([]);
+  const [divisiones, setDivisiones] = useState<Division[]>([]);
+  const [, setSelectedSector] = useState<string>('');
+  const [selectedDivision, setSelectedDivision] = useState<Division | null>(null);
+  const [isDivisionEnabled, setIsDivisionEnabled] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -79,12 +84,6 @@ const CompletarE: React.FC = () => {
     setSelectedCanton(event.target.value);
   };
 
-  const [sectores, setSectores] = useState<string[]>([]);
-  const [divisiones, setDivisiones] = useState<Division[]>([]);
-  const [selectedSector, setSelectedSector] = useState<string>('');
-  const [selectedDivision, setSelectedDivision] = useState<Division | null>(null);
-  const [isDivisionEnabled, setIsDivisionEnabled] = useState<boolean>(false);
-
   useEffect(() => {
     const fetchSectores = async () => {
       try {
@@ -98,11 +97,12 @@ const CompletarE: React.FC = () => {
     fetchSectores();
   }, []);
 
-  const handleSectorChange = async (event: any) => {
+  const handleSectorChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = event.target.value;
-    console.log(selectedSector);
-    setSelectedSector(selected);
+    setSelectedSector(selected); // Asegúrate de que esto está funcionando correctamente
     setIsDivisionEnabled(false);
+    setSelectedDivision(null); // Reinicia la división seleccionada
+
     if (selected) {
       try {
         const response = await axios.get(`sectores/${encodeURIComponent(selected)}`);
@@ -178,7 +178,7 @@ const CompletarE: React.FC = () => {
     }
   };
 
-  const handleLogoChange = (e: any) => {
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();

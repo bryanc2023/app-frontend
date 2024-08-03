@@ -12,6 +12,7 @@ import ListEmpresa from '../Empresa/ListEmpresa';
 import PerfilPModal from '../../components/PerfilPModal';
 import PerfilEModal from '../../components/PerfilEModal';
 import { dataNotificable, DataNotifyApi } from '../../types/NotifyType';
+import { ProfileData } from '../../types/PostulanteType';
 
 interface Postulante {
     id_postulante: number;
@@ -160,7 +161,7 @@ function PostulanteLayout() {
     const sidebarRef = useRef<HTMLDivElement>(null);
     const dispatch = useDispatch();
     const { user } = useSelector((state: RootState) => state.auth);
-    const [profileData, setProfileData] = useState<any>(null);
+    const [profileData, setProfileData] = useState<ProfileData | null>(null);
 
     const [query, setQuery] = useState(''); // Guardará el nombre y apellido del postulante
     const [postulantes, setPostulantes] = useState<Postulante[]>([]);
