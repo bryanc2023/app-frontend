@@ -280,7 +280,7 @@ export const routes: TypeRoute[] = [
         ],
     },
     {
-        path: '/empresaG',
+        path: '/',
         element: EmpresaGLayout,
         isProtected: true,
         allowedRoles: ['empresa_gestora'],
