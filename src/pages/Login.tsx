@@ -84,11 +84,7 @@ const Login = () => {
                         navigate("/verOfertasE");
                     }
                 } else if (role === 'empresa_gestora') {
-                    if (user.first_login_at === null) {
-                        navigate("/completare");
-                    } else {
-                        navigate("/inicioG");
-                    }
+                    navigate("/inicioG");
                 }
             }
 
