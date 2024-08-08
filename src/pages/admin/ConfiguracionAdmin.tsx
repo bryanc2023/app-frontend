@@ -11,9 +11,10 @@ interface Configuracion {
     valor_prioridad_baja: number;
     vigencia: boolean;
     created_at: string;
+    terminos_condiciones?: string; // Añadir el nuevo campo
 }
 
-const Configuracion = () => {
+const ConfiguracionComponent = () => {
     const [configuraciones, setConfiguraciones] = useState<Configuracion[]>([]);
     const [form, setForm] = useState<Configuracion>({
         dias_max_edicion: 0,
@@ -23,10 +24,13 @@ const Configuracion = () => {
         valor_prioridad_baja: 0,
         vigencia: true,
         created_at: '',
+        terminos_condiciones: '', // Inicializar el nuevo campo
     });
     const [modalOpen, setModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState({ title: '', message: '', success: false });
     const [showForm, setShowForm] = useState(false);
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [termsText, setTermsText] = useState('');
 
     useEffect(() => {
         fetchConfiguraciones();
@@ -41,11 +45,11 @@ const Configuracion = () => {
         }
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setForm((prevForm) => ({
             ...prevForm,
-            [name]: name === "vigencia" ? value === "true" : Number(value),
+            [name]: name === "vigencia" ? value === "true" : value,
         }));
     };
 
@@ -69,8 +73,6 @@ const Configuracion = () => {
         setModalOpen(false);
     };
 
-
-
     const handleActivate = async (id: number) => {
         setModalContent({ title: 'Cargando...', message: `Activando configuración...`, success: false });
         setModalOpen(true);
@@ -84,91 +86,105 @@ const Configuracion = () => {
         }
     };
 
+    const handleShowTerms = (terms: string) => {
+        setTermsText(terms || 'No terms available');
+        setShowTermsModal(true);
+    };
+
+    const handleCloseTermsModal = () => {
+        setShowTermsModal(false);
+    };
+
     return (
         <div className="p-4">
             <center><h1 className="text-2xl font-bold mb-4">Gestión de configuración</h1></center>
             <p> En esta sección se maneja la configuración básica del sistema en las ofertas, la configuración en vigencia es la que se encuentra actualmente operando en el sistema</p>
             <div className="overflow-x-auto">
+                <hr className="my-4" />
+                <h1 className="text-xl text-orange-400 mb-4">CONFIGURACIÓNES ESTABLECIDAS</h1>
+                <table className="min-w-full divide-y divide-gray-200 shadow-md rounded-lg overflow-hidden">
+                    <thead className="bg-gray-50">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Días Máx Edición
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Días Máx Eliminación
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Valor Prioridad Alta
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Valor Prioridad Media
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Valor Prioridad Baja
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Vigencia
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Fecha de creación
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Acción
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {configuraciones.map((config, index) => (
+                            <tr key={index} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.dias_max_edicion}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.dias_max_eliminacion}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.valor_prioridad_alta}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.valor_prioridad_media}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.valor_prioridad_baja}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.vigencia ? 'Sí' : 'No'}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {new Date(config.created_at).toLocaleString("es-ES", {
+                                        day: "2-digit",
+                                        month: "2-digit",
+                                        year: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                    })}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {!config.vigencia && (
+                                        <button
+                                            onClick={() => handleActivate(config.id!)}
+                                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                        >
+                                            Activar
+                                        </button>
+                                    )}
+                                    <button
+                                        onClick={() => handleShowTerms(config.terminos_condiciones || 'No terms available')}
+                                        className="ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                    >
+                                        Mostrar
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
             <hr className="my-4" />
-            <h1 className="text-xl text-orange-400 mb-4">CONFIGURACIÓNES ESTABLECIDAS</h1>
-  <table className="min-w-full divide-y divide-gray-200 shadow-md rounded-lg overflow-hidden">
-    <thead className="bg-gray-50">
-      <tr>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Días Máx Edición
-        </th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Días Máx Eliminación
-        </th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Valor Prioridad Alta
-        </th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Valor Prioridad Media
-        </th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Valor Prioridad Baja
-        </th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Vigencia
-        </th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Fecha de creación
-        </th>
-        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-          Acción
-        </th>
-      </tr>
-    </thead>
-    <tbody className="bg-white divide-y divide-gray-200">
-      {configuraciones.map((config, index) => (
-        <tr key={index} className="hover:bg-gray-50">
-          <td className="px-6 py-4 whitespace-nowrap">
-            {config.dias_max_edicion}
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap">
-            {config.dias_max_eliminacion}
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap">
-            {config.valor_prioridad_alta}
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap">
-            {config.valor_prioridad_media}
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap">
-            {config.valor_prioridad_baja}
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap">
-            {config.vigencia ? 'Sí' : 'No'}
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap">
-            {new Date(config.created_at).toLocaleString("es-ES", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            })}
-          </td>
-          <td className="px-6 py-4 whitespace-nowrap">
-            {!config.vigencia && (
-              <button
-                onClick={() => handleActivate(config.id!)}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-              >
-                Activar
-              </button>
-            )}
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</div>
-
-
-<hr className="my-4" />
-<button
+            <button
                 onClick={() => setShowForm(!showForm)}
                 className="px-4 py-2 mb-4 bg-blue-600 text-white rounded hover:bg-blue-700"
             >
@@ -228,6 +244,16 @@ const Configuracion = () => {
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                     </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">Términos y Condiciones:</label>
+                        <textarea
+                            name="terminos_condiciones"
+                            value={form.terminos_condiciones}
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                            rows={10}
+                        />
+                    </div>
                     <button
                         type="submit"
                         className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
@@ -237,12 +263,17 @@ const Configuracion = () => {
                 </form>
             )}
 
-
             <Modal show={modalOpen} onClose={closeModal} title={modalContent.title} success={modalContent.success}>
                 <p>{modalContent.message}</p>
+            </Modal>
+
+            <Modal show={showTermsModal} onClose={handleCloseTermsModal} title="Términos y Condiciones" success={false}>
+                <div className="p-4 max-h-96 overflow-y-auto">
+                    <pre className="whitespace-pre-wrap">{termsText}</pre>
+                </div>
             </Modal>
         </div>
     );
 };
 
-export default Configuracion;
+export default ConfiguracionComponent;

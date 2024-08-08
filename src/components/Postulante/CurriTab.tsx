@@ -8,6 +8,7 @@ import { storage } from '../../config/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
+import Modal from 'react-modal';
 
 interface Postulante {
   id_postulante: number;
@@ -81,6 +82,10 @@ const CurriTab: React.FC = () => {
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [generating, setGenerating] = useState<boolean>(false);
+  const [showAgreement, setShowAgreement] = useState<boolean>(false);
+  const [agreementAccepted, setAgreementAccepted] = useState<boolean>(false);
+  const [showTerms, setShowTerms] = useState<boolean>(false);
+  const [termsText, setTermsText] = useState<string>('');
 
   useEffect(() => {
     const fetchCVs = async () => {
@@ -103,7 +108,23 @@ const CurriTab: React.FC = () => {
       }
     };
 
+    const fetchTerms = async () => {
+      try {
+        const response = await axios.get('/configuraciones'); // Asegúrate de que este endpoint devuelve los términos y condiciones
+        const activeConfig = response.data.find((config: any) => config.vigencia);
+        if (activeConfig) {
+          setTermsText(activeConfig.terminos_condiciones);
+        } else {
+          setTermsText('No terms available');
+        }
+      } catch (error) {
+        console.error('Error fetching terms and conditions:', error);
+        setTermsText('Error loading terms and conditions');
+      }
+    };
+
     fetchCVs();
+    fetchTerms();
   }, [user]);
 
   const getModifiedEstadoCivil = (estadoCivil: string, genero: string) => {
@@ -402,6 +423,29 @@ const CurriTab: React.FC = () => {
     link.click();
     document.body.removeChild(link);
   };
+  const handleAgreementAccept = () => {
+    setAgreementAccepted(!agreementAccepted);
+  };
+
+  const handleAgreementSubmit = () => {
+    setShowAgreement(false);
+    generatePDF();
+  };
+
+  const handleGenerateClick = () => {
+    if (!profileData?.postulante.cv) {
+      setShowAgreement(true);
+    } else {
+      generatePDF();
+    }
+  };
+  const handleShowTerms = () => {
+    setShowTerms(true);
+  };
+
+  const handleCloseTerms = () => {
+    setShowTerms(false);
+  };
 
   return (
     <div className="mt-6 bg-gray-800 p-4 rounded-lg shadow-inner text-gray-200 relative">
@@ -416,7 +460,7 @@ const CurriTab: React.FC = () => {
           )}
           <button
            id="botoncv"
-            onClick={generatePDF}
+            onClick={handleGenerateClick}
             className="mb-4 sm:mb-0 bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
           >
             {profileData?.postulante.cv != null ? 'Actualizar CV' : 'Generar CV'}
@@ -477,6 +521,66 @@ const CurriTab: React.FC = () => {
           ></iframe>
         </div>
       )}
+
+      <Modal
+        isOpen={showAgreement}
+        onRequestClose={() => setShowAgreement(false)}
+        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+      >
+        <div className="bg-white p-6 rounded-lg shadow-lg text-black max-w-md mx-auto">
+          <h2 className="text-xl font-semibold mb-4">Acuerdo de Compromiso</h2>
+          <p className="mb-4">
+            Al generar su CV, usted acepta que la página Postúlate puede usar sus datos personales para los fines descritos en los
+            <span
+              onClick={handleShowTerms}
+              className="text-blue-500 cursor-pointer"
+            >
+              {' '}términos y condiciones
+            </span>.
+          </p>
+          <label className="flex items-center mb-4">
+            <input
+              type="checkbox"
+              className="mr-2"
+              checked={agreementAccepted}
+              onChange={handleAgreementAccept}
+            />
+            Acepto los términos y condiciones
+          </label>
+          <div className="flex justify-end">
+            <button
+              onClick={handleAgreementSubmit}
+              disabled={!agreementAccepted}
+              className={`px-4 py-2 rounded-md transition duration-300 ${agreementAccepted ? 'bg-blue-500 text-white hover:bg-blue-700' : 'bg-gray-400 text-gray-700 cursor-not-allowed'}`}
+            >
+              Continuar
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showTerms}
+        onRequestClose={handleCloseTerms}
+        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+      >
+        <div className="bg-white p-6 rounded-lg shadow-lg text-black max-w-md mx-auto max-h-full">
+          <h2 className="text-xl font-semibold mb-4">Términos y Condiciones</h2>
+          <div className="overflow-y-auto max-h-96">
+            <div className="space-y-4 text-sm">
+              <pre className="whitespace-pre-wrap">{termsText}</pre>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={handleCloseTerms}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition duration-300"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };

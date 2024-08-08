@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 import { storage } from '../../config/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaPlusCircle, FaTrashAlt } from 'react-icons/fa';
+import Modal from 'react-modal';
 
 interface IFormInput {
   logo: FileList;
@@ -45,6 +46,10 @@ const CompletarE: React.FC = () => {
   const [, setSelectedSector] = useState<string>('');
   const [selectedDivision, setSelectedDivision] = useState<Division | null>(null);
   const [isDivisionEnabled, setIsDivisionEnabled] = useState<boolean>(false);
+  const [showAgreement, setShowAgreement] = useState<boolean>(false);
+  const [agreementAccepted, setAgreementAccepted] = useState<boolean>(false);
+  const [showTerms, setShowTerms] = useState<boolean>(false);
+  const [termsText, setTermsText] = useState<string>('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -134,6 +139,42 @@ const CompletarE: React.FC = () => {
     return platformData ? platformData.icon : null;
   };
 
+  const fetchTerms = async () => {
+    try {
+      const response = await axios.get('/configuraciones'); // Asegúrate de que este endpoint devuelve los términos y condiciones
+      const activeConfig = response.data.find((config: any) => config.vigencia);
+      if (activeConfig) {
+        setTermsText(activeConfig.terminos_condiciones);
+      } else {
+        setTermsText('No terms available');
+      }
+    } catch (error) {
+      console.error('Error fetching terms and conditions:', error);
+      setTermsText('Error loading terms and conditions');
+    }
+  };
+
+  useEffect(() => {
+    fetchTerms();
+  }, []);
+
+  const handleAgreementAccept = () => {
+    setAgreementAccepted(!agreementAccepted);
+  };
+
+  const handleAgreementSubmit = () => {
+    setShowAgreement(false);
+    handleSubmit(onSubmit)();
+  };
+
+  const handleShowTerms = () => {
+    setShowTerms(true);
+  };
+
+  const handleCloseTerms = () => {
+    setShowTerms(false);
+  };
+
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     if (user && selectedDivision && selectedProvince && selectedCanton) {
       try {
@@ -192,7 +233,7 @@ const CompletarE: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-5 bg-gray-100">
       <h1 className="text-3xl font-bold text-center mb-8">Completar registro de empresa</h1>
-      <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-10 rounded-lg shadow-lg w-full max-w-4xl">
+      <form className="bg-white p-10 rounded-lg shadow-lg w-full max-w-4xl">
         <div className="form-group mb-8">
           <label htmlFor="logo" className="block text-gray-700 font-semibold mb-2">Logo:</label>
           <div className="flex items-center">
@@ -394,8 +435,74 @@ const CompletarE: React.FC = () => {
           {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
         </div>
 
-        <button type="submit" className="w-full py-3 px-4 bg-blue-500 text-white font-bold rounded-lg hover:bg-slate-600">Registrar empresa</button>
+        <button
+          type="button"
+          onClick={() => setShowAgreement(true)}
+          className="w-full py-3 px-4 bg-blue-500 text-white font-bold rounded-lg hover:bg-slate-600"
+        >
+          Registrar empresa
+        </button>
       </form>
+
+      <Modal
+        isOpen={showAgreement}
+        onRequestClose={() => setShowAgreement(false)}
+        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+      >
+        <div className="bg-white p-6 rounded-lg shadow-lg text-black max-w-md mx-auto">
+          <h2 className="text-xl font-semibold mb-4">Acuerdo de Compromiso</h2>
+          <p className="mb-4">
+            Al registrar su empresa, usted acepta que la página Postúlate puede usar sus datos personales para los fines descritos en los
+            <span
+              onClick={handleShowTerms}
+              className="text-blue-500 cursor-pointer"
+            >
+              {' '}términos y condiciones
+            </span>.
+          </p>
+          <label className="flex items-center mb-4">
+            <input
+              type="checkbox"
+              className="mr-2"
+              checked={agreementAccepted}
+              onChange={handleAgreementAccept}
+            />
+            Acepto los términos y condiciones
+          </label>
+          <div className="flex justify-end">
+            <button
+              onClick={handleAgreementSubmit}
+              disabled={!agreementAccepted}
+              className={`px-4 py-2 rounded-md transition duration-300 ${agreementAccepted ? 'bg-blue-500 text-white hover:bg-blue-700' : 'bg-gray-400 text-gray-700 cursor-not-allowed'}`}
+            >
+              Continuar
+            </button>
+          </div>
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={showTerms}
+        onRequestClose={handleCloseTerms}
+        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+      >
+        <div className="bg-white p-6 rounded-lg shadow-lg text-black max-w-md mx-auto max-h-full">
+          <h2 className="text-xl font-semibold mb-4">Términos y Condiciones</h2>
+          <div className="overflow-y-auto max-h-96">
+            <div className="space-y-4 text-sm">
+              <pre className="whitespace-pre-wrap">{termsText}</pre>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <button
+              onClick={handleCloseTerms}
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition duration-300"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
