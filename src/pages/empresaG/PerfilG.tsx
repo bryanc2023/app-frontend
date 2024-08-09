@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from '../../services/axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaGlobe, FaXing, FaXTwitter } from 'react-icons/fa6'; // Importar íconos
-import AddRedModal from '../../components/Empresa/AddRedEModal'; // Importa el modal
+import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaGlobe, FaXing, FaXTwitter } from 'react-icons/fa6';
+import AddRedModal from '../../components/Empresa/AddRedEModal';
+import EditLogoModal from '../../components/Empresa/EditProfilePicEModal'; // Importa el nuevo modal
 
 interface Empresa {
     id?: number;
@@ -28,6 +29,7 @@ const EmpresaDetails: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [isEditLogoModalOpen, setIsEditLogoModalOpen] = useState(false); // Estado para el modal de editar logo
     const [editedEmpresa, setEditedEmpresa] = useState<Empresa | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const { user } = useSelector((state: RootState) => state.auth);
@@ -41,7 +43,7 @@ const EmpresaDetails: React.FC = () => {
     const [selectedSector, setSelectedSector] = useState<string>('');
     const [selectedDivision, setSelectedDivision] = useState<string>('');
     const [isDivisionEnabled, setIsDivisionEnabled] = useState<boolean>(false);
-    const [isAddRedModalOpen, setIsAddRedModalOpen] = useState<boolean>(false); // Estado para el modal de agregar red
+    const [isAddRedModalOpen, setIsAddRedModalOpen] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -135,6 +137,14 @@ const EmpresaDetails: React.FC = () => {
         setModalIsOpen(false);
     };
 
+    const openEditLogoModal = () => {
+        setIsEditLogoModalOpen(true);
+    };
+
+    const closeEditLogoModal = () => {
+        setIsEditLogoModalOpen(false);
+    };
+
     const openAddRedModal = () => {
         setIsAddRedModalOpen(true);
     };
@@ -169,9 +179,6 @@ const EmpresaDetails: React.FC = () => {
             }
         }
     };
-    
-    
-    
 
     const reloadProfile = async () => {
         try {
@@ -278,7 +285,8 @@ const EmpresaDetails: React.FC = () => {
                     <img 
                         src={empresa?.logo} 
                         alt="Logo" 
-                        className="w-32 h-32 object-cover border-2 border-black rounded-full mb-4 sm:mb-0 mx-auto" 
+                        className="w-32 h-32 object-cover border-2 border-black rounded-full mb-4 sm:mb-0 mx-auto cursor-pointer" 
+                        onClick={openEditLogoModal} // Abre el modal al hacer clic en el logo
                     />
                     <button onClick={openModal} className="bg-blue-500 text-white px-4 py-2 rounded mb-4 mt-4 self-center">Editar Datos</button>
                 </div>
@@ -310,8 +318,8 @@ const EmpresaDetails: React.FC = () => {
                                 <div key={red.id_empresa_red} className="flex items-center space-x-2">
                                     <span>{red.nombre_red}</span>
                                     <a href={red.enlace} target="_blank" rel="noopener noreferrer" className="text-2xl hover:underline">
-                                    {renderIcon(red.nombre_red)}
-                                </a>
+                                        {renderIcon(red.nombre_red)}
+                                    </a>
                                 </div>
                             ))}
                         </div>
@@ -479,6 +487,20 @@ const EmpresaDetails: React.FC = () => {
                 onRequestClose={closeAddRedModal}
                 reloadProfile={reloadProfile}
                 idEmpresa={empresa?.id || 0}
+            />
+            <EditLogoModal
+                isOpen={isEditLogoModalOpen}
+                onRequestClose={closeEditLogoModal}
+                onSave={(newLogoURL) => {
+                    setEmpresa((prevData) => {
+                        if (prevData) {
+                            return { ...prevData, logo: newLogoURL };
+                        }
+                        return prevData;
+                    });
+                }}
+                initialImage={empresa?.logo || ''} // Imagen inicial del logo actual
+                empresaId={empresa?.id || 0} // Pasar el ID de la empresa
             />
         </div>
     );

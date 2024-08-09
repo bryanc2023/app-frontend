@@ -177,6 +177,16 @@ const CompletarE: React.FC = () => {
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     if (user && selectedDivision && selectedProvince && selectedCanton) {
+      Swal.fire({
+        title: 'Cargando...',
+        text: 'Por favor, espera mientras se procesa tu registro.',
+        allowOutsideClick: false,
+        allowEscapeKey: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+      });
+      
       try {
         const response = await axios.get(`ubicaciones/${selectedProvince}/${selectedCanton}`);
         const ubicacionId = response.data.ubicacion_id;
@@ -215,6 +225,11 @@ const CompletarE: React.FC = () => {
 
       } catch (error) {
         console.error('Error al enviar el formulario:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Hubo un problema al enviar el formulario. Por favor, inténtalo de nuevo más tarde.',
+        });
       }
     }
   };

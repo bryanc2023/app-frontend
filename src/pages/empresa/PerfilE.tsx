@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaGlobe, FaXing, FaXTwitter } from 'react-icons/fa6'; // Importar íconos
 import AddRedModal from '../../components/Empresa/AddRedEModal'; // Importa el modal
+import EditLogoModal from '../../components/Empresa/EditProfilePicEModal'; // Importa el nuevo modal
 
 interface Empresa {
     id?: number;
@@ -41,6 +42,7 @@ const EmpresaDetails: React.FC = () => {
     const [selectedSector, setSelectedSector] = useState<string>('');
     const [selectedDivision, setSelectedDivision] = useState<string>('');
     const [isDivisionEnabled, setIsDivisionEnabled] = useState<boolean>(false);
+    const [isEditLogoModalOpen, setIsEditLogoModalOpen] = useState(false); // Estado para el modal de editar logo
     const [isAddRedModalOpen, setIsAddRedModalOpen] = useState<boolean>(false); // Estado para el modal de agregar red
 
     const fetchRedes = async (empresaId: number) => {
@@ -99,6 +101,14 @@ const EmpresaDetails: React.FC = () => {
             fetchProfileData();
         }
     }, [user]);
+
+    const openEditLogoModal = () => {
+        setIsEditLogoModalOpen(true);
+    };
+
+    const closeEditLogoModal = () => {
+        setIsEditLogoModalOpen(false);
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -274,7 +284,8 @@ const EmpresaDetails: React.FC = () => {
                     <img 
                         src={empresa?.logo} 
                         alt="Logo" 
-                        className="w-32 h-32 object-cover border-2 border-black rounded-full mb-4 sm:mb-0 mx-auto" 
+                        className="w-32 h-32 object-cover border-2 border-black rounded-full mb-4 sm:mb-0 mx-auto cursor-pointer" 
+                        onClick={openEditLogoModal}
                     />
                     <button onClick={openModal} className="bg-blue-500 text-white px-4 py-2 rounded mb-4 mt-4 self-center">Editar Datos</button>
                 </div>
@@ -476,7 +487,22 @@ const EmpresaDetails: React.FC = () => {
                 reloadProfile={reloadProfile}
                 idEmpresa={empresa?.id || 0}
             />
+            <EditLogoModal
+                isOpen={isEditLogoModalOpen}
+                onRequestClose={closeEditLogoModal}
+                onSave={(newLogoURL) => {
+                    setEmpresa((prevData) => {
+                        if (prevData) {
+                            return { ...prevData, logo: newLogoURL };
+                        }
+                        return prevData;
+                    });
+                }}
+                initialImage={empresa?.logo }
+                empresaId={empresa?.id || 0}
+            />
         </div>
+        
     );
 };
 
