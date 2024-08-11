@@ -16,10 +16,10 @@ import PerfilEModal from '../../components/PerfilEModal';
 import { dataNotificable, DataNotifyApi } from '../../types/NotifyType';
 
 interface Postulante {
-    id_postulante: number
-    nombres: string
-    apellidos: string
-    foto: string
+    id_postulante: number;
+    nombres: string;
+    apellidos: string;
+    foto: string;
 }
 
 interface Idioma {
@@ -77,7 +77,7 @@ export interface PostulanteData {
         genero: string;
         informacion_extra: string;
         cv: string;
-    },
+    };
     idiomas: Idioma[];
     formaciones: Formacion[];
     red: Red[];
@@ -207,10 +207,12 @@ function EmpresaLayout() {
         setSidebarOpen(!sidebarOpen);
     };
 
-    const handleContentClick = () => {
-        // No cerrar la barra lateral al hacer clic fuera de ella
+    const handleLinkClick = () => {
+        // Cierra el sidebar en modo responsive al hacer clic en un enlace
+        if (window.innerWidth < 1024) {
+            setSidebarOpen(false);
+        }
     };
-
 
     useEffect(() => {
         const fetchEmpresa = async () => {
@@ -402,9 +404,8 @@ function EmpresaLayout() {
     }, [queryEmpresa]);
 
     return (
-        <div className={`flex h-screen overflow-hidden`} onClick={handleContentClick}>
+        <div className={`flex h-screen overflow-hidden`}>
             <nav className={`bg-orange-700 text-white p-4 fixed top-16 bottom-0 lg:relative lg:translate-x-0 transition-transform transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:w-64 z-20`}>
-               
                 <div className="flex flex-col items-center mb-4">
                     {empresa && (
                         <img
@@ -465,6 +466,7 @@ function EmpresaLayout() {
                                             key={postulante.id_postulante}
                                             postulante={postulante}
                                             getPostulante={getPostulante}
+                                            onClick={handleLinkClick} // Cierra el sidebar al seleccionar un postulante
                                         />
                                     ))
                                 ) : (
@@ -494,6 +496,7 @@ function EmpresaLayout() {
                                             key={empresa.id_empresa}
                                             empresa={empresa}
                                             getEmpresa={getEmpresa}
+                                            onClick={handleLinkClick} // Cierra el sidebar al seleccionar una empresa
                                         />
                                     ))
                                 ) : (
@@ -514,13 +517,13 @@ function EmpresaLayout() {
                         {dropdownOpen2 && (
                             <ul className="mt-2 bg-white text-black shadow-lg rounded-md overflow-hidden z-20 absolute left-0 top-full w-full">
                                 <li className={`p-2 ${location.pathname === '/InicioG' ? 'bg-gray-200' : ''}`}>
-                                    <Link to="/InicioG" className="flex items-center w-full pl-6">
+                                    <Link to="/InicioG" className="flex items-center w-full pl-6" onClick={handleLinkClick}>
                                         <FontAwesomeIcon icon={faClipboardList} className="mr-2" />
                                         <span>Gestión de Ofertas</span>
                                     </Link>
                                 </li>
                                 <li className={`p-2 ${location.pathname === '/ConsultoPostuG' ? 'bg-gray-200' : ''}`}>
-                                    <Link to="/ConsultoPostuG" className="flex items-center w-full pl-6">
+                                    <Link to="/ConsultoPostuG" className="flex items-center w-full pl-6" onClick={handleLinkClick}>
                                         <FontAwesomeIcon icon={faUsers} className="mr-2" />
                                         <span>Consultar Postulantes</span>
                                     </Link>
@@ -529,32 +532,30 @@ function EmpresaLayout() {
                         )}
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/CatalogoRegistro' ? 'bg-gray-700' : ''}`}>
-                        <Link to="/CatalogoRegistro" className="flex items-center w-full">
+                        <Link to="/CatalogoRegistro" className="flex items-center w-full" onClick={handleLinkClick}>
                             <FontAwesomeIcon icon={faFileAlt} className="mr-2" />
                             <span className="lg:inline">Gestión de criterios</span>
                         </Link>
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/MonitoreoG' ? 'bg-gray-700' : ''}`}>
-                        <Link to="/MonitoreoG" className="flex items-center w-full">
+                        <Link to="/MonitoreoG" className="flex items-center w-full" onClick={handleLinkClick}>
                             <FontAwesomeIcon icon={faUsers} className="mr-2" />
                             <span className="lg:inline">Control y monitoreo</span>
                         </Link>
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/ReportesG' ? 'bg-gray-700' : ''}`}>
-                        <Link to="/ReportesG" className="flex items-center w-full">
+                        <Link to="/ReportesG" className="flex items-center w-full" onClick={handleLinkClick}>
                             <FontAwesomeIcon icon={faChartLine} className="mr-2" />
                             <span className="lg:inline">Reportes</span>
                         </Link>
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/PerfilG' ? 'bg-gray-700' : ''}`}>
-                        <Link to="/PerfilG" className="flex items-center w-full">
+                        <Link to="/PerfilG" className="flex items-center w-full" onClick={handleLinkClick}>
                             <FontAwesomeIcon icon={faUser} className="mr-2" />
                             <span className="lg:inline">Mi perfil</span>
                         </Link>
                     </li>
                 </ul>
-
-               
             </nav>
 
             <div className="flex-1 flex flex-col overflow-auto">
@@ -575,38 +576,42 @@ function EmpresaLayout() {
                             </button>
 
                             {isModalNotify && (
-                                <div className="absolute bg-white top-10 w-80 -left-56 p-5 shadow-xl rounded-lg">
-                                    <div className="flex justify-between text-orange-500">
-                                        <h3 className="text-center text-lg font-semibold">Notificaciones</h3>
-                                        <button onClick={() => setIsModalNotify(false)}>
-                                            <XMarkIcon className="w-6" />
+                                <div className="absolute mt-2 w-64 right-0 z-30">
+                                    <div className="bg-white p-5 shadow-xl rounded-lg w-full relative">
+                                        <div className="flex justify-between text-orange-500 mb-3">
+                                            <h3 className="text-center text-lg font-semibold">Notificaciones</h3>
+                                            <button onClick={() => setIsModalNotify(false)}>
+                                                <XMarkIcon className="w-6" />
+                                            </button>
+                                        </div>
+                                        {notificaciones.length > 0 ? (
+                                            notificaciones.map((notificacion) => (
+                                                <div key={notificacion.id} className="bg-gray-50 p-2 my-2 rounded-lg">
+                                                    <p className="font-semibold text-gray-700">{notificacion.mensaje}</p>
+                                                    <p className="text-gray-500">{notificacion.asunto}</p>
+                                                    <p className="text-gray-500">{notificacion.destinatario}</p>
+                                                    <button
+                                                        className="text-blue-500 text-sm"
+                                                        onClick={() => marcarLeida(notificacion.id)}
+                                                    >
+                                                        Marcar como leída
+                                                    </button>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-center text-gray-500">No hay notificaciones</p>
+                                        )}
+                                        <button
+                                            className="bg-blue-500 text-white py-2 px-4 rounded mt-2 w-full"
+                                            onClick={marcarTodasLeidas}
+                                        >
+                                            Marcar todas como leídas
                                         </button>
                                     </div>
-                                    {notificaciones.length > 0 ? (
-                                        notificaciones.map((notificacion) => (
-                                            <div key={notificacion.id} className="bg-gray-50 p-2 my-2 rounded-lg">
-                                                <p className="font-semibold text-gray-700">{notificacion.mensaje}</p>
-                                                <p className="text-gray-500">{notificacion.asunto}</p>
-                                                <p className="text-gray-500">{notificacion.destinatario}</p>
-                                                <button
-                                                    className="text-blue-500 text-sm"
-                                                    onClick={() => marcarLeida(notificacion.id)}
-                                                >
-                                                    Marcar como leída
-                                                </button>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-center text-gray-500">No hay notificaciones</p>
-                                    )}
-                                    <button
-                                        className="bg-blue-500 text-white py-2 px-4 rounded mt-2 w-full"
-                                        onClick={marcarTodasLeidas}
-                                    >
-                                        Marcar todas como leídas
-                                    </button>
                                 </div>
                             )}
+
+
                         </div>
                         <button onClick={toggleDropdown} className="flex items-center focus:outline-none">
                             {empresa && (
@@ -622,10 +627,10 @@ function EmpresaLayout() {
                         {dropdownOpen && (
                             <ul className="absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-md overflow-hidden z-20" style={{ top: '100%', right: '0' }}>
                                 <li className="px-4 py-2 hover:bg-gray-200 rounded-md">
-                                    <Link to="/employer/profile">Mi Perfil</Link>
+                                    <Link to="/employer/profile" onClick={handleLinkClick}>Mi Perfil</Link>
                                 </li>
                                 <li className="px-4 py-2 hover:bg-gray-200 rounded-md">
-                                    <Link to="/" onClick={() => dispatch(logout())}>Cerrar Sesión</Link>
+                                    <Link to="/" onClick={() => { dispatch(logout()); handleLinkClick(); }}>Cerrar Sesión</Link>
                                 </li>
                             </ul>
                         )}
