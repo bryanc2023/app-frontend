@@ -4,7 +4,7 @@ import  { useEffect} from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserPlus, faUserTie, faBriefcase, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import Navbar from "../components/layout/Navbar";
-
+import axios from "../services/axios";
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {RootState} from '../store';
@@ -12,20 +12,58 @@ import {RootState} from '../store';
 const Home: React.FC = () => {
 
   const navigate = useNavigate();
-  const { isLogged, role } = useSelector((state: RootState) => state.auth);
+  const { isLogged, role ,user} = useSelector((state: RootState) => state.auth);
   useEffect(() => {
-    if (isLogged && role) {
-        if (role === 'postulante') {
-            navigate('/verOfertasAll');
-        } else if (role === 'empresa_oferente') {
-            navigate('/inicio-e');
-        } else if (role === 'admin') {
-            navigate('/inicioAdmin');
-        } else if (role === 'empresa_gestora') {
-            navigate('/inicioG');
+  const checkRegistrationStatus = async () => {
+    try {
+        if (isLogged && user) {
+            // Llamada a la API para verificar el estado del registro
+       
+
+            const response = await axios.get('user/registration-status', {
+                headers: {
+                    Authorization: `Bearer ${user.token}`, // Usa el token de autenticación si es necesario
+                },
+            });
+
+            const { profileCompleted } = response.data;
+
+            if (!profileCompleted) {
+                // Si el perfil no está completo, redirige a la página de completar perfil
+              
+                if (role === 'postulante') {
+                  navigate('/completar');
+                  return;
+              } else if (role === 'empresa_oferente') {
+                navigate('/completarE');
+                return;
+              } else if (role === 'admin') {
+                  navigate('/inicioAdmin');
+              } else if (role === 'empresa_gestora') {
+                navigate('/completar');
+                return;
+              }
+            }
+
+            // Redirige según el rol del usuario
+            if (role === 'postulante') {
+                navigate('/verOfertasAll');
+            } else if (role === 'empresa_oferente') {
+                navigate('/VerOfertasE');
+            } else if (role === 'admin') {
+                navigate('/inicioAdmin');
+            } else if (role === 'empresa_gestora') {
+                navigate('/inicioG');
+            }
         }
+    } catch (error) {
+        console.error('Error checking registration status:', error);
+        // Maneja el error según sea necesario (p. ej., mostrar un mensaje al usuario)
     }
-}, [isLogged, role, navigate]);
+};
+
+checkRegistrationStatus();
+}, [isLogged, role, user, navigate]);
 
   return (
     <div className="flex flex-col min-h-screen">

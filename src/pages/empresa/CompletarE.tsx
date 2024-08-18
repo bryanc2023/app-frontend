@@ -52,6 +52,18 @@ const CompletarE: React.FC = () => {
   const [termsText, setTermsText] = useState<string>('');
 
   useEffect(() => {
+    const handlePopState = () => {
+      window.location.reload(); // Recarga la página cuando se presiona el botón "volver"
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
+  useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get('ubicaciones');
@@ -79,6 +91,8 @@ const CompletarE: React.FC = () => {
 
     fetchCantons();
   }, [selectedProvince]);
+
+  
 
   const handleProvinceChange = (event: any) => {
     setSelectedProvince(event.target.value);
@@ -264,6 +278,7 @@ const CompletarE: React.FC = () => {
               id="logo"
               {...register('logo', { required: 'El logo es requerido.' })}
               onChange={handleLogoChange}
+              accept=".png, .jpg, .jpeg" 
               className={`block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 ${errors.logo ? 'border-red-500' : ''}`}
             />
             {errors.logo && <p className="text-red-500 text-xs mt-1">{errors.logo.message}</p>}

@@ -99,6 +99,18 @@ function CompletarP2() {
     }
   }, [isLogged, navigate]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      window.location.reload(); // Recarga la página cuando se presiona el botón "volver"
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
   const redes = [
     { nombre: 'LinkedIn', icono: <FaLinkedin className="text-blue-600 inline" /> },
     { nombre: 'Instagram', icono: <FaInstagram className="text-pink-600 inline" /> },
