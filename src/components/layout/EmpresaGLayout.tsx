@@ -509,28 +509,19 @@ function EmpresaLayout() {
                     )}
                 </div>
                 <ul>
-                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 relative`}>
-                        <div onClick={toggleDropdown2} className="flex items-center w-full cursor-pointer">
-                            <FontAwesomeIcon icon={faChevronDown} className={`mr-2 ${dropdownOpen2 ? 'transform rotate-180' : ''}`} />
-                            <span className="mr-2">Ofertas</span>
-                        </div>
-                        {dropdownOpen2 && (
-                            <ul className="mt-2 bg-white text-black shadow-lg rounded-md overflow-hidden z-20 absolute left-0 top-full w-full">
-                                <li className={`p-2 ${location.pathname === '/InicioG' ? 'bg-gray-200' : ''}`}>
-                                    <Link to="/InicioG" className="flex items-center w-full pl-6" onClick={handleLinkClick}>
-                                        <FontAwesomeIcon icon={faClipboardList} className="mr-2" />
-                                        <span>Gestión de Ofertas</span>
-                                    </Link>
-                                </li>
-                                <li className={`p-2 ${location.pathname === '/ConsultoPostuG' ? 'bg-gray-200' : ''}`}>
-                                    <Link to="/ConsultoPostuG" className="flex items-center w-full pl-6" onClick={handleLinkClick}>
-                                        <FontAwesomeIcon icon={faUsers} className="mr-2" />
-                                        <span>Consultar Postulantes</span>
-                                    </Link>
-                                </li>
-                            </ul>
-                        )}
+                <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/InicioG' ? 'bg-gray-700' : ''}`}>
+                        <Link to="/InicioG" className="flex items-center w-full ">
+                            <FontAwesomeIcon icon={faClipboardList} className="mr-2" />
+                            <span>Gestión de Ofertas</span>
+                        </Link>
                     </li>
+                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/ConsultoPostuG' ? 'bg-gray-700' : ''}`}>
+                        <Link to="/ConsultoPostuG" className="flex items-center w-full ">
+                            <FontAwesomeIcon icon={faUsers} className="mr-2" />
+                            <span>Consultar Postulantes</span>
+                        </Link>
+                    </li>
+
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/CatalogoRegistro' ? 'bg-gray-700' : ''}`}>
                         <Link to="/CatalogoRegistro" className="flex items-center w-full" onClick={handleLinkClick}>
                             <FontAwesomeIcon icon={faFileAlt} className="mr-2" />

@@ -709,9 +709,9 @@ function AgregarO() {
                 <hr className="my-4" />
                 <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
                   <label className="block text-sm font-bold mb-2" htmlFor="id_criterio">Criterio</label>
-                  <div className="flex">
+                  <div className="flex flex-col md:flex-row">
                     <select
-                      className="w-2/3 p-2 border rounded mr-2"
+                     className="w-full md:w-2/3 p-2 border rounded"
                       id="criterio"
                       onChange={handleCriterioChange}
                       value={selectedCriterioId || ''}>
@@ -726,8 +726,9 @@ function AgregarO() {
                       <>
                         {selectedCriterioId === 4 ? (
                           <>
+                             
                           <select
-                            className="w-1/3 p-2 border rounded mr-2"
+                           className="w-full md:w-full p-2 border rounded"
                             id="valor g"
                             value={valorCriterio}
                             onChange={(e) => setValorCriterio(e.target.value)}
@@ -738,7 +739,7 @@ function AgregarO() {
                             <option value="Otro">Otro</option>
                           </select>
                           <select
-                               className="w-1/4 p-1 border rounded mr-2"
+                              className="w-full md:w-full p-2 border rounded"
                                id="prioridad"
                                value={prioridadCriterio || ''}
                                onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
@@ -747,11 +748,12 @@ function AgregarO() {
                                <option value="2">Media</option>
                                <option value="3">Baja</option>
                              </select>
+                      
                           </>
                         ) : selectedCriterioId === 5 ? (
                           <>
                           <select
-                            className="w-1/3 p-2 border rounded mr-2"
+                           className="w-full md:w-2/3 p-2 border rounded"
                             id="valor e"
                             value={valorCriterio}
                             onChange={(e) => setValorCriterio(e.target.value)}
@@ -762,7 +764,7 @@ function AgregarO() {
                             <option value="Viudo">Viudo/a</option>
                           </select>
                           <select
-                               className="w-1/4 p-1 border rounded mr-2"
+                               className="w-full md:w-2/3 p-2 border rounded"
                                id="prioridad"
                                value={prioridadCriterio || ''}
                                onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
@@ -775,7 +777,7 @@ function AgregarO() {
                         ) : selectedCriterioId === 6 ? (
                           <>
                           <select
-                            className="w-1/3 p-2 border rounded mr-2"
+                          className="w-full md:w-full p-2 border rounded"
                             id="valor e"
                             value={valorCriterio}
                             onChange={(e) => setValorCriterio(e.target.value)}
@@ -789,7 +791,7 @@ function AgregarO() {
                             ))}
                           </select>
                                <select
-                               className="w-1/4 p-1 border rounded mr-2"
+                               className="w-full md:w-full p-2 border rounded"
                                id="prioridad"
                                value={prioridadCriterio || ''}
                                onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
@@ -802,7 +804,7 @@ function AgregarO() {
                         ) : selectedCriterioId === 7 ? (
                           <>
                           <select
-                            className="w-1/3 p-2 border rounded mr-2"
+                           className="w-full md:w-full p-2 border rounded"
                             id="valor e"
                             value={valorCriterio}
                             onChange={(e) => setValorCriterio(e.target.value)}
@@ -813,7 +815,7 @@ function AgregarO() {
                             <option value="Mayor,(Más de 36 años)">36 años en adelante</option>
                           </select>
                                 <select
-                                className="w-1/4 p-1 border rounded mr-2"
+                                className="w-full md:w-full p-2 border rounded"
                                 id="prioridad"
                                 value={prioridadCriterio || ''}
                                 onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
@@ -828,7 +830,7 @@ function AgregarO() {
 
                           <>
 
-                            <select id="province" className="w-1/3 p-2 border rounded mr-2" onChange={handleProvinceChange}
+                            <select id="province"className="w-full md:w-full p-2 border rounded" onChange={handleProvinceChange}
                               value={selectedProvince}>
                               <option value="">Provincia..</option>
                               {provinces.map((province, index) => (
@@ -838,7 +840,7 @@ function AgregarO() {
                               ))}
                             </select>
                             <select
-                              className="w-1/3 p-2 border rounded mr-2"
+                             className="w-full md:w-full p-2 border rounded"
                               id="valor e"
                               value={selectedCanton}
                               onChange={handleCantonChange}
@@ -853,7 +855,7 @@ function AgregarO() {
 
                             </select>
                             <select
-                      className="w-1/4 p-1 border rounded mr-2"
+                      className="w-full md:w-full p-2 border rounded"
                       id="prioridad"
                       value={prioridadCriterio || ''}
                       onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
@@ -865,7 +867,7 @@ function AgregarO() {
                           </>
                         ) : (
                           <select
-                          className="w-1/4 p-1 border rounded mr-2"
+                          className="w-full md:w-full p-2 border rounded"
                           id="prioridad"
                           value={prioridadCriterio || ''}
                           onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
