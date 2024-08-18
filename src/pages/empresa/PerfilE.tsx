@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from '../../services/axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
-import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaGlobe, FaXing, FaXTwitter } from 'react-icons/fa6'; // Importar íconos
-import AddRedModal from '../../components/Empresa/AddRedEModal'; // Importa el modal
-import EditLogoModal from '../../components/Empresa/EditProfilePicEModal'; // Importa el nuevo modal
+import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaGlobe, FaXing, FaXTwitter, FaUserTie, FaBriefcase } from 'react-icons/fa6'; 
+import AddRedModal from '../../components/Empresa/AddRedEModal'; 
+import EditLogoModal from '../../components/Empresa/EditProfilePicEModal'; 
+import PlanModal from '../../components/Empresa/PlanModal';
 
 interface Empresa {
     id?: number;
@@ -22,6 +23,7 @@ interface Empresa {
     descripcion: string;
     cantidad_empleados: number;
     red: { id_empresa_red: number; enlace: string; nombre_red: string }[];
+    plan: string; // Nuevo campo para el plan contratado
 }
 
 const EmpresaDetails: React.FC = () => {
@@ -31,6 +33,7 @@ const EmpresaDetails: React.FC = () => {
     const [modalIsOpen, setModalIsOpen] = useState(false);
     const [editedEmpresa, setEditedEmpresa] = useState<Empresa | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [isPlanModalOpen, setIsPlanModalOpen] = useState<boolean>(false); // Estado para el modal de planes
     const { user } = useSelector((state: RootState) => state.auth);
 
     const [provinces, setProvinces] = useState<string[]>([]);
@@ -77,6 +80,7 @@ const EmpresaDetails: React.FC = () => {
 
                     const redesResponse = await axios.get(`/empresa-red/${empresaData.id_empresa}`);
                     empresaData.red = redesResponse.data;
+                    empresaData.plan = 'Estándar'; // Asigna el plan actual aquí
 
                     setEmpresa(empresaData);
 
@@ -108,6 +112,14 @@ const EmpresaDetails: React.FC = () => {
 
     const closeEditLogoModal = () => {
         setIsEditLogoModalOpen(false);
+    };
+
+    const openPlanModal = () => {
+        setIsPlanModalOpen(true);
+    };
+
+    const closePlanModal = () => {
+        setIsPlanModalOpen(false);
     };
 
     useEffect(() => {
@@ -232,9 +244,7 @@ const EmpresaDetails: React.FC = () => {
                 setModalIsOpen(false);
                 setError(null);
             } catch (err: any) {
-               
-                    setError(`Axios error: ${err.response?.data?.message || err.message}`);
-               
+                setError(`Axios error: ${err.response?.data?.message || err.message}`);
             }
         }
     };
@@ -255,6 +265,17 @@ const EmpresaDetails: React.FC = () => {
                 return <FaXTwitter className="text-blue-400" />;
             default:
                 return <FaGlobe className="text-gray-400" />;
+        }
+    };
+
+    const getPlanIcon = (plan: string) => {
+        switch (plan) {
+            case 'Gratuito':
+                return <FaUserTie className="text-green-500 text-2xl" />;
+            case 'Estándar':
+                return <FaBriefcase className="text-blue-500 text-2xl" />;
+            default:
+                return null;
         }
     };
 
@@ -321,6 +342,16 @@ const EmpresaDetails: React.FC = () => {
                                 </a>
                                 </div>
                             ))}
+                        </div>
+                    </div>
+                    <div className="bg-gray-100 p-4 rounded-lg mt-6">
+                        <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-black">Plan Contratado</h2>
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                                {getPlanIcon(empresa?.plan || 'N/A')}
+                                <span className="text-lg font-semibold">{empresa?.plan || 'N/A'}</span>
+                            </div>
+                            <button onClick={openPlanModal} className="bg-blue-500 text-white px-4 py-2 rounded">Ver Otros Planes</button>
                         </div>
                     </div>
                 </div>
@@ -474,7 +505,7 @@ const EmpresaDetails: React.FC = () => {
                                         <button onClick={closeModal} className="px-4 py-2 text-red-500 border border-red-500 rounded-md hover:bg-red-500 hover:text-white ml-4">
                                             Cancelar
                                         </button>
-                                    </div>
+                                    </div>    
                                 </div>
                             )}
                         </div>
@@ -500,6 +531,11 @@ const EmpresaDetails: React.FC = () => {
                 }}
                 initialImage={empresa?.logo }
                 empresaId={empresa?.id || 0}
+            />
+            <PlanModal 
+                isOpen={isPlanModalOpen} 
+                onRequestClose={closePlanModal} 
+                currentPlan={empresa?.plan || 'N/A'} 
             />
         </div>
         

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useNavigate } from 'react-router-dom'; // Importa useNavigate para redireccionar
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faBars, faTimes, faClipboardList, faUsers, faChartLine, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -147,7 +147,7 @@ const initialEmpresaData: EmpresaData = {
 
 function EmpresaLayout() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false); // Controla la visibilidad del sidebar
     const [empresa, setEmpresa] = useState<Empresa | null>(null);
     const { user } = useSelector((state: RootState) => state.auth);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -179,6 +179,7 @@ function EmpresaLayout() {
     const [isModalNotify, setIsModalNotify] = useState(false);
 
     const dispatch = useDispatch();
+    const navigate = useNavigate(); // Utiliza navigate para redireccionar
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -207,7 +208,6 @@ function EmpresaLayout() {
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
     };
-
 
     useEffect(() => {
         const fetchEmpresa = async () => {
@@ -400,6 +400,11 @@ function EmpresaLayout() {
         }
     }, [queryEmpresa]);
 
+    const handleLinkClick = (path: string) => {
+        setSidebarOpen(false); // Cierra el sidebar al hacer clic en un link
+        navigate(path); // Navega a la ruta seleccionada
+    };
+
     return (
         <div className="flex h-screen overflow-hidden">
             <nav className={`bg-orange-700 text-white p-4 fixed top-16 bottom-0 lg:relative lg:translate-x-0 transition-transform transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:w-64 z-20`}>
@@ -505,32 +510,30 @@ function EmpresaLayout() {
                 </div>
                 <ul>
                     <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
-                        <Link to="/verOfertasE" className="flex items-center w-full">
+                        <button onClick={() => handleLinkClick('/verOfertasE')} className="flex items-center w-full">
                             <FontAwesomeIcon icon={faClipboardList} className="mr-2" />
                             <span>Gestión de Ofertas</span>
-                        </Link>
+                        </button>
                     </li>
                     <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
-                        <Link to="/ConsPost" className="flex items-center w-full">
+                        <button onClick={() => handleLinkClick('/ConsPost')} className="flex items-center w-full">
                             <FontAwesomeIcon icon={faUsers} className="mr-2" />
                             <span>Consultar Postulantes</span>
-                        </Link>
+                        </button>
                     </li>
                     <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
-                        <Link to="/MoniR" className="flex items-center w-full">
+                        <button onClick={() => handleLinkClick('/MoniR')} className="flex items-center w-full">
                             <FontAwesomeIcon icon={faChartLine} className="mr-2" />
                             <span>Monitoreo de Reclutamiento</span>
-                        </Link>
+                        </button>
                     </li>
                     <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
-                        <Link to="/PerfilE" className="flex items-center w-full">
+                        <button onClick={() => handleLinkClick('/PerfilE')} className="flex items-center w-full">
                             <FontAwesomeIcon icon={faUser} className="mr-2" />
                             <span>Mi perfil</span>
-                        </Link>
+                        </button>
                     </li>
                 </ul>
-
-                
             </nav>
 
             <div className="flex-1 flex flex-col overflow-auto">

@@ -11,6 +11,7 @@ interface ListEmpresaProps {
         logo: string;
     };
     getEmpresa: (idEmpresa: Empresa['id_empresa']) => void;
+    onClick?: () => void;
 }
 
 export default function ListEmpresa({ empresa, getEmpresa }: ListEmpresaProps) {

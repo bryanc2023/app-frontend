@@ -269,7 +269,6 @@ function PostulanteLayout() {
         try {
             setIsLoadingEmpresas(true);
             setIsModalEmpresas(true);
-            console.log(queryEmpresa);
             const { data } = await axios.get('getEmpresaByName', {
                 params: {
                     'nombre_comercial': queryEmpresa
@@ -278,7 +277,7 @@ function PostulanteLayout() {
 
             setEmpresas(data);
         } catch (error) {
-            console.log(error);
+           
             setEmpresas([]);
         } finally {
             setIsLoadingEmpresas(false);
@@ -349,7 +348,7 @@ function PostulanteLayout() {
             // Consulto a la API
             const { data } = await axios.get(`postulante/${postulanteData.id_postulante}`);
             setDataPost(data);
-            console.log(data);
+            
         } catch (error) {
             console.log(error);
         } finally {
@@ -365,7 +364,7 @@ function PostulanteLayout() {
 
             const { data } = await axios.get(`getEmpresaById/${idEmpresa}`);
             setDataEmpresa(data);
-            console.log(data);
+           
         } catch (error) {
             console.log(error);
         } finally {
@@ -383,7 +382,7 @@ function PostulanteLayout() {
                 id: notification.id,
                 mensaje: notification.data.mensaje || notification.data.asunto
             }));
-            console.log( data )
+        
 
             setNotificaciones(notify);
         } catch (error) {
@@ -553,58 +552,63 @@ function PostulanteLayout() {
                                 )}
                             </button>
                             {isModalNotify && (
-                                <div className="absolute bg-white top-10 w-80 -left-56 p-5 shadow-xl rounded-lg">
-                                    <div className="flex justify-between text-orange-500">
-                                        <h3 className="text-center text-lg font-semibold">Notificaciones</h3>
-                                        <button onClick={() => setIsModalNotify(false)}>
-                                            <XMarkIcon className="w-6" />
+                                <div className="absolute mt-2 w-64 right-0 z-30">
+                                    <div className="bg-white p-5 shadow-xl rounded-lg w-full relative">
+                                        <div className="flex justify-between text-orange-500 mb-3">
+                                            <h3 className="text-center text-lg font-semibold">Notificaciones</h3>
+                                            <button onClick={() => setIsModalNotify(false)}>
+                                                <XMarkIcon className="w-6" />
+                                            </button>
+                                        </div>
+                                        {notificaciones.length > 0 ? (
+                                            notificaciones.map((notificacion) => (
+                                                <div key={notificacion.id} className="bg-gray-50 p-2 my-2 rounded-lg">
+                                                    <p className="font-semibold text-gray-700">{notificacion.mensaje}</p>
+                                                    <p className="text-gray-500">{notificacion.asunto}</p>
+                                                    <p className="text-gray-500">{notificacion.destinatario}</p>
+                                                    <button
+                                                        className="text-blue-500 text-sm"
+                                                        onClick={() => marcarLeida(notificacion.id)}
+                                                    >
+                                                        Marcar como leída
+                                                    </button>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-center text-gray-500">No hay notificaciones</p>
+                                        )}
+                                        <button
+                                            className="bg-blue-500 text-white py-2 px-4 rounded mt-2 w-full"
+                                            onClick={marcarTodasLeidas}
+                                        >
+                                            Marcar todas como leídas
                                         </button>
                                     </div>
-                                    {notificaciones.length > 0 ? (
-                                        notificaciones.map((notificacion) => (
-                                            <div key={notificacion.id} className="bg-gray-50 p-2 my-2 rounded-lg">
-                                                <p className="font-semibold text-gray-700">{notificacion.mensaje}</p>
-                                                <p className="text-gray-500">{notificacion.asunto}</p>
-                                                <p className="text-gray-500">{notificacion.destinatario}</p>
-                                                <button
-                                                    className="text-blue-500 text-sm"
-                                                    onClick={() => marcarLeida(notificacion.id)}
-                                                >
-                                                    Marcar como leída
-                                                </button>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-center text-gray-500">No hay notificaciones</p>
-                                    )}
-                                    <button
-                                        className="bg-blue-500 text-white py-2 px-4 rounded mt-2 w-full"
-                                        onClick={marcarTodasLeidas}
-                                    >
-                                        Marcar todas como leídas
-                                    </button>
                                 </div>
                             )}
+                        
                         </div>
-                        <button onClick={toggleDropdown} className="flex items-center focus:outline-none">
-                            <img
-                                src={profileData ? profileData.postulante.foto : 'https://via.placeholder.com/30'}
-                                alt="Foto de Perfil"
-                                className="rounded-full w-8 h-8 object-cover mr-2"
-                            />
-                            <span className="hidden lg:inline">{user ? `${user.name} ` : 'Postulante'}</span>
-                            <FontAwesomeIcon icon={faChevronDown} className="ml-2" />
-                        </button>
-                        {dropdownOpen && (
-                            <ul className="absolute right-0 mt-2 w-48 bg-white text-black shadow-lg rounded-md overflow-hidden z-20" style={{ top: '100%', right: '0' }}>
-                                <li className="px-4 py-2 hover:bg-gray-200 rounded-md">
-                                    <Link to="/perfilP">Mi Perfil</Link>
-                                </li>
-                                <li className="px-4 py-2 hover:bg-gray-200 rounded-md">
-                                    <Link to="/" onClick={() => dispatch(logout())}>Cerrar Sesión</Link>
-                                </li>
-                            </ul>
-                        )}
+                        <div ref={dropdownRef}> 
+                            <button onClick={toggleDropdown} className="flex items-center focus:outline-none">
+                                <img
+                                    src={profileData ? profileData.postulante.foto : 'https://via.placeholder.com/30'}
+                                    alt="Foto de Perfil"
+                                    className="rounded-full w-8 h-8 object-cover mr-2"
+                                />
+                                <span className="hidden lg:inline">{user ? `${user.name} ` : 'Postulante'}</span>
+                                <FontAwesomeIcon icon={faChevronDown} className="ml-2" />
+                            </button>
+                            {dropdownOpen && (
+                                <ul className="absolute mt-2 w-48 bg-white text-black shadow-lg rounded-md overflow-hidden z-20" style={{ top: '100%', right: '0' }}>
+                                    <li className="px-4 py-2 hover:bg-gray-200 rounded-md">
+                                        <Link to="/perfilP">Mi Perfil</Link>
+                                    </li>
+                                    <li className="px-4 py-2 hover:bg-gray-200 rounded-md">
+                                        <Link to="/" onClick={() => { dispatch(logout()); setDropdownOpen(false); }}>Cerrar Sesión</Link>
+                                    </li>
+                                </ul>
+                            )}
+                        </div>
                     </div>
                     <button className="lg:hidden flex items-center focus:outline-none" onClick={toggleSidebar}>
                         <FontAwesomeIcon icon={sidebarOpen ? faTimes : faBars} />

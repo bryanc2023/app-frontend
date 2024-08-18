@@ -10,6 +10,7 @@ interface Postulante {
 interface ListPostulantesProps {
     postulante: Postulante;
     getPostulante: (postulante: Postulante) => void;
+    onClick?: () => void;
 }
 
 export default function ListPostulantes({ postulante, getPostulante }: ListPostulantesProps) {
