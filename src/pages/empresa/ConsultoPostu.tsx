@@ -36,6 +36,18 @@ interface Postulacion {
             total_evaluacion: number;
             fecha: string;
             estado_postulacion: string;
+            formaciones: {
+                puesto: string;
+                area: string;
+                empresa: string;
+                anios_e: string;
+                mes_e: number;
+            }[];
+            titulos: {
+                institucion: string;
+                titulo_acreditado: string;
+            }[];
+
         }[];
     };
 }
@@ -54,6 +66,17 @@ interface Postulante {
     total_evaluacion: number;
     fecha: string;
     estado_postulacion: string;
+    formaciones: {
+        puesto: string;
+        area: string;
+        empresa: string;
+        anios_e: string;
+        mes_e: number;
+    }[];
+    titulos: {
+        institucion: string;
+        titulo_acreditado: string;
+    }[];
 }
 
 
@@ -98,6 +121,7 @@ const PostulantesList: React.FC = () => {
                 const response = await axios.get(`postulacionesE/${user?.id}`);
                 const postulacionesData = transformarRespuesta(response.data.postulaciones);
                 setPostulaciones(postulacionesData);
+                console.log(postulacionesData);
 
             } catch (error) {
                 console.error('Error fetching postulaciones:', error);
@@ -164,6 +188,17 @@ const PostulantesList: React.FC = () => {
                         total_evaluacion: postulante.total_evaluacion,
                         fecha: postulante.fecha,
                         estado_postulacion: postulante.estado_postulacion,
+                        formaciones: postulante.formaciones.map((formacion: any) => ({
+                            puesto: formacion.puesto,
+                            area: formacion.area,
+                            empresa: formacion.empresa,
+                            anios_e: formacion.anios_e,
+                            mes_e: formacion.mes_e,
+                        })),
+                        titulos: postulante.titulos.map((titulo: any) => ({
+                            institucion: titulo.institucion,
+                            titulo_acreditado: titulo.titulo_acreditado,
+                        })),
                     })),
                 },
             };
@@ -273,7 +308,7 @@ const PostulantesList: React.FC = () => {
             setSelectedFechaFin(nuevaFechaFin);
         }
     };
-    
+
 
     return (
         <div className="mb-4 text-center max-w-screen-lg mx-auto">
@@ -304,31 +339,31 @@ const PostulantesList: React.FC = () => {
                     </ul>
                 )}
                 <div className="mb-4 bg-white p-4 rounded-lg shadow-lg">
-                <div className="mb-4">
-    <label className="block font-semibold text-orange-500 mb-2 text-center">Fecha de Publicación:</label>
-    <div className="flex justify-center space-x-4">
-        <div>
-            <label htmlFor="selectFechaInicio" className="mr-2 font-semibold text-orange-500">Fecha inicio:</label>
-            <input
-                type="date"
-                id="selectFechaInicio"
-                className="px-2 py-1 border border-gray-300 rounded"
-                value={selectedFechaInicio}
-                onChange={(e) => setSelectedFechaInicio(e.target.value)}
-            />
-        </div>
-        <div>
-            <label htmlFor="selectFechaFin" className="mr-2 font-semibold text-orange-500">Fecha fin:</label>
-            <input
-                type="date"
-                id="selectFechaFin"
-                className="px-2 py-1 border border-gray-300 rounded"
-                value={selectedFechaFin}
-                onChange={handleFechaFinChange}
-            />
-        </div>
-    </div>
-</div>
+                    <div className="mb-4">
+                        <label className="block font-semibold text-orange-500 mb-2 text-center">Fecha de Publicación:</label>
+                        <div className="flex justify-center space-x-4">
+                            <div>
+                                <label htmlFor="selectFechaInicio" className="mr-2 font-semibold text-orange-500">Fecha inicio:</label>
+                                <input
+                                    type="date"
+                                    id="selectFechaInicio"
+                                    className="px-2 py-1 border border-gray-300 rounded"
+                                    value={selectedFechaInicio}
+                                    onChange={(e) => setSelectedFechaInicio(e.target.value)}
+                                />
+                            </div>
+                            <div>
+                                <label htmlFor="selectFechaFin" className="mr-2 font-semibold text-orange-500">Fecha fin:</label>
+                                <input
+                                    type="date"
+                                    id="selectFechaFin"
+                                    className="px-2 py-1 border border-gray-300 rounded"
+                                    value={selectedFechaFin}
+                                    onChange={handleFechaFinChange}
+                                />
+                            </div>
+                        </div>
+                    </div>
                     <div>
                         <label htmlFor="selectOferta" className="mr-2 font-semibold text-orange-500">Selecciona una oferta:</label>
                         <select
@@ -397,12 +432,41 @@ const PostulantesList: React.FC = () => {
                                                     {postulante.nombres} {postulante.apellidos}
                                                 </h3>
                                                 <p className="text-sm text-gray-600">
-                                                    <b> Género: </b>{postulante.genero}, <b> Edad:</b> {postulante.edad} años
+                                                    <b> Edad:</b> {postulante.edad} años
                                                 </p>
                                                 <p className="text-sm text-gray-600">
                                                     <b> Nota de evaluación en hoja de vida: </b>{postulante.total_evaluacion}
                                                 </p>
 
+                                                {postulante.formaciones && postulante.formaciones.length > 0 && (
+                                                    <div className="mt-2">
+                                                        <p className="text-sm text-gray-600">
+                                                            <b>Experiencia:</b>
+                                                        </p>
+                                                        {postulante.formaciones.map((formacion, index) => (
+                                                            <p key={index} className="text-sm text-gray-600 ml-4">
+                                                                <b>Puesto:</b> {formacion.puesto} en {formacion.empresa} -  {formacion.mes_e === 0 ? (
+                                                                    <span>No ha cumplido con más de un mes de experiencia</span>
+                                                                ) : (
+                                                                    <span><b>Tiempo experiencia:</b> {formacion.anios_e} años, {formacion.mes_e} meses</span>
+                                                                )}
+                                                            </p>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {postulante.titulos && postulante.titulos.length > 0 && (
+                                                    <div className="mt-2">
+                                                        <p className="text-sm text-gray-600">
+                                                            <b>Títulos:</b>
+                                                        </p>
+                                                        {postulante.titulos.map((titulo, index) => (
+                                                            <p key={index} className="text-sm text-gray-600 ml-4">
+                                                                <b>Institución:</b> {titulo.institucion}, <b>Título Acreditado:</b> {titulo.titulo_acreditado}
+                                                            </p>
+                                                        ))}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                         <button

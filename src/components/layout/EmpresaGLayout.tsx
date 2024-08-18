@@ -199,9 +199,7 @@ function EmpresaLayout() {
         setDropdownOpen(!dropdownOpen);
     };
 
-    const toggleDropdown2 = () => {
-        setDropdownOpen2(!dropdownOpen2);
-    };
+
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
@@ -404,7 +402,7 @@ function EmpresaLayout() {
     return (
         <div className={`flex h-screen overflow-hidden`} onClick={handleContentClick}>
             <nav className={`bg-orange-700 text-white p-4 fixed top-16 bottom-0 lg:relative lg:translate-x-0 transition-transform transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:w-64 z-20`}>
-               
+
                 <div className="flex flex-col items-center mb-4">
                     {empresa && (
                         <img
@@ -506,27 +504,17 @@ function EmpresaLayout() {
                     )}
                 </div>
                 <ul>
-                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 relative`}>
-                        <div onClick={toggleDropdown2} className="flex items-center w-full cursor-pointer">
-                            <FontAwesomeIcon icon={faChevronDown} className={`mr-2 ${dropdownOpen2 ? 'transform rotate-180' : ''}`} />
-                            <span className="mr-2">Ofertas</span>
-                        </div>
-                        {dropdownOpen2 && (
-                            <ul className="mt-2 bg-white text-black shadow-lg rounded-md overflow-hidden z-20 absolute left-0 top-full w-full">
-                                <li className={`p-2 ${location.pathname === '/InicioG' ? 'bg-gray-200' : ''}`}>
-                                    <Link to="/InicioG" className="flex items-center w-full pl-6">
-                                        <FontAwesomeIcon icon={faClipboardList} className="mr-2" />
-                                        <span>Gestión de Ofertas</span>
-                                    </Link>
-                                </li>
-                                <li className={`p-2 ${location.pathname === '/ConsultoPostuG' ? 'bg-gray-200' : ''}`}>
-                                    <Link to="/ConsultoPostuG" className="flex items-center w-full pl-6">
-                                        <FontAwesomeIcon icon={faUsers} className="mr-2" />
-                                        <span>Consultar Postulantes</span>
-                                    </Link>
-                                </li>
-                            </ul>
-                        )}
+                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/InicioG' ? 'bg-gray-700' : ''}`}>
+                        <Link to="/InicioG" className="flex items-center w-full ">
+                            <FontAwesomeIcon icon={faClipboardList} className="mr-2" />
+                            <span>Gestión de Ofertas</span>
+                        </Link>
+                    </li>
+                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/ConsultoPostuG' ? 'bg-gray-700' : ''}`}>
+                        <Link to="/ConsultoPostuG" className="flex items-center w-full ">
+                            <FontAwesomeIcon icon={faUsers} className="mr-2" />
+                            <span>Consultar Postulantes</span>
+                        </Link>
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/CatalogoRegistro' ? 'bg-gray-700' : ''}`}>
                         <Link to="/CatalogoRegistro" className="flex items-center w-full">
@@ -554,7 +542,7 @@ function EmpresaLayout() {
                     </li>
                 </ul>
 
-               
+
             </nav>
 
             <div className="flex-1 flex flex-col overflow-auto">

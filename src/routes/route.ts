@@ -150,6 +150,20 @@ export const routes: TypeRoute[] = [
             },
         ],
     },
+    ,
+    {
+        path: '/edit-oferta/:id',
+        element: EmpresaLayout,
+        isProtected: true,
+        allowedRoles: ['empresa_oferente'],
+        children: [
+            {
+                path: '',
+                element: EditarO,
+                allowedRoles: ['empresa_oferente'],
+            },
+        ],
+    },
     {
         path: '/resultadosP',
         element: PostulanteLayout,
@@ -230,12 +244,7 @@ export const routes: TypeRoute[] = [
                 path: 'perfildet/:id_postulante',
                 element: PostulanteDetallePage,
                 allowedRoles: ['empresa_oferente'],
-            },
-            {
-                path: 'edit-oferta/:id',
-                element: EditarO,
-                allowedRoles: ['empresa_oferente'],
-            },
+            }
         ],
     },
     {
