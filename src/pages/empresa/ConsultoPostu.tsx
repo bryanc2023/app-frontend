@@ -7,7 +7,7 @@ import { RootState } from '../../store';
 import jszip from 'jszip';
 import FileSaver from 'file-saver';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
-import { FaInfoCircle, FaUserTie, FaFileAlt, FaCheckCircle } from 'react-icons/fa';
+import { FaInfoCircle, FaUserTie, FaFileAlt, FaCheckCircle, FaCommentDots } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 
 interface Postulacion {
@@ -36,6 +36,12 @@ interface Postulacion {
             total_evaluacion: number;
             fecha: string;
             estado_postulacion: string;
+            respuestas: {
+                id_pregunta: number;
+                id_oferta: number;
+                pregunta: string;
+                respuesta: string;
+            }[];
             formaciones: {
                 puesto: string;
                 area: string;
@@ -66,6 +72,12 @@ interface Postulante {
     total_evaluacion: number;
     fecha: string;
     estado_postulacion: string;
+    respuestas: {
+        id_pregunta: number;
+        id_oferta: number;
+        pregunta: string;
+        respuesta: string;
+    }[];
     formaciones: {
         puesto: string;
         area: string;
@@ -199,6 +211,12 @@ const PostulantesList: React.FC = () => {
                             institucion: titulo.institucion,
                             titulo_acreditado: titulo.titulo_acreditado,
                         })),
+                        respuestas: postulante.respuestas ? postulante.respuestas.map((respuesta: any) => ({
+                            id_pregunta: respuesta.id_pregunta,
+                            id_oferta: respuesta.id_oferta,
+                            pregunta: respuesta.pregunta,
+                            respuesta: respuesta.respuesta,
+                        })) : [], // Si respuestas es null, asignamos un array vacío
                     })),
                 },
             };
@@ -418,17 +436,16 @@ const PostulantesList: React.FC = () => {
                                     {(currentPage - 1) * postulantesPerPage + index + 1}
                                 </div>
 
-
                                 <div className="p-4">
-                                    <div className="flex items-center justify-between mb-2">
-                                        <div className="flex items-center">
+                                    <div className="flex flex-col md:flex-row items-center justify-between mb-2">
+                                        <div className="flex flex-col md:flex-row items-center">
                                             <img
                                                 src={postulante.foto}
                                                 alt="Foto de perfil"
-                                                className="w-40 h-36  mr-2"
+                                                className="w-40 h-36 mr-2"
                                             />
                                             <div>
-                                                <h3 className="text-lg font-semibold">
+                                                <h3 className="text-lg font-bold text-blue-900">
                                                     {postulante.nombres} {postulante.apellidos}
                                                 </h3>
                                                 <p className="text-sm text-gray-600">
@@ -439,22 +456,26 @@ const PostulantesList: React.FC = () => {
                                                 </p>
 
                                                 {postulante.formaciones && postulante.formaciones.length > 0 && (
-                                                    <div className="mt-2">
-                                                        <p className="text-sm text-gray-600">
-                                                            <b>Experiencia:</b>
-                                                        </p>
-                                                        {postulante.formaciones.map((formacion, index) => (
-                                                            <p key={index} className="text-sm text-gray-600 ml-4">
-                                                                <b>Puesto:</b> {formacion.puesto} en {formacion.empresa} -  {formacion.mes_e === 0 ? (
-                                                                    <span>No ha cumplido con más de un mes de experiencia</span>
-                                                                ) : (
-                                                                    <span><b>Tiempo experiencia:</b> {formacion.anios_e} años, {formacion.mes_e} meses</span>
-                                                                )}
-                                                            </p>
-                                                        ))}
-                                                    </div>
-                                                )}
+                                                    <>
+                                                        <hr className="my-4" />
 
+                                                        <div className="mt-2">
+                                                            <p className="text-sm text-gray-600">
+                                                                <b>Experiencia:</b>
+                                                            </p>
+                                                            {postulante.formaciones.map((formacion, index) => (
+                                                                <p key={index} className="text-sm text-gray-600 ml-4">
+                                                                    <b>Puesto:</b> {formacion.puesto} en {formacion.empresa} -  {formacion.mes_e === 0 ? (
+                                                                        <span>No ha cumplido con más de un mes de experiencia</span>
+                                                                    ) : (
+                                                                        <span><b>Tiempo experiencia:</b> {formacion.anios_e} años, {formacion.mes_e} meses</span>
+                                                                    )}
+                                                                </p>
+                                                            ))}
+                                                        </div>
+                                                    </>
+                                                )}
+                                                <hr className="my-4" />
                                                 {postulante.titulos && postulante.titulos.length > 0 && (
                                                     <div className="mt-2">
                                                         <p className="text-sm text-gray-600">
@@ -468,15 +489,35 @@ const PostulantesList: React.FC = () => {
                                                     </div>
                                                 )}
                                             </div>
+                                            <hr className="my-4" />
                                         </div>
-                                        <button
-                                            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                                            onClick={() => handleShowModal(postulante, filteredPostulaciones.id_oferta)}
-                                        >
-                                            Ver Detalles
-                                        </button>
-                                    </div>
 
+                                        <div className="mt-4 md:mt-0 md:ml-4 text-center md:text-right">
+    {postulante.respuestas && postulante.respuestas.length > 0 && (
+        <div className="mb-2 relative inline-block group">
+            <div className="flex flex-col items-center md:items-start">
+                <div className="flex items-center">
+                    <FaCommentDots className="text-green-500 text-lg mb-1 inline-block" />
+                    <span className="ml-2 text-sm font-semibold">RESPUESTAS A PREGUNTAS</span>
+                </div>
+                <div className="absolute left-0 top-0 transform -translate-x-full mt-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white text-green-500 text-sm rounded-md shadow-lg p-2 z-10">
+                    Tiene respuestas a las preguntas de evaluación. Las puede visualizar en "Ver detalles".
+                </div>
+            </div>
+        </div>
+    )}
+    <div className="mt-2">
+        <button
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+            onClick={() => handleShowModal(postulante, filteredPostulaciones.id_oferta)}
+        >
+            Ver Detalles
+        </button>
+    </div>
+</div>
+
+
+                                    </div>
                                 </div>
                                 <div className={`border-t border-gray-200 p-4 ${getBackgroundColor(postulante.estado_postulacion)}`}>
                                     <p className="text-sm text-gray-600">
@@ -489,7 +530,6 @@ const PostulantesList: React.FC = () => {
                             </div>
                         ))}
                     </div>
-
 
                     {/* Paginación */}
                     {filteredPostulaciones.oferta.postulantes.length > postulantesPerPage && (

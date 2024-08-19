@@ -40,7 +40,7 @@ const Home: React.FC = () => {
               } else if (role === 'admin') {
                   navigate('/inicioAdmin');
               } else if (role === 'empresa_gestora') {
-                navigate('/completar');
+                navigate('/completarE');
                 return;
               }
             }

@@ -45,8 +45,14 @@ interface Oferta {
     soli_sueldo: number;
     correo_contacto: string;
     numero_contacto: string;
+    preguntas: Pregunta[];
 }
 
+interface Pregunta {
+    id: number;
+    id_oferta: number;
+    pregunta: string;
+}
 interface Criterio {
     criterio: string;
     pivot: {
