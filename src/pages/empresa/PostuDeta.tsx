@@ -16,6 +16,12 @@ interface Postulante {
     total_evaluacion: number;
     fecha: string;
     estado_postulacion: string;
+    respuestas: {
+        id_pregunta:number;
+        pregunta:string;
+        id_oferta:number;
+        respuesta:string;
+       }[];
 }
 
 interface PostulanteDetailProps {
@@ -26,6 +32,7 @@ interface PostulanteDetailProps {
 
 const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOferta, onClose }) => {
     const [showComentarioModal, setShowComentarioModal] = useState(false);
+    const [showRespuestasModal, setShowRespuestasModal] = useState(false);
     const [comentario, setComentario] = useState('');
     const [hayAprobado, setHayAprobado] = useState(false);
 
@@ -115,6 +122,14 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
         }
     };
 
+    const handleOpenRespuestasModal = () => {
+        setShowRespuestasModal(true);
+    };
+
+    const handleCloseRespuestasModal = () => {
+        setShowRespuestasModal(false);
+    };
+
     return (
         <div className="p-4 bg-white text-gray-900 rounded-lg relative">
             <h1 className="text-2xl font-bold mb-4 text-gray-900">Detalles del Postulante</h1>
@@ -132,8 +147,19 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
                 <div className="mb-4">
                     <p className="text-gray-900 mb-2">
                         <span className="font-bold">Hoja de vida:</span>
-                        <a href={postulante.cv} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline ml-2">Ver hoja de vida</a>
+                        <a href={postulante.cv} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline ml-2">Ver hoja de vida completa</a>
                     </p>
+                </div>
+            )}
+            {/* Botón para ver respuestas, solo si existen */}
+            {postulante.respuestas && postulante.respuestas.length > 0 && (
+                <div className="mb-4">
+                    <button
+                        onClick={handleOpenRespuestasModal}
+                        className="bg-slate-400 text-white py-2 px-4 rounded hover:bg-blue-600"
+                    >
+                        Ver respuestas del postulante a las preguntas de evaluación
+                    </button>
                 </div>
             )}
             <div className="flex justify-end mt-4">
@@ -202,6 +228,49 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
                 </div>
             )}
             {showComentarioModal && <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>}
+             {/* Modal de Respuestas */}
+             {showRespuestasModal && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none">
+        <div className="relative w-full max-w-4xl mx-auto my-6 md:my-8">
+            <div className="relative flex flex-col w-full bg-white border-0 rounded-lg shadow-lg outline-none focus:outline-none">
+                <div className="flex items-start justify-between p-5 border-b border-solid rounded-t border-blueGray-200">
+                    <h3 className="text-lg md:text-xl font-semibold text-orange-600">
+                        RESPUESTAS DEL POSTULANTE
+                    </h3>
+                    <button
+                        className="p-1 ml-auto bg-transparent border-0 text-black float-right text-2xl leading-none font-semibold outline-none focus:outline-none"
+                        onClick={handleCloseRespuestasModal}
+                    >
+                        <span className="text-black h-6 w-6 text-2xl block outline-none focus:outline-none">×</span>
+                    </button>
+                </div>
+                <div className="relative p-6 flex-auto overflow-y-auto max-h-96 md:max-h-[75vh]">
+                    {postulante.respuestas.map((respuesta, index) => (
+                        <div key={index} className="mb-4">
+                            <p className="font-bold">Pregunta {index + 1}:</p>
+                            <p className="text-gray-700">{respuesta.pregunta}</p>
+                            <p className="font-bold mt-2">Respuesta:</p>
+                            <p className="text-gray-700">{respuesta.respuesta}</p>
+                            <hr className="my-4" />
+                        </div>
+                    ))}
+                </div>
+                <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
+                    <button
+                        className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1"
+                        type="button"
+                        style={{ transition: "all .15s ease" }}
+                        onClick={handleCloseRespuestasModal}
+                    >
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+)}
+
+            {showRespuestasModal && <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>}
         </div>
     );
 };

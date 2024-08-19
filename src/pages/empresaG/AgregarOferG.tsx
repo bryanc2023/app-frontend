@@ -50,11 +50,11 @@ function AgregarO() {
   const [titulos, setTitulos] = useState<Titulo[]>([]);
   const [selectedNivel, setSelectedNivel] = useState('');
   const [selectedCampo, setSelectedCampo] = useState('');
-  const [selectedTitulo, setSelectedTitulo] = useState('');
   const [selectedTituloId, setSelectedTituloId] = useState<number>();
   const [requireEducation, setRequireEducation] = useState(false);
   const [soliSueldo, setSolicitarSueldo] = useState(false);
   const [requireCriterio, setRequireCriterio] = useState(false);
+  const [requirePregunta, setRequirePregunta] = useState(false);
   const [selectedTitles, setSelectedTitles] = useState<Titulo[]>([]);
   const [showCorreo, setShowCorreo] = useState(false);
   const [showNumeroContacto, setShowNumeroContacto] = useState(false);
@@ -70,6 +70,39 @@ function AgregarO() {
   const [cantons, setCantons] = useState<canton[]>([]);
   const [selectedProvince, setSelectedProvince] = useState('');
   const [selectedCanton, setSelectedCanton] = useState('');
+  const [preguntas, setPreguntas] = useState([]);
+  const [nuevaPregunta, setNuevaPregunta] = useState('');
+
+  const handleAgregarPregunta = () => {
+    if (preguntas.length < 5 && nuevaPregunta.trim() !== '') {
+      // Agregar signos de interrogación si no están presentes
+      let preguntaConInterrogacion = nuevaPregunta.trim();
+      if (!preguntaConInterrogacion.startsWith('¿')) {
+        preguntaConInterrogacion = '¿' + preguntaConInterrogacion;
+      }
+      if (!preguntaConInterrogacion.endsWith('?')) {
+        preguntaConInterrogacion = preguntaConInterrogacion + '?';
+      }
+
+      setPreguntas([...preguntas, preguntaConInterrogacion]);
+      setNuevaPregunta('');
+
+    } else if (preguntas.length >= 5) {
+
+      Swal.fire({
+        icon: 'error',
+        title: 'Límite alcanzado',
+        text: 'Solo puedes añadir hasta 5 preguntas.',
+      });
+    }
+  };
+
+  const handleEliminarPregunta = (index) => {
+    const nuevasPreguntas = preguntas.filter((_, i) => i !== index);
+    setPreguntas(nuevasPreguntas);
+  };
+
+
 
   const handleCheckboxChange = (event: any) => {
     setShowExperiencia(event.target.checked);
@@ -152,7 +185,7 @@ function AgregarO() {
 
   const handleProvinceChange = (event: any) => {
     setSelectedProvince(event.target.value);
-    setSelectedCanton('');
+
   };
 
   const handleCantonChange = (event: any) => {
@@ -164,14 +197,11 @@ function AgregarO() {
 
   const handleNivelChange = (event: any) => {
     setSelectedNivel(event.target.value);
-    setSelectedTitulo('');
     setSelectedTituloId(0);
   };
 
   const handleCampoChange = (event: any) => {
     setSelectedCampo(event.target.value);
-    setSelectedTitulo('');
-    console.log(selectedTitulo);
     setSelectedTituloId(0);
   };
 
@@ -233,12 +263,8 @@ function AgregarO() {
     const selectedTituloId = parseInt(event.target.value, 10);
     setSelectedTituloId(selectedTituloId);
 
-    const selectedTituloObject = titulos.find(titulo => titulo.id === selectedTituloId);
-    if (selectedTituloObject) {
-      setSelectedTitulo(selectedTituloObject.titulo);
-    } else {
-      setSelectedTitulo('');
-    }
+
+
   };
 
   const handleAgregarTitulo = () => {
@@ -279,6 +305,8 @@ function AgregarO() {
     return value >= 0 || 'Este campo no puede contener números negativos';
   };
 
+
+
   const onSubmit = handleSubmit(async (values) => {
     if (user) {
       try {
@@ -292,12 +320,14 @@ function AgregarO() {
           solicitar_sueldo: soliSueldo ? soliSueldo : 0,
           titulos: selectedTitles,
           criterios: selectedCriterios,
+          preguntas: preguntas,
         };
 
         console.log('Usuario:', usuario);
         console.log('Datos del formulario:', dataToSend);
         console.log('Títulos seleccionados:', selectedTitles);
         console.log('Criterios seleccionados:', selectedCriterios);
+        console.log('Preguntas:', preguntas);
 
         await axios.post('add-oferta', dataToSend, {
           headers: {
@@ -513,7 +543,9 @@ function AgregarO() {
             {errors.objetivo_cargo && <p className="text-red-500">{String(errors.objetivo_cargo.message)}</p>}
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-bold mb-2" htmlFor="sueldo">• Sueldo a ofrecer</label>
+            <label className="block text-sm font-bold mb-2" htmlFor="sueldo">• Sueldo a ofrecer <span className="text-red-500 ml-1">*</span>
+              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio)</span></label>
+
             <input
               className="w-full p-2 border rounded"
               type="number"
@@ -711,7 +743,7 @@ function AgregarO() {
                   <label className="block text-sm font-bold mb-2" htmlFor="id_criterio">Criterio</label>
                   <div className="flex flex-col md:flex-row">
                     <select
-                     className="w-full md:w-2/3 p-2 border rounded"
+                      className="w-full md:w-2/3 p-2 border rounded"
                       id="criterio"
                       onChange={handleCriterioChange}
                       value={selectedCriterioId || ''}>
@@ -726,111 +758,111 @@ function AgregarO() {
                       <>
                         {selectedCriterioId === 4 ? (
                           <>
-                             
-                          <select
-                           className="w-full md:w-full p-2 border rounded"
-                            id="valor g"
-                            value={valorCriterio}
-                            onChange={(e) => setValorCriterio(e.target.value)}
-                          >
-                            <option value="">Seleccione un género...</option>
-                            <option value="Masculino">Masculino</option>
-                            <option value="Femenino">Femenino</option>
-                            <option value="Otro">Otro</option>
-                          </select>
-                          <select
+
+                            <select
                               className="w-full md:w-full p-2 border rounded"
-                               id="prioridad"
-                               value={prioridadCriterio || ''}
-                               onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                               <option value="">Seleccione una prioridad...</option>
-                               <option value="1">Alta</option>
-                               <option value="2">Media</option>
-                               <option value="3">Baja</option>
-                             </select>
-                      
+                              id="valor g"
+                              value={valorCriterio}
+                              onChange={(e) => setValorCriterio(e.target.value)}
+                            >
+                              <option value="">Seleccione un género...</option>
+                              <option value="Masculino">Masculino</option>
+                              <option value="Femenino">Femenino</option>
+                              <option value="Otro">Otro</option>
+                            </select>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
+
                           </>
                         ) : selectedCriterioId === 5 ? (
                           <>
-                          <select
-                           className="w-full md:w-2/3 p-2 border rounded"
-                            id="valor e"
-                            value={valorCriterio}
-                            onChange={(e) => setValorCriterio(e.target.value)}
-                          >
-                            <option value="">Seleccione un estado civil...</option>
-                            <option value="Casado">Casado/a</option>
-                            <option value="Soltero">Soltero/a</option>
-                            <option value="Viudo">Viudo/a</option>
-                          </select>
-                          <select
-                               className="w-full md:w-2/3 p-2 border rounded"
-                               id="prioridad"
-                               value={prioridadCriterio || ''}
-                               onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                               <option value="">Seleccione una prioridad...</option>
-                               <option value="1">Alta</option>
-                               <option value="2">Media</option>
-                               <option value="3">Baja</option>
-                             </select>
+                            <select
+                              className="w-full md:w-2/3 p-2 border rounded"
+                              id="valor e"
+                              value={valorCriterio}
+                              onChange={(e) => setValorCriterio(e.target.value)}
+                            >
+                              <option value="">Seleccione un estado civil...</option>
+                              <option value="Casado">Casado/a</option>
+                              <option value="Soltero">Soltero/a</option>
+                              <option value="Viudo">Viudo/a</option>
+                            </select>
+                            <select
+                              className="w-full md:w-2/3 p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
                           </>
                         ) : selectedCriterioId === 6 ? (
                           <>
-                          <select
-                          className="w-full md:w-full p-2 border rounded"
-                            id="valor e"
-                            value={valorCriterio}
-                            onChange={(e) => setValorCriterio(e.target.value)}
-                          >
-                            <option value="">Seleccione un idioma...</option>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="valor e"
+                              value={valorCriterio}
+                              onChange={(e) => setValorCriterio(e.target.value)}
+                            >
+                              <option value="">Seleccione un idioma...</option>
 
-                            {languages.map((language: idioma) => (
-                              <option key={language.id} value={language.id + ',' + language.nombre}>
-                                {language.nombre}
-                              </option>
-                            ))}
-                          </select>
-                               <select
-                               className="w-full md:w-full p-2 border rounded"
-                               id="prioridad"
-                               value={prioridadCriterio || ''}
-                               onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                               <option value="">Seleccione una prioridad...</option>
-                               <option value="1">Alta</option>
-                               <option value="2">Media</option>
-                               <option value="3">Baja</option>
-                             </select>
-                             </>
+                              {languages.map((language: idioma) => (
+                                <option key={language.id} value={language.id + ',' + language.nombre}>
+                                  {language.nombre}
+                                </option>
+                              ))}
+                            </select>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
+                          </>
                         ) : selectedCriterioId === 7 ? (
                           <>
-                          <select
-                           className="w-full md:w-full p-2 border rounded"
-                            id="valor e"
-                            value={valorCriterio}
-                            onChange={(e) => setValorCriterio(e.target.value)}
-                          >
-                            <option value="">Rango de edad...</option>
-                            <option value="Joven,(18-25 años)">18 - 25 años</option>
-                            <option value="Adulto,(26-35 años)">26 - 35 años</option>
-                            <option value="Mayor,(Más de 36 años)">36 años en adelante</option>
-                          </select>
-                                <select
-                                className="w-full md:w-full p-2 border rounded"
-                                id="prioridad"
-                                value={prioridadCriterio || ''}
-                                onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                                <option value="">Seleccione una prioridad...</option>
-                                <option value="1">Alta</option>
-                                <option value="2">Media</option>
-                                <option value="3">Baja</option>
-                              </select>
-                              </>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="valor e"
+                              value={valorCriterio}
+                              onChange={(e) => setValorCriterio(e.target.value)}
+                            >
+                              <option value="">Rango de edad...</option>
+                              <option value="Joven,(18-25 años)">18 - 25 años</option>
+                              <option value="Adulto,(26-35 años)">26 - 35 años</option>
+                              <option value="Mayor,(Más de 36 años)">36 años en adelante</option>
+                            </select>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
+                          </>
 
                         ) : selectedCriterioId === 8 ? (
 
                           <>
 
-                            <select id="province"className="w-full md:w-full p-2 border rounded" onChange={handleProvinceChange}
+                            <select id="province" className="w-full md:w-full p-2 border rounded" onChange={handleProvinceChange}
                               value={selectedProvince}>
                               <option value="">Provincia..</option>
                               {provinces.map((province, index) => (
@@ -840,7 +872,7 @@ function AgregarO() {
                               ))}
                             </select>
                             <select
-                             className="w-full md:w-full p-2 border rounded"
+                              className="w-full md:w-full p-2 border rounded"
                               id="valor e"
                               value={selectedCanton}
                               onChange={handleCantonChange}
@@ -855,31 +887,31 @@ function AgregarO() {
 
                             </select>
                             <select
-                      className="w-full md:w-full p-2 border rounded"
-                      id="prioridad"
-                      value={prioridadCriterio || ''}
-                      onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                      <option value="">Seleccione una prioridad...</option>
-                      <option value="1">Alta</option>
-                      <option value="2">Media</option>
-                      <option value="3">Baja</option>
-                    </select>
+                              className="w-full md:w-full p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
                           </>
                         ) : (
                           <select
-                          className="w-full md:w-full p-2 border rounded"
-                          id="prioridad"
-                          value={prioridadCriterio || ''}
-                          onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                          <option value="">Seleccione una prioridad...</option>
-                          <option value="1">Alta</option>
-                          <option value="2">Media</option>
-                          <option value="3">Baja</option>
-                        </select>
+                            className="w-full md:w-full p-2 border rounded"
+                            id="prioridad"
+                            value={prioridadCriterio || ''}
+                            onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                            <option value="">Seleccione una prioridad...</option>
+                            <option value="1">Alta</option>
+                            <option value="2">Media</option>
+                            <option value="3">Baja</option>
+                          </select>
                         )}
                       </>
                     )}
-              
+
                   </div>
                   {criterioDescripcion && (
                     <p className="mt-2 text-gray-600"><strong>¿Qué se evalua?</strong> {criterioDescripcion}</p>
@@ -902,6 +934,71 @@ function AgregarO() {
                               type="button"
                               className="text-red-500"
                               onClick={() => handleEliminarCriterio(criterio.id_criterio)}
+                            >
+                              x
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                <hr className="my-4" />
+              </>)}
+
+          </div>
+          <div className="bg-white p-6 rounded-lg shadow-lg py-7" style={{ marginTop: '20px' }}>
+
+            <h3 className="text-1xl text-red-500 font-bold mb-4">Preguntas de evaluación:</h3>
+            <span>Puede realizar 5 preguntas como máximo para los postulantes de esta oferta. Este apartado no es obligatorio</span>
+            <div className="mb-4">
+              <div className="flex items-center">
+                <input
+                  className="mr-2 leading-tight"
+                  type="checkbox"
+                  id="requireCriterio"
+                  checked={requirePregunta}
+                  onChange={() => setRequirePregunta(!requirePregunta)}
+                />
+                <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="requirePregunta">
+                  ¿Realizar preguntas específicas a los postulantes?
+                </label>
+              </div>
+            </div>
+
+            {requirePregunta && (
+              <>
+                <hr className="my-4" />
+                <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                  <label className="block text-sm font-bold mb-2" htmlFor="nuevaPregunta">Nueva Pregunta</label>
+                  <div className="flex flex-col md:flex-row">
+                    <input
+                      className="w-full md:w-2/3 p-2 border rounded mb-4"
+                      id="nuevaPregunta"
+                      type="text"
+                      value={nuevaPregunta}
+                      onChange={(e) => setNuevaPregunta(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                      onClick={handleAgregarPregunta}
+                    >
+                      Agregar Pregunta
+                    </button>
+                  </div>
+
+                  {preguntas.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="font-semibold">Preguntas Añadidas:</h4>
+                      <ul>
+                        {preguntas.map((pregunta, index) => (
+                          <li key={index} className="flex items-center justify-between mb-2">
+                            <span>{pregunta}</span>
+                            <button
+                              type="button"
+                              className="text-red-500"
+                              onClick={() => handleEliminarPregunta(index)}
                             >
                               x
                             </button>
