@@ -61,15 +61,8 @@ const RecruitmentDashboard = () => {
     }, [user]);
 
     useEffect(() => {
-        // Filtrar y agrupar datos por mes
-        const filtered = postulaciones.filter(postulacion => 
-            (!fechaInicio || new Date(postulacion.fecha) >= new Date(fechaInicio)) &&
-            (!fechaFin || new Date(postulacion.fecha) <= new Date(fechaFin)) &&
-            (!selectedArea || postulacion.area_id === parseInt(selectedArea, 10)) &&
-            (!selectedEstado || postulacion.estado === selectedEstado)
-        );
-
-        const groupedData = filtered.reduce((acc, curr) => {
+        // Agrupar datos globales por mes
+        const groupedDataByMonth = postulaciones.reduce((acc, curr) => {
             const month = format(parseISO(curr.fecha), 'MMM yyyy');
             if (!acc[month]) {
                 acc[month] = { month, postulantes: 0, applications: 0 };
@@ -79,8 +72,20 @@ const RecruitmentDashboard = () => {
             return acc;
         }, {} as { [key: string]: GroupedData });
 
-        setFilteredData(Object.values(groupedData));
-    }, [postulaciones, fechaInicio, fechaFin, selectedArea, selectedEstado]);
+        setFilteredData(Object.values(groupedDataByMonth));
+    }, [postulaciones]);
+
+    const groupedDataByYear = postulaciones.reduce((acc, curr) => {
+        const year = format(parseISO(curr.fecha), 'yyyy');
+        if (!acc[year]) {
+            acc[year] = { year, postulantes: 0, applications: 0 };
+        }
+        acc[year].postulantes += curr.num_postulantes;
+        acc[year].applications += 1;
+        return acc;
+    }, {} as { [key: string]: { year: string; postulantes: number; applications: number } });
+
+    const yearlyData = Object.values(groupedDataByYear);
 
     const handleFilterByDate = async () => {
         try {
@@ -241,7 +246,6 @@ const RecruitmentDashboard = () => {
                                             <Bar dataKey="postulantes" fill="#8884d8">
                                                 {data.map((_, index) => (
                                                     <Cell key={`cell-${index}`} fill={COLORS2[index % COLORS2.length]} />
-                                                   
                                                 ))}
                                             </Bar>
                                         </BarChart>
@@ -296,13 +300,13 @@ const RecruitmentDashboard = () => {
                                 <div className="bg-white p-4 rounded shadow">
                                     <h2 className="text-xl font-semibold mb-4">Ofertas por Año</h2>
                                     <ResponsiveContainer width="100%" height={300}>
-                                        <BarChart data={filteredData}>
-                                            <XAxis dataKey="month" />
+                                        <BarChart data={yearlyData}>
+                                            <XAxis dataKey="year" />
                                             <YAxis />
                                             <Tooltip />
                                             <Legend />
                                             <Bar dataKey="postulantes" fill="#8884d8">
-                                                {filteredData.map((_, index) => (
+                                                {yearlyData.map((_, index) => (
                                                     <Cell key={`cell-${index}`} fill={COLORS2[index % COLORS2.length]} />
                                                 ))}
                                             </Bar>
