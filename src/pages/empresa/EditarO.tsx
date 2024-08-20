@@ -369,7 +369,7 @@ function EditarO() {
         criterios: criteriosValidos,
       };
   
-      console.log('Datos del formulario:', dataToSend);
+     
   
       await axios.put(`update-oferta/${id}`, dataToSend, {
         headers: {

@@ -19,7 +19,7 @@ function RegistroE() {
     };
 
     const onSubmit = (values:typeof initialValues)=>{
-        console.log(values);
+        
         Swal.fire({
             title: 'Cargando...',
             text: 'Por favor, espera mientras se procede al registro',
@@ -31,10 +31,8 @@ function RegistroE() {
         });
         Api.post('/auth/registerE', values)
             .then((response) => {
-                Swal.close(); // Cerrar el mensaje de "cargando"
-                console.log(response);
-                // Si la respuesta indica un registro exitoso, muestra la alerta de SweetAlert
-               
+                Swal.close(); 
+            
                 if (response.statusCode === 201) {
                     Swal.fire({
                         icon: 'success',

@@ -286,10 +286,6 @@ function AgregarO() {
           criterios: selectedCriterios,
         };
 
-        console.log('Usuario:', usuario);
-        console.log('Datos del formulario:', dataToSend);
-        console.log('Títulos seleccionados:', selectedTitles);
-        console.log('Criterios seleccionados:', selectedCriterios);
 
          await axios.post('add-oferta', dataToSend, {
           headers: {

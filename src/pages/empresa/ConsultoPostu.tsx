@@ -234,7 +234,7 @@ const PostulantesList: React.FC = () => {
                 const starsRef = ref(storage, postulante.cv);
                 promises.push(
                     getDownloadURL(starsRef).then(url => {
-                        console.log("URL de descarga:", url);
+                    
                         return fetch(url)
                             .then(response => response.blob())
                             .then(blob => {
