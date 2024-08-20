@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bar, Line, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement } from 'chart.js';
 import axios from '../../services/axios';
-import { FiActivity, FiLoader } from 'react-icons/fi';
+import { FiActivity} from 'react-icons/fi';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);
 
@@ -47,7 +47,7 @@ const Estadisticas: React.FC = () => {
     const [selectedCanton, setSelectedCanton] = useState<string>('');
     const [ubicacionData, setUbicacionData] = useState({ labels: [] as string[], datasets: [] as any[] });
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(true);
 
     const [summary, setSummary] = useState({
         totalOfertas: 0,
@@ -357,66 +357,41 @@ const Estadisticas: React.FC = () => {
         }
     }, [selectedCanton]);
 
-    // Estilos en línea
-    const overlayStyle: React.CSSProperties = {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100%',
-        height: '100%',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 9999,
-    };
-
-    const contentStyle: React.CSSProperties = {
-        color: 'white',
-        fontSize: '24px',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-    };
-
-    const iconStyle: React.CSSProperties = {
-        marginBottom: '10px',
-        animation: 'spin 1s linear infinite',
-    };
-
-    const spinAnimation = `
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    `;
+    
 
     return (
         <div className="mb-4 text-center max-w-screen-lg mx-auto">
-       
+
 
             {loading ? (
                 <>
-                 <div style={overlayStyle}>
-                 <div style={contentStyle}>
-                     <FiLoader style={iconStyle} size={48} />
-                     <span>Cargando...</span>
-                 </div>
-                 
-             </div>
-             
-             </>
+                    <div className="mb-4">
+                        <div>
+                            <h1 className="text-3xl font-bold mb-4 flex justify-center items-center text-orange-500 ml-2">
+                                MONITOREO Y CONTROL DE LA APLICACIÓN WEB
+                                <FiActivity className="text-orange-500 ml-2" />
+                            </h1>
+                            <center><p>En esta sección se muestra las estadísticas de la aplicación</p></center>
+                            <hr className="my-4" />
+                        </div>
+                        <div className="flex flex-col items-center space-y-2">
+                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                            <span className="font-bold">Cargando estadísticas...</span>
+                        </div>
+                    </div>
+                </>
             ) : (
                 <>
-                
-                
+
+
                     <div className="mb-4">
-                    <h1 className="text-3xl font-bold mb-4 flex justify-center items-center text-orange-500 ml-2">
-                MONITOREO Y CONTROL DE LA APLICACIÓN WEB 
-                <FiActivity className="text-orange-500 ml-2" />
-            </h1>
-                        <center><p>En esta sección se muestra las estadísticas de la aplicación por año/mes de manera general:</p></center>
+                        <h1 className="text-3xl font-bold mb-4 flex justify-center items-center text-orange-500 ml-2">
+                            MONITOREO Y CONTROL DE LA APLICACIÓN WEB
+                            <FiActivity className="text-orange-500 ml-2" />
+                        </h1>
+                        <center><p>En esta sección se muestra las estadísticas de la aplicación </p></center>
                         <label className="block text-sm font-bold mb-2" htmlFor="yearSelect">Seleccione el Año:</label>
+                        <hr className="my-4" />
                         <select
                             id="yearSelect"
                             value={selectedYear}
@@ -563,7 +538,7 @@ const Estadisticas: React.FC = () => {
                             {selectedCanton && (
                                 <div>
                                     {genderData.labels.length > 0 ? (
-                                        
+
                                         <div className="w-1/2 mx-auto">
                                             <h3 className="text-xl font-semibold mb-2">{`Distribución de Postulantes por Género`}</h3>
                                             <Pie data={genderData} />

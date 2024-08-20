@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faBars, faTimes, faClipboardList, faFileAlt, faUsers, faChartLine, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faBars, faTimes, faClipboardList, faFileAlt, faUsers, faChartLine, faUser, faCheckCircle, faChessBoard, faCheckToSlot, faFileArchive } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/authSlice';
 import axios from '../../services/axios';
@@ -14,6 +14,7 @@ import ListEmpresa from '../Empresa/ListEmpresa';
 import PerfilPModal from '../../components/PerfilPModal';
 import PerfilEModal from '../../components/PerfilEModal';
 import { dataNotificable, DataNotifyApi } from '../../types/NotifyType';
+import { FaCheckToSlot, FaStopwatch20, FaWatchmanMonitoring } from 'react-icons/fa6';
 
 
 
@@ -526,19 +527,20 @@ function EmpresaLayout() {
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/CatalogoRegistro' ? 'bg-gray-700' : ''}`}>
                         <Link to="/CatalogoRegistro" className="flex items-center w-full" onClick={handleLinkClick}>
-                            <FontAwesomeIcon icon={faFileAlt} className="mr-2" />
+                            <FontAwesomeIcon icon={faCheckCircle} className="mr-2" />
                             <span className="lg:inline">Gestión de criterios</span>
                         </Link>
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/MonitoreoG' ? 'bg-gray-700' : ''}`}>
                         <Link to="/MonitoreoG" className="flex items-center w-full" onClick={handleLinkClick}>
-                            <FontAwesomeIcon icon={faUsers} className="mr-2" />
+                            <FontAwesomeIcon icon={faChartLine} className="mr-2" />
                             <span className="lg:inline">Control y monitoreo</span>
                         </Link>
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/ReportesG' ? 'bg-gray-700' : ''}`}>
                         <Link to="/ReportesG" className="flex items-center w-full" onClick={handleLinkClick}>
-                            <FontAwesomeIcon icon={faChartLine} className="mr-2" />
+                            <FontAwesomeIcon icon={faFileAlt} className="mr-2" />
+
                             <span className="lg:inline">Reportes</span>
                         </Link>
                     </li>
