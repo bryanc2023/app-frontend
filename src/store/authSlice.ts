@@ -30,10 +30,11 @@ export const loginUser = createAsyncThunk(
   async (data: any, { rejectWithValue }) => {
     try {
       const response = await Api.post('/auth/login', data);
-    
+      
 
       if (response.statusCode === 200) {
         window.localStorage.setItem("token",response.data.token);
+        console.log(response.data.token)
         return response.data; // Asegúrate de retornar 'response.data'
       }else if (response.statusCode === 403){
         return rejectWithValue('403');

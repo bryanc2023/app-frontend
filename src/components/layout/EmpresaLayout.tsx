@@ -177,6 +177,7 @@ function EmpresaLayout() {
     const [notificaciones, setNotificaciones] = useState<dataNotificable[]>([]);
     const [, setLoadNotificaiones] = useState(false);
     const [isModalNotify, setIsModalNotify] = useState(false);
+    const [selectedNavItem, setSelectedNavItem] = useState<string>('');
 
     const dispatch = useDispatch();
     const navigate = useNavigate(); // Utiliza navigate para redireccionar
@@ -227,7 +228,12 @@ function EmpresaLayout() {
     const getLogoUrl = (logoPath: string) => {
         return logoPath.startsWith('http') ? logoPath : `http://localhost:8000/storage/${logoPath}`;
     };
-
+    const handleLinkClick = (path: string, itemName: string) => {
+        setSidebarOpen(false); // Cierra el sidebar al hacer clic en un link
+        setSelectedNavItem(itemName); // Actualiza el item seleccionado
+        navigate(path); // Navega a la ruta seleccionada
+    };
+    
     const searchPostulante = async () => {
         try {
             setIsLoading(true);
@@ -400,10 +406,6 @@ function EmpresaLayout() {
         }
     }, [queryEmpresa]);
 
-    const handleLinkClick = (path: string) => {
-        setSidebarOpen(false); // Cierra el sidebar al hacer clic en un link
-        navigate(path); // Navega a la ruta seleccionada
-    };
 
     return (
         <div className="flex h-screen overflow-hidden">
@@ -434,7 +436,7 @@ function EmpresaLayout() {
                             <input
                                 type="text"
                                 className="w-full focus:outline-none"
-                                placeholder="Buscar postulante por el nombre de la empresa"
+                                placeholder="Buscar empresa por el nombre de la empresa"
                                 onChange={(e) => setQueryEmpresa(e.target.value)}
                                 onKeyDown={handleKeyDownEmpresa}
                                 value={queryEmpresa}
@@ -509,31 +511,40 @@ function EmpresaLayout() {
                     )}
                 </div>
                 <ul>
-                    <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
-                        <button onClick={() => handleLinkClick('/verOfertasE')} className="flex items-center w-full">
+                    <li
+                        className={`mb-4 flex items-center p-2 rounded-md ${selectedNavItem === 'Gestión de Ofertas' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700 hover:text-white'}`}
+                    >
+                        <button onClick={() => handleLinkClick('/verOfertasE', 'Gestión de Ofertas')} className="flex items-center w-full">
                             <FontAwesomeIcon icon={faClipboardList} className="mr-2" />
                             <span>Gestión de Ofertas</span>
                         </button>
                     </li>
-                    <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
-                        <button onClick={() => handleLinkClick('/ConsPost')} className="flex items-center w-full">
+                    <li
+                        className={`mb-4 flex items-center p-2 rounded-md ${selectedNavItem === 'Consultar Postulantes' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700 hover:text-white'}`}
+                    >
+                        <button onClick={() => handleLinkClick('/ConsPost', 'Consultar Postulantes')} className="flex items-center w-full">
                             <FontAwesomeIcon icon={faUsers} className="mr-2" />
                             <span>Consultar Postulantes</span>
                         </button>
                     </li>
-                    <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
-                        <button onClick={() => handleLinkClick('/MoniR')} className="flex items-center w-full">
+                    <li
+                        className={`mb-4 flex items-center p-2 rounded-md ${selectedNavItem === 'Control y Monitoreo' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700 hover:text-white'}`}
+                    >
+                        <button onClick={() => handleLinkClick('/MoniR', 'Control y Monitoreo')} className="flex items-center w-full">
                             <FontAwesomeIcon icon={faChartLine} className="mr-2" />
-                            <span>Monitoreo de Reclutamiento</span>
+                            <span>Control y Monitoreo</span>
                         </button>
                     </li>
-                    <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
-                        <button onClick={() => handleLinkClick('/PerfilE')} className="flex items-center w-full">
+                    <li
+                        className={`mb-4 flex items-center p-2 rounded-md ${selectedNavItem === 'Mi perfil' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700 hover:text-white'}`}
+                    >
+                        <button onClick={() => handleLinkClick('/PerfilE', 'Mi perfil')} className="flex items-center w-full">
                             <FontAwesomeIcon icon={faUser} className="mr-2" />
                             <span>Mi perfil</span>
                         </button>
                     </li>
                 </ul>
+
             </nav>
 
             <div className="flex-1 flex flex-col overflow-auto">

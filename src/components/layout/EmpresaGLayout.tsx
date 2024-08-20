@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faBars, faTimes, faClipboardList, faFileAlt, faUsers, faChartLine, faUser, faAdjust, faClipboardCheck, faClipboardUser } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faBars, faTimes, faClipboardList, faFileAlt, faUsers, faChartLine, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/authSlice';
 import axios from '../../services/axios';
@@ -14,7 +14,8 @@ import ListEmpresa from '../Empresa/ListEmpresa';
 import PerfilPModal from '../../components/PerfilPModal';
 import PerfilEModal from '../../components/PerfilEModal';
 import { dataNotificable, DataNotifyApi } from '../../types/NotifyType';
-import { FaClipboardCheck } from 'react-icons/fa6';
+
+
 
 interface Postulante {
     id_postulante: number;
@@ -149,6 +150,7 @@ function EmpresaLayout() {
     const dropdownRef = useRef<HTMLDivElement>(null);
     const notifyRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLDivElement>(null);
+    const location = useLocation();
 
     const [select, setSelect] = useState(1);
 
@@ -433,7 +435,7 @@ function EmpresaLayout() {
                             <input
                                 type="text"
                                 className="w-full focus:outline-none"
-                                placeholder="Buscar postulante por el nombre de la empresa"
+                                placeholder="Buscar empresa por el nombre de la empresa"
                                 onChange={(e) => setQueryEmpresa(e.target.value)}
                                 onKeyDown={handleKeyDownEmpresa}
                                 value={queryEmpresa}
@@ -510,7 +512,7 @@ function EmpresaLayout() {
                     )}
                 </div>
                 <ul>
-                <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/InicioG' ? 'bg-gray-700' : ''}`}>
+                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/InicioG' ? 'bg-gray-700' : ''}`}>
                         <Link to="/InicioG" className="flex items-center w-full ">
                             <FontAwesomeIcon icon={faClipboardList} className="mr-2" />
                             <span>Gestión de Ofertas</span>
@@ -522,16 +524,15 @@ function EmpresaLayout() {
                             <span>Consultar Postulantes</span>
                         </Link>
                     </li>
-
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/CatalogoRegistro' ? 'bg-gray-700' : ''}`}>
                         <Link to="/CatalogoRegistro" className="flex items-center w-full" onClick={handleLinkClick}>
-                            <FontAwesomeIcon icon={faClipboardCheck} className="mr-2" />
+                            <FontAwesomeIcon icon={faFileAlt} className="mr-2" />
                             <span className="lg:inline">Gestión de criterios</span>
                         </Link>
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/MonitoreoG' ? 'bg-gray-700' : ''}`}>
                         <Link to="/MonitoreoG" className="flex items-center w-full" onClick={handleLinkClick}>
-                            <FontAwesomeIcon icon={faClipboardUser} className="mr-2" />
+                            <FontAwesomeIcon icon={faUsers} className="mr-2" />
                             <span className="lg:inline">Control y monitoreo</span>
                         </Link>
                     </li>
@@ -548,6 +549,7 @@ function EmpresaLayout() {
                         </Link>
                     </li>
                 </ul>
+
             </nav>
 
             <div className="flex-1 flex flex-col overflow-auto">
