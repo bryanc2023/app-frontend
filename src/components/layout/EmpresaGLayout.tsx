@@ -534,7 +534,7 @@ function EmpresaLayout() {
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/MonitoreoG' ? 'bg-gray-700' : ''}`}>
                         <Link to="/MonitoreoG" className="flex items-center w-full" onClick={handleLinkClick}>
                             <FontAwesomeIcon icon={faChartLine} className="mr-2" />
-                            <span className="lg:inline">Control y monitoreo</span>
+                            <span className="lg:inline">Control y monitoreo de la aplicación</span>
                         </Link>
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/ReportesG' ? 'bg-gray-700' : ''}`}>
