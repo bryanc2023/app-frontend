@@ -185,33 +185,47 @@ const Reportes: React.FC = () => {
 
   const generatePDF = () => {
     const doc = new jsPDF();
-    doc.text('Proajob', 14, 16);
-    doc.setFontSize(10);
-    doc.text(`Reporte de ${reportType}`, 14, 22);
+    const date = new Date();
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    doc.setFontSize(18);
+    doc.setTextColor(255, 87, 34); // Color naranja
+    doc.setFont('helvetica', 'bold');
+    doc.text('POSTÚLATE', doc.internal.pageSize.getWidth() / 2, 16, { align: 'center' });
+
+    // Subtítulo con el tipo de reporte y la fecha
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0); // Color negro para el subtítulo y la fecha
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Reporte de ${reportType}`, doc.internal.pageSize.getWidth() / 2, 24, { align: 'center' });
+    doc.text(`Fecha: ${formattedDate}`, doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
 
     let tableColumn: string[] = [];
     let tableRows: any[] = [];
 
     if (reportType === 'empresas') {
-      tableColumn = ["Nombre Comercial", "Tamaño", "Ubicación", "Sector", "Cantidad de Ofertas"];
-      tableRows = data.map(item => [
+      tableColumn = ["#", "Nombre Comercial", "Tamaño", "Ubicación", "Sector", "Cantidad de Ofertas"];
+      tableRows = data.map((item, index) => [
+        index + 1,  // Número de fila
         item.nombre_comercial,
         item.tamanio,
         item.ubicacion,
         item.sector,
-        item.total_ofertas || 0,  // Cambiado de total_postulaciones a total_ofertas
+        item.total_ofertas || 0,
       ]);
     } else if (reportType === 'ofertas') {
-      tableColumn = ["Cargo", "Nombre de la Empresa", "Estado", "Cantidad de Postulaciones"];
-      tableRows = data.map(item => [
+      tableColumn = ["#", "Cargo", "Nombre de la Empresa", "Estado", "Cantidad de Postulaciones"];
+      tableRows = data.map((item, index) => [
+        index + 1,  // Número de fila
         item.cargo,
         item.nombre_comercial,
         item.estado,
         item.num_postulaciones || 0,
       ]);
     } else if (reportType === 'postulantes') {
-      tableColumn = ["Nombre", "Vigencia", "Género", "Estado Civil", "Ubicación"];
-      tableRows = data.map(item => [
+      tableColumn = ["#", "Nombre", "Vigencia", "Género", "Estado Civil", "Ubicación"];
+      tableRows = data.map((item, index) => [
+        index + 1,  // Número de fila
         item.name,
         item.vigencia,
         item.genero,
@@ -219,47 +233,69 @@ const Reportes: React.FC = () => {
         item.ubicacion,
       ]);
     }
+  
 
+    // Estilo de la tabla en color naranja
     (doc as any).autoTable({
       head: [tableColumn],
       body: tableRows,
-      startY: 30,
+      startY: 40,
       theme: 'striped',
-      headStyles: { fillColor: [22, 160, 133] }
+      headStyles: { fillColor: [255, 87, 34] }, // Color naranja
+      styles: { cellPadding: 3 },
     });
 
-    doc.save('reporte.pdf');
+    // Pie de página con la fecha y un pequeño mensaje
+    doc.setFontSize(10);
+    doc.text(`Generado por Postúlate - ${formattedDate}`, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    doc.text('Este reporte contiene información confidencial.', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 5, { align: 'center' });
+
+    doc.save(`ReportePostulate_${reportType}_${formattedDate}.pdf`);
   };
 
   const previewPDF = async () => {
     const doc = new jsPDF();
-    doc.text('Proajob', 14, 16);
-    doc.setFontSize(10);
-    doc.text(`Reporte de ${reportType}`, 14, 22);
+    const date = new Date();
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    doc.setFontSize(18);
+    doc.setTextColor(255, 87, 34); // Color naranja
+    doc.setFont('helvetica', 'bold');
+    doc.text('POSTÚLATE', doc.internal.pageSize.getWidth() / 2, 16, { align: 'center' });
+
+    // Subtítulo con el tipo de reporte y la fecha
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0); // Color negro para el subtítulo y la fecha
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Reporte de ${reportType}`, doc.internal.pageSize.getWidth() / 2, 24, { align: 'center' });
+    doc.text(`Fecha: ${formattedDate}`, doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
 
     let tableColumn: string[] = [];
     let tableRows: any[] = [];
 
     if (reportType === 'empresas') {
-      tableColumn = ["Nombre Comercial", "Tamaño", "Ubicación", "Sector", "Cantidad de Ofertas"];
-      tableRows = data.map(item => [
+      tableColumn = ["#", "Nombre Comercial", "Tamaño", "Ubicación", "Sector", "Cantidad de Ofertas"];
+      tableRows = data.map((item, index) => [
+        index + 1,  // Número de fila
         item.nombre_comercial,
         item.tamanio,
         item.ubicacion,
         item.sector,
-        item.total_ofertas || 0,  // Cambiado de total_postulaciones a total_ofertas
+        item.total_ofertas || 0,
       ]);
     } else if (reportType === 'ofertas') {
-      tableColumn = ["Cargo", "Nombre de la Empresa", "Estado", "Cantidad de Postulaciones"];
-      tableRows = data.map(item => [
+      tableColumn = ["#", "Cargo", "Nombre de la Empresa", "Estado", "Cantidad de Postulaciones"];
+      tableRows = data.map((item, index) => [
+        index + 1,  // Número de fila
         item.cargo,
         item.nombre_comercial,
         item.estado,
         item.num_postulaciones || 0,
       ]);
     } else if (reportType === 'postulantes') {
-      tableColumn = ["Nombre", "Vigencia", "Género", "Estado Civil", "Ubicación"];
-      tableRows = data.map(item => [
+      tableColumn = ["#", "Nombre", "Vigencia", "Género", "Estado Civil", "Ubicación"];
+      tableRows = data.map((item, index) => [
+        index + 1,  // Número de fila
         item.name,
         item.vigencia,
         item.genero,
@@ -267,14 +303,22 @@ const Reportes: React.FC = () => {
         item.ubicacion,
       ]);
     }
+  
 
+    // Estilo de la tabla en color naranja
     (doc as any).autoTable({
       head: [tableColumn],
       body: tableRows,
-      startY: 30,
+      startY: 40,
       theme: 'striped',
-      headStyles: { fillColor: [22, 160, 133] }
+      headStyles: { fillColor: [255, 87, 34] }, // Color naranja
+      styles: { cellPadding: 3 },
     });
+
+    // Pie de página con la fecha y un pequeño mensaje
+    doc.setFontSize(10);
+    doc.text(`Generado por Postúlate - ${formattedDate}`, doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    doc.text('Este reporte contiene información confidencial.', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 5, { align: 'center' });
 
     const pdfBlob = doc.output('blob');
     const url = URL.createObjectURL(pdfBlob);
