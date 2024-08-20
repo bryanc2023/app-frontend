@@ -61,11 +61,7 @@ const EditCompetenciaModal: React.FC< EditCompetenciaModalProps> = ({ isOpen, on
   }, [habilidad, reset]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    console.log('Datos enviados:', {
-      id_postulante: profileData?.postulante?.id_postulante,
-      id_competencia: habilidad.id,
-      nivel: data.nivel
-    });
+   
 
     try {
       const response = await axios.put('/postulante_competencia/update', {

@@ -161,7 +161,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
             };
 
             await axios.post('postular', postData);
-            console.log(postData);
+  
             setLoading(false); // Desactivar la carga
             Swal.fire({
                 title: '¡Hecho!',

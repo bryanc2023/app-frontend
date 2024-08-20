@@ -67,12 +67,6 @@ const EditIdiomaModal: React.FC<EditIdiomaModalProps> = ({ isOpen, onRequestClos
   }, [idioma, reset]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    console.log('Datos enviados:', {
-      id_postulante: profileData?.postulante?.id_postulante,
-      id_idioma: idioma.id,
-      nivel_oral: data.nivel_oral,
-      nivel_escrito: data.nivel_escrito
-    });
 
     try {
       const response = await axios.put('/postulante_idioma/update', {

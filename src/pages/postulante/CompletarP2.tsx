@@ -369,7 +369,7 @@ const handleRedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
             'Content-Type': 'multipart/form-data',
           },
         });
-        console.log("Exito");
+
         
         Swal.fire({
           icon: 'success',

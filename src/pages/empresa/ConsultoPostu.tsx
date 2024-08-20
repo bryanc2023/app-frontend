@@ -133,7 +133,7 @@ const PostulantesList: React.FC = () => {
                 const response = await axios.get(`postulacionesE/${user?.id}`);
                 const postulacionesData = transformarRespuesta(response.data.postulaciones);
                 setPostulaciones(postulacionesData);
-                console.log(postulacionesData);
+         
 
             } catch (error) {
                 console.error('Error fetching postulaciones:', error);

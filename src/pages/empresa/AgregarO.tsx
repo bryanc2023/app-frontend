@@ -323,11 +323,7 @@ function AgregarO() {
           preguntas: preguntas,
         };
 
-        console.log('Usuario:', usuario);
-        console.log('Datos del formulario:', dataToSend);
-        console.log('Títulos seleccionados:', selectedTitles);
-        console.log('Criterios seleccionados:', selectedCriterios);
-        console.log('Preguntas:', preguntas);
+    
 
         await axios.post('add-oferta', dataToSend, {
           headers: {

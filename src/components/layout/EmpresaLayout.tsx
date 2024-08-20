@@ -380,7 +380,7 @@ function EmpresaLayout() {
     };
 
     useEffect(() => {
-        console.log('useEffect notificaciones')
+       
         getNotificaciones();
     }, []);
 

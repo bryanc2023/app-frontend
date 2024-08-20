@@ -89,7 +89,7 @@ function VerOfertasPPage() {
         const response = await axios.get('user/registration-status');
 
         const { profileCompleted } = response.data;
-        console.log(profileCompleted);
+    
         if (!profileCompleted) {
             navigate('/completarE');
             return;

@@ -11,14 +11,13 @@ const VerifyEmail = () => {
     const [bgColor, setBgColor] = useState('#FFA500');
 
     useEffect(() => {
-        console.log('id:', id);
-        console.log('token:', token);
+    
         
         const verifyEmail = async () => {
             try {
-                console.log('Verifying email with id:', id, 'and token:', token);
+             
                 const response = await Api.get(`/auth/verifyEmail/${id}/${token}`);
-                console.log('Response:', response);
+          
 
                 if (response.statusCode === 200) {
                     setMessage('¡Correo verificado! Tu correo ha sido verificado exitosamente. Ya puedes logearte correctamente.');
