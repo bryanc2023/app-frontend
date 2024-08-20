@@ -528,7 +528,7 @@ function AgregarO() {
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="objetivo_cargo">• Objetivo del puesto de trabajo
               <span className="text-red-500 ml-1">*</span>
-              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio)</span>
+              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Máximo 500 caractéres)</span>
             </label>
             <textarea
               className="w-full p-2 border rounded"
@@ -554,7 +554,7 @@ function AgregarO() {
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="funciones">• Funciones del puesto:
               <span className="text-red-500 ml-1">*</span>
-              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio)</span>
+              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Máximo 500 caractéres)</span>
             </label>
             <textarea
               className="w-full p-2 border rounded"
