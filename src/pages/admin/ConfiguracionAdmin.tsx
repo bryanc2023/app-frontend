@@ -174,7 +174,7 @@ const ConfiguracionComponent = () => {
                                         onClick={() => handleShowTerms(config.terminos_condiciones || 'No terms available')}
                                         className="ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                                     >
-                                        Mostrar
+                                        Mostrar Términos 
                                     </button>
                                 </td>
                             </tr>
