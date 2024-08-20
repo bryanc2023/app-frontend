@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import { FiEdit, FiPlus, FiEye, FiTrash2, FiSearch } from 'react-icons/fi';
 import { FaBriefcase, FaCalendarAlt } from 'react-icons/fa';
 import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
 
 
 interface Oferta {
@@ -79,11 +80,23 @@ function VerOfertasPPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false); // Estado para el menú desplegable
     const [areas, setAreas] = useState<Area[]>([]);
     const [configuracion, setConfiguracion] = useState<Configuracion | null>(null);
-
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchOfertas();
         fetchConfiguracion();
+        const checkRegistrationStatus = async () => {
+        const response = await axios.get('user/registration-status');
+
+        const { profileCompleted } = response.data;
+        console.log(profileCompleted);
+        if (!profileCompleted) {
+            navigate('/completarE');
+            return;
+        }
+    }
+    
+checkRegistrationStatus();
     }, []);
 
     const fetchConfiguracion = async () => {

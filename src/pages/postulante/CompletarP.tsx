@@ -68,7 +68,18 @@ const CompletarP: React.FC = () => {
     }
   }, [isLogged, navigate]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      window.location.reload(); // Recarga la página cuando se presiona el botón "volver"
+    };
 
+    window.addEventListener('popstate', handlePopState);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+  
   useEffect(() => {
     const fetchData = async () => {
       try {

@@ -58,6 +58,14 @@ interface canton {
   canton: string;
 }
 
+interface Pregunta {
+  id: number;
+  id_oferta: number;
+  pregunta: string;
+}
+
+
+
 function EditarO() {
   const { id } = useParams<{ id: string }>(); // Obtener el ID de la oferta de los parámetros de la URL
   const navigate = useNavigate();
@@ -88,11 +96,16 @@ function EditarO() {
   const [defaultAreaId, setDefaultAreaId] = useState('');
   const [defaultArea, setDefaultArea] = useState('');
   const [loading, setLoading] = useState(true);
+  const [requirePregunta, setRequirePregunta] = useState(false);
+  const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
+  const [nuevaPregunta, setNuevaPregunta] = useState('');
 
   const handleCheckboxChange = (event: any) => {
     setShowExperiencia(event.target.checked);
   };
+  
 
+  
   useEffect(() => {
     const fetchOferta = async () => {
       try {
@@ -127,6 +140,13 @@ function EditarO() {
           setValue('numero_contacto', oferta.numero_contacto);
         }
   // Manejar la educación requerida y los títulos
+  // Cargar preguntas
+ // Cargar preguntas
+ if (oferta.preguntas.length > 0) {
+  setRequirePregunta(true);
+  setPreguntas(oferta.preguntas);
+}
+
 
       // Manejar la educación requerida y los títulos
       if (oferta.expe.length > 0) {
@@ -141,6 +161,8 @@ function EditarO() {
         setSelectedTitles([]);
       }
 
+       // Manejar la educación requerida y los títulos
+ 
       if (oferta.criterios.length > 0){
         setRequireCriterio(true);
         setSelectedCriterios(oferta.criterios.map((criterio:CriterioS) => ({
@@ -165,6 +187,39 @@ function EditarO() {
 
     fetchOferta();
   }, [id, setValue]);
+
+  const handleAgregarPregunta = () => {
+    if (preguntas.length < 5 && nuevaPregunta.trim() !== '') {
+      // Agregar signos de interrogación si no están presentes
+      let preguntaConInterrogacion = nuevaPregunta.trim();
+      if (!preguntaConInterrogacion.startsWith('¿')) {
+        preguntaConInterrogacion = '¿' + preguntaConInterrogacion;
+      }
+      if (!preguntaConInterrogacion.endsWith('?')) {
+        preguntaConInterrogacion = preguntaConInterrogacion + '?';
+      }
+
+      const nuevaPreguntaObj: Pregunta = {
+        id: preguntas.length + 1,
+        id_oferta: parseInt(id || '0'),
+        pregunta: preguntaConInterrogacion,
+      };
+
+      setPreguntas([...preguntas, nuevaPreguntaObj]);
+      setNuevaPregunta('');
+    } else if (preguntas.length >= 5) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Límite alcanzado',
+        text: 'Solo puedes añadir hasta 5 preguntas.',
+      });
+    }
+  };
+
+  const handleEliminarPregunta = (index: number) => {
+    const nuevasPreguntas = preguntas.filter((_, i) => i !== index);
+    setPreguntas(nuevasPreguntas);
+  };
 
 
   useEffect(() => {
@@ -358,6 +413,8 @@ function EditarO() {
 
   const onSubmit = handleSubmit(async (values) => {
     try {
+       // Aquí transformamos el array de preguntas a un array de strings
+    const preguntasSoloTexto = preguntas.map(preguntaObj => preguntaObj.pregunta);
       const criteriosValidos = selectedCriterios.filter(criterio => criterio.id_criterio > 0 && criterio.prioridad !== null);
       const dataToSend = {
         ...values,
@@ -367,6 +424,7 @@ function EditarO() {
         mostrar_sueldo: values.mostrar_sueldo ? 1 : 0,
         titulos: selectedTitles,
         criterios: criteriosValidos,
+        preguntas: preguntasSoloTexto, 
       };
   
      
@@ -794,9 +852,9 @@ function EditarO() {
                 <hr className="my-4" />
                 <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
                   <label className="block text-sm font-bold mb-2" htmlFor="id_criterio">Criterio</label>
-                  <div className="flex">
+                  <div className="flex flex-col md:flex-row">
                     <select
-                      className="w-2/3 p-2 border rounded mr-2"
+                     className="w-full md:w-2/3 p-2 border rounded"
                       id="criterio"
                       onChange={handleCriterioChange}
                       value={selectedCriterioId || ''}>
@@ -811,8 +869,9 @@ function EditarO() {
                       <>
                         {selectedCriterioId === 4 ? (
                           <>
+                             
                           <select
-                            className="w-1/3 p-2 border rounded mr-2"
+                           className="w-full md:w-full p-2 border rounded"
                             id="valor g"
                             value={valorCriterio}
                             onChange={(e) => setValorCriterio(e.target.value)}
@@ -823,7 +882,7 @@ function EditarO() {
                             <option value="Otro">Otro</option>
                           </select>
                           <select
-                               className="w-1/4 p-1 border rounded mr-2"
+                              className="w-full md:w-full p-2 border rounded"
                                id="prioridad"
                                value={prioridadCriterio || ''}
                                onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
@@ -832,11 +891,12 @@ function EditarO() {
                                <option value="2">Media</option>
                                <option value="3">Baja</option>
                              </select>
+                      
                           </>
                         ) : selectedCriterioId === 5 ? (
                           <>
                           <select
-                            className="w-1/3 p-2 border rounded mr-2"
+                           className="w-full md:w-2/3 p-2 border rounded"
                             id="valor e"
                             value={valorCriterio}
                             onChange={(e) => setValorCriterio(e.target.value)}
@@ -847,7 +907,7 @@ function EditarO() {
                             <option value="Viudo">Viudo/a</option>
                           </select>
                           <select
-                               className="w-1/4 p-1 border rounded mr-2"
+                               className="w-full md:w-2/3 p-2 border rounded"
                                id="prioridad"
                                value={prioridadCriterio || ''}
                                onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
@@ -860,7 +920,7 @@ function EditarO() {
                         ) : selectedCriterioId === 6 ? (
                           <>
                           <select
-                            className="w-1/3 p-2 border rounded mr-2"
+                          className="w-full md:w-full p-2 border rounded"
                             id="valor e"
                             value={valorCriterio}
                             onChange={(e) => setValorCriterio(e.target.value)}
@@ -874,7 +934,7 @@ function EditarO() {
                             ))}
                           </select>
                                <select
-                               className="w-1/4 p-1 border rounded mr-2"
+                               className="w-full md:w-full p-2 border rounded"
                                id="prioridad"
                                value={prioridadCriterio || ''}
                                onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
@@ -887,7 +947,7 @@ function EditarO() {
                         ) : selectedCriterioId === 7 ? (
                           <>
                           <select
-                            className="w-1/3 p-2 border rounded mr-2"
+                           className="w-full md:w-full p-2 border rounded"
                             id="valor e"
                             value={valorCriterio}
                             onChange={(e) => setValorCriterio(e.target.value)}
@@ -898,7 +958,7 @@ function EditarO() {
                             <option value="Mayor,(Más de 36 años)">36 años en adelante</option>
                           </select>
                                 <select
-                                className="w-1/4 p-1 border rounded mr-2"
+                                className="w-full md:w-full p-2 border rounded"
                                 id="prioridad"
                                 value={prioridadCriterio || ''}
                                 onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
@@ -913,7 +973,7 @@ function EditarO() {
 
                           <>
 
-                            <select id="province" className="w-1/3 p-2 border rounded mr-2" onChange={handleProvinceChange}
+                            <select id="province"className="w-full md:w-full p-2 border rounded" onChange={handleProvinceChange}
                               value={selectedProvince}>
                               <option value="">Provincia..</option>
                               {provinces.map((province, index) => (
@@ -923,7 +983,7 @@ function EditarO() {
                               ))}
                             </select>
                             <select
-                              className="w-1/3 p-2 border rounded mr-2"
+                             className="w-full md:w-full p-2 border rounded"
                               id="valor e"
                               value={selectedCanton}
                               onChange={handleCantonChange}
@@ -938,7 +998,7 @@ function EditarO() {
 
                             </select>
                             <select
-                      className="w-1/4 p-1 border rounded mr-2"
+                      className="w-full md:w-full p-2 border rounded"
                       id="prioridad"
                       value={prioridadCriterio || ''}
                       onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
@@ -950,7 +1010,7 @@ function EditarO() {
                           </>
                         ) : (
                           <select
-                          className="w-1/4 p-1 border rounded mr-2"
+                          className="w-full md:w-full p-2 border rounded"
                           id="prioridad"
                           value={prioridadCriterio || ''}
                           onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
@@ -978,29 +1038,90 @@ function EditarO() {
                     <div className="mt-4">
                       <h4 className="font-semibold">Criterios Seleccionados:</h4>
                       <ul>
-  {selectedCriterios.map(criterio => (
-    <li key={criterio.id_criterio} className="flex items-center justify-between mb-2">
-      <span>
-        {criterio.valor 
-          ? `${criterio.criterio ?? criterio.criterio} = ${criterio.valor}  ` 
-          : `${criterio.criterio ?? criterio.criterio}`}
-      </span>
-      <button
-        type="button"
-        className="text-red-500"
-        onClick={() => handleEliminarCriterio(criterio.id_criterio)}
-      >
-        x
-      </button>
-    </li>
-  ))}
-</ul>
-
+                        {selectedCriterios.map(criterio => (
+                          <li key={criterio.id_criterio} className="flex items-center justify-between mb-2">
+                            <span>{criterio.valor ? `${criterio.criterio} = ${criterio.valor}  ` : `${criterio.criterio}`}</span>
+                            <button
+                              type="button"
+                              className="text-red-500"
+                              onClick={() => handleEliminarCriterio(criterio.id_criterio)}
+                            >
+                              x
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   )}
                 </div>
                 <hr className="my-4" />
               </>)}
+       {/* Sección de preguntas */}
+       <hr className="my-4" />
+          <div className="bg-white p-6 rounded-lg shadow-lg py-8" style={{ marginTop: '20px' }}>
+            <h3 className="text-1xl text-red-500 font-bold mb-4">Preguntas de evaluación:</h3>
+            <span>Puede realizar 5 preguntas como máximo para los postulantes de esta oferta. Este apartado no es obligatorio</span>
+            <div className="mb-4">
+              <div className="flex items-center">
+                <input
+                  className="mr-2 leading-tight"
+                  type="checkbox"
+                  id="requirePregunta"
+                  checked={requirePregunta}
+                  onChange={() => setRequirePregunta(!requirePregunta)}
+                />
+                <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="requirePregunta">
+                  ¿Realizar preguntas específicas a los postulantes?
+                </label>
+              </div>
+            </div>
+
+            {requirePregunta && (
+              <>
+                <hr className="my-4" />
+                <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                  <label className="block text-sm font-bold mb-2" htmlFor="nuevaPregunta">Nueva Pregunta</label>
+                  <div className="flex flex-col md:flex-row">
+                    <input
+                      className="w-full md:w-2/3 p-2 border rounded mb-4"
+                      id="nuevaPregunta"
+                      type="text"
+                      value={nuevaPregunta}
+                      onChange={(e) => setNuevaPregunta(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                      onClick={handleAgregarPregunta}
+                    >
+                      Agregar Pregunta
+                    </button>
+                  </div>
+
+                  {preguntas.length > 0 && (
+                    <div className="mt-4">
+                      <h4 className="font-semibold">Preguntas Añadidas:</h4>
+                      <ul>
+                        {preguntas.map((pregunta, index) => (
+                          <li key={pregunta.id} className="flex items-center justify-between mb-2">
+                            <span>{pregunta.pregunta}</span>
+                            <button
+                              type="button"
+                              className="text-red-500"
+                              onClick={() => handleEliminarPregunta(index)}
+                            >
+                              x
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                <hr className="my-4" />
+              </>
+            )}
+          </div>
 
           </div>
           <div className="flex justify-center">

@@ -38,12 +38,20 @@ interface Oferta {
     expe: {
         titulo: string;
         nivel_educacion: string;
+        campo_amplio: string;
     }[];
     sueldo: number;
     n_mostrar_sueldo: number;
     soli_sueldo: number;
     correo_contacto: string;
     numero_contacto: string;
+    preguntas: Pregunta[];
+}
+
+interface Pregunta {
+    id: number;
+    id_oferta: number;
+    pregunta: string;
 }
 
 interface Criterio {
@@ -67,7 +75,7 @@ interface CheckCvResponse {
 const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
     const [sueldoDeseado, setSueldoDeseado] = useState<number | null>(null);
     const [checkCvResponse, setCheckCvResponse] = useState<CheckCvResponse | null>(null);
-
+    const [loading, setLoading] = useState(false); 
     const fetchCvStatus = async () => {
         try {
             const response = await axios.get(`check-cv/${userId}`);
@@ -92,7 +100,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
     if (!oferta) return null;
 
     const handlePostular = async () => {
-        console.log(`id_usuario: ${userId}, id_oferta: ${oferta.id_oferta}, sueldo: ${sueldoDeseado}`);
+      
         if (oferta.soli_sueldo === 1 && (sueldoDeseado === null || sueldoDeseado === undefined)) {
             Swal.fire({
                 title: '¡Error!',
@@ -102,6 +110,36 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
             });
             return;
         }
+       
+     // Recopilar las respuestas de las preguntas si existen
+     let respuestas = [];
+     if (oferta.preguntas.length > 0) {
+         let respuestasCompletas = true;
+         oferta.preguntas.forEach((pregunta, index) => {
+             const respuestaElement = document.getElementById(`respuesta-${index}`) as HTMLTextAreaElement;
+             const respuesta = respuestaElement.value.trim();
+             if (respuesta === '') {
+                 respuestasCompletas = false;
+             }
+             respuestas.push({
+                 id_pregunta: pregunta.id,
+                 pregunta: pregunta.pregunta,
+                 id_oferta: oferta.id_oferta,
+                 respuesta: respuesta
+             });
+         });
+ 
+         if (!respuestasCompletas) {
+             Swal.fire({
+                 title: '¡Error!',
+                 text: 'Debes completar todas las respuestas antes de postular.',
+                 icon: 'error',
+                 confirmButtonText: 'Ok'
+             });
+             return;
+         }
+     }
+     setLoading(true); // Activar el estado de carga
         try {
             await fetchCvStatus();
 
@@ -118,20 +156,25 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
             const postData = {
                 id_postulante: userId,
                 id_oferta: oferta.id_oferta,
-                sueldo: sueldoDeseado
+                sueldo: sueldoDeseado,
+                respuestas: respuestas.length > 0 ? respuestas : undefined
             };
 
             await axios.post('postular', postData);
+            console.log(postData);
+            setLoading(false); // Desactivar la carga
             Swal.fire({
                 title: '¡Hecho!',
                 text: 'Te has postulado a la oferta seleccionado, verifica el estado de tu postulación en los resultados',
                 icon: 'success',
                 confirmButtonText: 'Ok'
             }).then(() => {
+                
                 navigate("/verOfertasAll");
             });
         } catch (error) {
             console.error('Error postulando:', error);
+            setLoading(false); // Desactivar la carga
             Swal.fire({
                 title: '¡Ha ocurrido un error!',
                 text: 'Ya has postulado para esta oferta, consulta su estado en la pestaña de "Consultar postulación".',
@@ -229,14 +272,23 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
 
 
     return (
+        
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
+            {loading && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white"></div>
+                    <span className="text-white text-lg mt-4">Cargando...</span>
+                </div>
+            </div>
+        )}
             <div className="bg-white p-4 rounded shadow-lg w-11/12 md:w-3/4 max-w-4xl text-center overflow-auto max-h-screen md:max-h-96" style={{ maxHeight: `calc(100vh - 30px)` }}>
                 <div className="text-left mb-4 px-6 py-4 bg-gray-100 rounded-lg">
-                    <div className="flex items-center mb-4">
+                    <div className="flex flex-col md:flex-row items-center mb-4">
                         <img
                             src={oferta.n_mostrar_empresa === 1 ? '/images/anonima.png' : oferta.empresa.logo}
                             alt="Logo"
-                            className="w-20 h-20 shadow-lg rounded-full mr-4"
+                            className="w-20 h-20 shadow-lg rounded-full mb-4 md:mb-0 md:mr-4"
                         />
                         <div>
                             <h2 className="text-xl font-bold mb-1 text-blue-500 flex items-center">
@@ -259,10 +311,24 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                     </div>
                 </div>
                 <div className="flex justify-center items-start">
-                    <div className="w-full md:w-1/2">
+                    <div className="w-full">
                         <div className="text-left">
+                            {oferta.expe.length > 0 && (
+                                <>
+                                    <hr className="my-4" />
+                                    <p className="text-slate-950 mb-1 "><strong className='flex items-center'>  <FontAwesomeIcon icon={faBriefcase} className="mr-2" /> Titulo/Experiencia necesaria o similar para este cargo:</strong></p>
+                                    <ul className="mb-4">
+                                        {oferta.expe.map((expe, index) => (
+                                            <li key={index}>
+                                                <p><strong className="text-orange-800 mb-1 ">⁃ {expe.titulo}:</strong> {expe.nivel_educacion} en {expe.campo_amplio}</p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                    <hr className="my-4" />
+                                </>
+                            )}
                             <p className="text-gray-700 mb-1 flex items-center">
-                                {IconoSueldo} <strong>Sueldo:</strong> {oferta.sueldo === 0 ? 'No especificado' : `${oferta.sueldo} $`}
+                                {IconoSueldo} <strong>Sueldo:</strong>   {(oferta.sueldo === 0 || oferta.n_mostrar_sueldo === 1) ? 'No especificado' : `${oferta.sueldo} $`}
                             </p>
                             <p className="text-gray-700 mb-1 ">
                                 <strong className='flex items-center'> {IconoExperiencia}Experiencia en cargos similares:</strong> {oferta.experiencia === 0 ? 'Ninguna' : `${oferta.experiencia} año/s`}
@@ -277,16 +343,14 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                             <p className="text-gray-700 mb-1"><strong className='flex items-center'>   {IconoObjetivo} Objetivo del cargo:</strong> {oferta.objetivo_cargo}</p>
                         </div>
                     </div>
-                    <div className="w-full md:w-1/2">
-                        <div className="text-left">
-                            <p className="text-gray-700 "><strong><p className="text-gray-700 mb-1 flex items-center"> {IconoLectura} Funciones:</p></strong> {renderFunciones()}</p>
 
-                        </div>
-
-                    </div>
 
                 </div>
                 <div className="text-left mb-4 px-6 py-4 bg-orange-50 rounded-lg">
+
+                    <p className="text-gray-700 "><strong><p className="text-gray-700 mb-1 flex items-center"> {IconoLectura} Funciones:</p></strong> {renderFunciones()}</p>
+                    <hr className="my-4" />
+
                     <p className="text-slate-950 mb-1 "><strong><p className="text-gray-700 mb-1 flex items-center"> {IconoLectura} Detalles adicionales:</p></strong> {renderDetalles()}</p>
 
                     {oferta.criterios.length > 0 && (
@@ -302,10 +366,11 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                             </ul>
                         </>
                     )}
+
                     {oferta.soli_sueldo === 1 && (
                         <div className="mt-4">
                             <hr className="my-4" />
-                            <label htmlFor="sueldoDeseado" className="text-gray-700 block mb-2"><strong>Ingrese el sueldo deseado a ganar en el trabajo:</strong></label>
+                            <label htmlFor="sueldoDeseado" className="text-gray-700 block mb-2"><strong>Ingrese el sueldo prospecto a ganar en el trabajo:</strong></label>
                             <input
                                 type="number"
                                 id="sueldoDeseado"
@@ -337,6 +402,32 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                             <p className="text-gray-700 mb-1"><strong>Número de contacto:</strong> {oferta.numero_contacto}</p>
                         </div>
                     )}
+                    {oferta.preguntas.length > 0 && (
+                        <>
+                            <hr className="my-4" />
+                            <div className="mt-4">
+                                <h3 className="text-lg font-bold text-gray-700">Preguntas de evaluación</h3>
+                                <p className="text-sm text-gray-500 mb-4">Máximo 300 caracteres por respuesta.</p>
+                                {oferta.preguntas.map((pregunta, index) => (
+                                    <div key={index} className="mb-4">
+                                        <label htmlFor={`respuesta-${index}`} className="block text-gray-700 mb-2">
+                                            {pregunta.pregunta}
+                                        </label>
+                                        <textarea
+                                            id={`respuesta-${index}`}
+                                            className="w-full p-2 border rounded"
+                                            placeholder="Escribe tu respuesta aquí"
+                                            maxLength={300}
+                                            rows={4}
+                                        // Aquí puedes manejar el estado de las respuestas si es necesario
+                                        ></textarea>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
+
+
 
 
                 </div>

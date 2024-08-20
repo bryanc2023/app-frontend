@@ -20,13 +20,13 @@ interface Oferta {
         nombre_comercial: string;
         logo: string;
         id_ubicacion: number;
-        ubicacion:{
-            provincia:string;
-            canton:string;
+        ubicacion: {
+            provincia: string;
+            canton: string;
         };
     };
     fecha_max_pos: string;
-    fecha_publi:string;
+    fecha_publi: string;
     n_mostrar_empresa: number;
     modalidad: string;
     carga_horaria: string;
@@ -38,14 +38,21 @@ interface Oferta {
     expe: {
         titulo: string;
         nivel_educacion: string;
+        campo_amplio: string;
     }[];
     sueldo: number;
     n_mostrar_sueldo: number;
     soli_sueldo: number;
-    correo_contacto:string;
-    numero_contacto:string;
+    correo_contacto: string;
+    numero_contacto: string;
+    preguntas: Pregunta[];
 }
 
+interface Pregunta {
+    id: number;
+    id_oferta: number;
+    pregunta: string;
+}
 interface Criterio {
     criterio: string;
     pivot: {
@@ -93,39 +100,39 @@ const VerOfertasAll = () => {
     useEffect(() => {
         const getFirstLoginDate = async () => {
             try {
-           
+
                 if (!user || !user.id) {
-                  throw new Error('User ID not available');
+                    throw new Error('User ID not available');
                 }
-        
+
                 const response = await axios.get(`first?user_id=${user.id}`);
                 const { data } = response;
-        
+
                 if (!data.hasOwnProperty('has_first_login')) {
-                  throw new Error('Invalid response format');
+                    throw new Error('Invalid response format');
                 }
-        
+
                 const hasFirstLogin = data.has_first_login;
-           
-        
-                if (!hasFirstLogin ) {
-                  navigate('/completar'); // Redirigir a completar perfil si no tiene first_login_at y está logeado
+
+
+                if (!hasFirstLogin) {
+                    navigate('/completar'); // Redirigir a completar perfil si no tiene first_login_at y está logeado
                 } else {
-                  navigate('/verOfertasAll'); // Redirigir a ver ofertas si tiene first_login_at
+                    navigate('/verOfertasAll'); // Redirigir a ver ofertas si tiene first_login_at
                 }
-              } catch (error) {
+            } catch (error) {
                 console.error('Error fetching first login status:', error);
                 // Manejar el error según tus necesidades, por ejemplo, mostrar un mensaje de error
-              }
-          };
-          getFirstLoginDate
+            }
+        };
+        getFirstLoginDate
         fetchOfertas();
         fetchAreas();
         fetchData();
-    
+
     }, []);
 
-   
+
 
     const fetchData = async () => {
         try {
@@ -179,7 +186,7 @@ const VerOfertasAll = () => {
             }
         } catch (error) {
             console.error('Error fetching ofertas:', error);
-        }finally {
+        } finally {
             setLoading(false);
         }
     };
@@ -351,7 +358,7 @@ const VerOfertasAll = () => {
                     </div>
                 )}
 
-                { loading ? (
+                {loading ? (
                     <div className="flex justify-center items-center h-32">
                         <div className="flex items-center space-x-2">
                             <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
@@ -367,42 +374,41 @@ const VerOfertasAll = () => {
                         <div className="relative overflow-x-auto">
                             <div className="flex flex-col gap-4">
                                 {currentOfertas.map((oferta) => (
-                                  <div key={oferta.id_oferta} className="w-full relative bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 p-4 flex flex-col lg:flex-row items-center">
-                                  <div className="relative w-full lg:w-80 lg:h-52 flex items-center justify-center overflow-hidden mt-4 lg:mt-0 order-2 lg:order-1">
-                                      <img
-                                          src={oferta.n_mostrar_empresa === 1 ? '/images/anonima.png' : oferta.empresa.logo}
-                                          alt="Logo"
-                                          className="w-full h-full object-contain"
-                                      />
-                                  </div>
-              
-                                  <div className="flex-1 pr-4 order-1 lg:order-2 mt-8 lg:mt-8">
-                                      <div className="text-center mb-2 flex items-center justify-center lg:justify-start">
-                                          <FiUser className="text-blue-800 mr-2" size={24} />
-                                          <h2 className="text-xl font-bold text-blue-800 lg:ml-4">{oferta.cargo}</h2>
-                                      </div>
-              
-                                      <p className="text-gray-700 mb-1"><strong>Empresa:</strong> {oferta.n_mostrar_empresa === 1 ? 'Anónima' : oferta.empresa.nombre_comercial}</p>
-                                      <p className="text-gray-700 mb-1"><strong>Área:</strong> {oferta.areas.nombre_area.charAt(0).toUpperCase() + oferta.areas.nombre_area.slice(1).toLowerCase()}</p>
-                                      <p className="text-gray-700 mb-1"><strong>Carga Horaria:</strong> {oferta.carga_horaria}</p>
-                                      <p className="text-gray-700 mb-1"><strong>Fecha Máxima De Postulación:</strong> {formatFechaMaxPos(oferta.fecha_max_pos)}</p>
-              
-                                      <center>
-                                          <button
-                                              onClick={() => setSelectedOferta(oferta)}
-                                              className="flex items-center justify-center bg-green-500 text-white p-2 rounded-lg mt-4"
-                                          >
-                                              Ver Oferta <FiEye className="ml-2" />
-                                          </button>
-                                      </center>
-                                  </div>
-              
-                                  {/* Ubicación de la empresa */}
-                                  <div className="absolute top-2 right-2 flex items-center text-gray-700">
-                                      <FiMapPin className="text-blue-800 mr-1" />
-                                      <span>{oferta.empresa.ubicacion.provincia}, {oferta.empresa.ubicacion.canton}</span>
-                                  </div>
-                              </div>
+                                    <div key={oferta.id_oferta} className="w-full relative bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 p-4 flex flex-col lg:flex-row items-center">
+                                        <div className="relative w-full lg:w-80 lg:h-52 flex items-center justify-center overflow-hidden mt-4 lg:mt-0 order-2 lg:order-1">
+                                            <img
+                                                src={oferta.n_mostrar_empresa === 1 ? '/images/anonima.png' : oferta.empresa.logo}
+                                                alt="Logo"
+                                                className="w-3/4 h-auto md:w-full md:h-full object-contain max-w-xs max-h-60"
+                                            />
+                                        </div>
+                                        <div className="flex-1 pr-4 order-1 lg:order-2 mt-8 lg:mt-8">
+                                            <div className="text-center mb-2 flex items-center justify-center lg:justify-start">
+                                                <FiUser className="text-blue-800 mr-2" size={24} />
+                                                <h2 className="text-xl font-bold text-blue-800 lg:ml-4">{oferta.cargo}</h2>
+                                            </div>
+
+                                            <p className="text-gray-700 mb-1"><strong>Empresa:</strong> {oferta.n_mostrar_empresa === 1 ? 'Anónima' : oferta.empresa.nombre_comercial}</p>
+                                            <p className="text-gray-700 mb-1"><strong>Área:</strong> {oferta.areas.nombre_area.charAt(0).toUpperCase() + oferta.areas.nombre_area.slice(1).toLowerCase()}</p>
+                                            <p className="text-gray-700 mb-1"><strong>Carga Horaria:</strong> {oferta.carga_horaria}</p>
+                                            <p className="text-gray-700 mb-1"><strong>Fecha Máxima De Postulación:</strong> {formatFechaMaxPos(oferta.fecha_max_pos)}</p>
+
+                                            <center>
+                                                <button
+                                                    onClick={() => setSelectedOferta(oferta)}
+                                                    className="flex items-center justify-center bg-green-500 text-white p-2 rounded-lg mt-4"
+                                                >
+                                                    Ver Oferta <FiEye className="ml-2" />
+                                                </button>
+                                            </center>
+                                        </div>
+
+                                        {/* Ubicación de la empresa */}
+                                        <div className="absolute top-2 right-2 flex items-center text-gray-700">
+                                            <FiMapPin className="text-blue-800 mr-1" />
+                                            <span>{oferta.empresa.ubicacion.provincia}, {oferta.empresa.ubicacion.canton}</span>
+                                        </div>
+                                    </div>
                                 ))}
                             </div>
                         </div>
