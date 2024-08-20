@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bar, Line, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement } from 'chart.js';
 import axios from '../../services/axios';
+import { FiActivity } from 'react-icons/fi';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);
 
@@ -303,7 +304,11 @@ const Estadisticas: React.FC = () => {
 
     return (
         <div className="mb-4 text-center max-w-screen-lg mx-auto">
-            <h2 className="text-2xl font-bold mb-4">Estadísticas de la App de Gestión de Ofertas de Trabajo</h2>
+                <h1 className="text-3xl font-bold mb-4 flex justify-center items-center text-orange-500 ml-2">
+      MONITOREO Y CONTROL DE LA APLICACIÓN WEB 
+                    <FiActivity className="text-orange-500 ml-2" />
+                </h1>
+            
             <div className="mb-4">
                 <center><p>En esta sección se muestra las estadísticas de la aplicación por año/mes de manera general:</p></center>
                 <label className="block text-sm font-bold mb-2" htmlFor="yearSelect">Seleccione el Año:</label>

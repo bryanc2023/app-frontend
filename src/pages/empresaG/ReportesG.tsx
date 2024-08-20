@@ -6,6 +6,7 @@ import axios from '../../services/axios';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import Modal from 'react-modal';
+import { FiPaperclip } from 'react-icons/fi';
 
 interface ReportData {
   id: number;
@@ -372,7 +373,12 @@ const Reportes: React.FC = () => {
 
   return (
     <div className="mb-4 text-center max-w-screen-lg mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Generar Reportes</h2>
+                  <h1 className="text-3xl font-bold mb-4 flex justify-center items-center text-orange-500 ml-2">
+      REPORTES
+                    <FiPaperclip className="text-orange-500 ml-2" />
+                </h1>
+            
+      <p>En esta sección se muestran reportes generados a partir de la información obtenida de la app</p>
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Reporte</label>
         <select
