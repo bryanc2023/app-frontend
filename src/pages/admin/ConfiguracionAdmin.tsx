@@ -62,7 +62,7 @@ const ConfiguracionComponent = () => {
             const response = await axios.post('/configuraciones', form);
             setModalContent({ title: 'Éxito', message: `Configuración guardada correctamente`, success: true });
             fetchConfiguraciones(); // Refresh the list of configuraciones
-            console.log(response, form);
+            console.log(response);
         } catch (error) {
             console.error('Error guardando configuración:', error);
             setModalContent({ title: 'Error', message: `Error guardando configuración`, success: false });
