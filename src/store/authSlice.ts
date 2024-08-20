@@ -30,7 +30,7 @@ export const loginUser = createAsyncThunk(
   async (data: any, { rejectWithValue }) => {
     try {
       const response = await Api.post('/auth/login', data);
-      console.log('API Response:', response); // Imprime la respuesta para depuración
+    
 
       if (response.statusCode === 200) {
         window.localStorage.setItem("token",response.data.token);
@@ -74,7 +74,7 @@ export const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isLogged = true;
-        console.log('Fulfilled Action Payload:', action.payload); // Imprime el payload para depuración
+
         if (action.payload) {
           state.token = action.payload.token;
           state.user = action.payload.user;
