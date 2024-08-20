@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Bar, Line, Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement } from 'chart.js';
 import axios from '../../services/axios';
-import { FiActivity } from 'react-icons/fi';
+import { FiActivity, FiLoader } from 'react-icons/fi';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ArcElement, PointElement, LineElement);
 
 const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
 interface Area {
     id: number;
     nombre_area: string;
@@ -33,6 +34,7 @@ interface Postulacion {
 const Estadisticas: React.FC = () => {
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [selectedArea, setSelectedArea] = useState<string>('');
+    const [initialLoad, setInitialLoad] = useState(true);
     const [areas, setAreas] = useState<Area[]>([]);
     const [barData, setBarData] = useState({ labels: [] as string[], datasets: [] as any[] });
     const [lineData, setLineData] = useState({ labels: [] as string[], datasets: [] as any[] });
@@ -44,6 +46,8 @@ const Estadisticas: React.FC = () => {
     const [selectedProvince, setSelectedProvince] = useState<string>('');
     const [selectedCanton, setSelectedCanton] = useState<string>('');
     const [ubicacionData, setUbicacionData] = useState({ labels: [] as string[], datasets: [] as any[] });
+
+    const [loading, setLoading] = useState(true);
 
     const [summary, setSummary] = useState({
         totalOfertas: 0,
@@ -94,14 +98,23 @@ const Estadisticas: React.FC = () => {
 
     useEffect(() => {
         const fetchData = async () => {
+            if (initialLoad) {
+                setLoading(true); // Mostrar "Cargando" solo durante la primera carga de datos
+            }
+
             await fetchOfertasPorMes();
             await fetchUsuariosRegistradosPorMes();
             await fetchPostulacionesPorMes();
             await fetchAreas();
+
+            if (initialLoad) {
+                setLoading(false); // Ocultar "Cargando" después de la primera carga
+                setInitialLoad(false); // Marcar la primera carga como completada
+            }
         };
 
         fetchData();
-    }, [selectedYear, selectedArea]);
+    }, [selectedYear, selectedArea, selectedProvince, selectedCanton]);
 
     const fetchAreas = async () => {
         try {
@@ -112,9 +125,23 @@ const Estadisticas: React.FC = () => {
         }
     };
 
+    const getFilterLabel = () => {
+        const area = selectedArea ? areas.find(a => a.id.toString() === selectedArea)?.nombre_area : 'Todas las Áreas';
+        const province = selectedProvince || 'Todas las Provincias';
+        const canton = selectedCanton || 'Todos los Cantones';
+        return `${area} - ${province} - ${canton}`;
+    };
+
     const fetchOfertasPorMes = async () => {
         try {
-            const response = await axios.get(`/ofertas-por-mes?id_empresa=1&year=${selectedYear}`);
+            const response = await axios.get(`/ofertas-por-mes`, {
+                params: {
+                    year: selectedYear,
+                    area: selectedArea,
+                    province: selectedProvince,
+                    canton: selectedCanton
+                }
+            });
             const ofertas: Oferta[] = response.data;
 
             const labels = ofertas.map((oferta: Oferta) => `${monthNames[oferta.month - 1]} ${oferta.year}`);
@@ -149,7 +176,14 @@ const Estadisticas: React.FC = () => {
 
     const fetchUsuariosRegistradosPorMes = async () => {
         try {
-            const response = await axios.get(`/usuarios-registrados-por-mes?year=${selectedYear}`);
+            const response = await axios.get(`/usuarios-registrados-por-mes`, {
+                params: {
+                    year: selectedYear,
+                    area: selectedArea,
+                    province: selectedProvince,
+                    canton: selectedCanton
+                }
+            });
             const usuarios: Usuario[] = response.data;
 
             const labels = usuarios.map((usuario: Usuario) => `${monthNames[usuario.month - 1]} ${usuario.year}`);
@@ -184,7 +218,14 @@ const Estadisticas: React.FC = () => {
 
     const fetchPostulacionesPorMes = async () => {
         try {
-            const response = await axios.get(`/postulaciones-por-mes?year=${selectedYear}`);
+            const response = await axios.get(`/postulaciones-por-mes`, {
+                params: {
+                    year: selectedYear,
+                    area: selectedArea,
+                    province: selectedProvince,
+                    canton: selectedCanton
+                }
+            });
             const postulaciones: Postulacion[] = response.data;
 
             const labels = postulaciones.map((postulacion: Postulacion) => `${monthNames[postulacion.month - 1]} ${postulacion.year}`);
@@ -221,20 +262,28 @@ const Estadisticas: React.FC = () => {
         const fetchPostulantesPorGenero = async () => {
             try {
                 const response = await axios.get('/postulantes-por-genero', {
-                    params: { area: selectedArea }
+                    params: {
+                        area: selectedArea,
+                        province: selectedProvince,
+                        canton: selectedCanton
+                    }
                 });
                 const data = response.data;
 
-                setGenderData({
-                    labels: ['Masculino', 'Femenino', 'Otro'],
-                    datasets: [
-                        {
-                            data: [data.masculino, data.femenino, data.otro],
-                            backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'],
-                            hoverBackgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'],
-                        },
-                    ],
-                });
+                if (data.masculino || data.femenino || data.otro) {
+                    setGenderData({
+                        labels: ['Masculino', 'Femenino', 'Otro'],
+                        datasets: [
+                            {
+                                data: [data.masculino, data.femenino, data.otro],
+                                backgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'],
+                                hoverBackgroundColor: ['#36A2EB', '#FF6384', '#FFCE56'],
+                            },
+                        ],
+                    });
+                } else {
+                    setGenderData({ labels: [], datasets: [] }); // Limpiar datos si no hay datos disponibles
+                }
             } catch (error) {
                 console.error('Error fetching data', error);
             }
@@ -243,7 +292,11 @@ const Estadisticas: React.FC = () => {
         const fetchPostulacionesOfertasPorArea = async () => {
             try {
                 const response = await axios.get('/postulantes-por-area', {
-                    params: { area: selectedArea }
+                    params: {
+                        area: selectedArea,
+                        province: selectedProvince,
+                        canton: selectedCanton
+                    }
                 });
                 const data = response.data;
 
@@ -264,11 +317,11 @@ const Estadisticas: React.FC = () => {
             }
         };
 
-        if (selectedArea) {
+        if (selectedArea || selectedProvince || selectedCanton) {
             fetchPostulantesPorGenero();
             fetchPostulacionesOfertasPorArea();
         }
-    }, [selectedArea]);
+    }, [selectedArea, selectedProvince, selectedCanton]);
 
     useEffect(() => {
         const fetchPostulacionesOfertasPorUbicacion = async () => {
@@ -276,7 +329,9 @@ const Estadisticas: React.FC = () => {
                 const response2 = await axios.get(`ubicaciones/${selectedProvince}/${selectedCanton}`);
                 const ubicacionId = response2.data.ubicacion_id;
                 const response = await axios.get('/postulantes-por-ubicacion', {
-                    params: { ubicacion: ubicacionId }
+                    params: {
+                        ubicacion: ubicacionId
+                    }
                 });
                 const data = response.data;
 
@@ -302,140 +357,226 @@ const Estadisticas: React.FC = () => {
         }
     }, [selectedCanton]);
 
+    // Estilos en línea
+    const overlayStyle: React.CSSProperties = {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 9999,
+    };
+
+    const contentStyle: React.CSSProperties = {
+        color: 'white',
+        fontSize: '24px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+    };
+
+    const iconStyle: React.CSSProperties = {
+        marginBottom: '10px',
+        animation: 'spin 1s linear infinite',
+    };
+
+    const spinAnimation = `
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    `;
+
     return (
         <div className="mb-4 text-center max-w-screen-lg mx-auto">
-                <h1 className="text-3xl font-bold mb-4 flex justify-center items-center text-orange-500 ml-2">
-      MONITOREO Y CONTROL DE LA APLICACIÓN WEB 
-                    <FiActivity className="text-orange-500 ml-2" />
-                </h1>
-            
-            <div className="mb-4">
-                <center><p>En esta sección se muestra las estadísticas de la aplicación por año/mes de manera general:</p></center>
-                <label className="block text-sm font-bold mb-2" htmlFor="yearSelect">Seleccione el Año:</label>
-                <select
-                    id="yearSelect"
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-                    className="block w-full p-2 border rounded"
-                >
-                    {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
-                        <option key={year} value={year}>{year}</option>
-                    ))}
-                </select>
-            </div>
-            <div className="mb-4">
-                <label htmlFor="selectArea" className="block text-sm font-bold mb-2">Selecciona el Área:</label>
-                <select
-                    id="selectArea"
-                    className="px-2 py-1 border border-gray-300 rounded w-full"
-                    value={selectedArea}
-                    onChange={(e) => setSelectedArea(e.target.value)}
-                >
-                    <option value="">Todas</option>
-                    {areas.map(area => (
-                        <option key={area.id} value={area.id}>
-                            {area.nombre_area}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            <div className="mb-4">
-                <label htmlFor="province" className="block text-sm font-bold mb-2">Provincia:</label>
-                <select
-                    id="province"
-                    className="px-2 py-1 border border-gray-300 rounded w-full"
-                    onChange={handleProvinceChange}
-                >
-                    <option value="">Seleccione</option>
-                    {provinces.map((province, index) => (
-                        <option key={index} value={province}>
-                            {province}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            <div className="mb-4">
-                <label htmlFor="canton" className="block text-sm font-bold mb-2">Cantón:</label>
-                <select
-                    id="canton"
-                    className="px-2 py-1 border border-gray-300 rounded w-full"
-                    disabled={!selectedProvince}
-                    onChange={handleCantonChange}
-                >
-                    <option value="">Seleccione</option>
-                    {cantons.map((canton, index) => (
-                        <option key={index} value={canton}>
-                            {canton}
-                        </option>
-                    ))}
-                </select>
-            </div>
-            <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-2">Ofertas Publicadas por Mes</h3>
-                <Bar data={barData} />
-            </div>
-            <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-2">Usuarios Registrados por Mes</h3>
-                <Line data={lineData} />
-            </div>
-            <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-2">Postulaciones Realizadas por Mes</h3>
-                <Bar data={horizontalBarData} options={{ indexAxis: 'y' }} />
-            </div>
-            <div className="bg-gray-100 p-4 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold mb-2">Resumen</h3>
-                <p><strong>Total de Ofertas Publicadas:</strong> {summary.totalOfertas}</p>
-                <p><strong>Total de Usuarios Registrados:</strong> {summary.totalUsuarios}</p>
-                <p><strong>Total de Postulaciones Realizadas:</strong> {summary.totalPostulaciones}</p>
-                <table className="min-w-full bg-white border border-gray-200 mt-4">
-                    <thead>
-                        <tr>
-                            <th className="px-4 py-2 border-b">Mes/Año</th>
-                            <th className="px-4 py-2 border-b">Total Ofertas</th>
-                            <th className="px-4 py-2 border-b">Total Usuarios</th>
-                            <th className="px-4 py-2 border-b">Total Postulaciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {summary.detallesOfertas.map((oferta, index) => (
-                            <tr key={index}>
-                                <td className="border px-4 py-2">{`${monthNames[oferta.month - 1]} ${oferta.year}`}</td>
-                                <td className="border px-4 py-2">{oferta.total}</td>
-                                <td className="border px-4 py-2">{summary.detallesUsuarios[index] ? summary.detallesUsuarios[index].total : 'N/A'}</td>
-                                <td className="border px-4 py-2">{summary.detallesPostulaciones[index] ? summary.detallesPostulaciones[index].total : 'N/A'}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            <div>
-                <hr className="my-4" />
-                <div className="bg-white p-4 rounded shadow mb-8">
-                    <center>
-                        <p className="mb-4">En esta sección puedes visualizar datos puntuales de áreas y ubicaciones de ofertas, postulaciones y postulantes:</p>
-                    </center>
-                    {selectedArea && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                            <div>
-                                <h3 className="text-xl font-semibold mb-2">Postulaciones y Ofertas en el Área determinada</h3>
-                                <Bar data={areaData} />
-                            </div>
-                            <div>
-                                <h3 className="text-xl font-semibold mb-2">Postulantes y Ofertas en la Ubicación determinada</h3>
-                                <Bar data={ubicacionData} />
-                            </div>
+       
+
+            {loading ? (
+                <>
+                 <div style={overlayStyle}>
+                 <div style={contentStyle}>
+                     <FiLoader style={iconStyle} size={48} />
+                     <span>Cargando...</span>
+                 </div>
+                 
+             </div>
+             
+             </>
+            ) : (
+                <>
+                
+                
+                    <div className="mb-4">
+                    <h1 className="text-3xl font-bold mb-4 flex justify-center items-center text-orange-500 ml-2">
+                MONITOREO Y CONTROL DE LA APLICACIÓN WEB 
+                <FiActivity className="text-orange-500 ml-2" />
+            </h1>
+                        <center><p>En esta sección se muestra las estadísticas de la aplicación por año/mes de manera general:</p></center>
+                        <label className="block text-sm font-bold mb-2" htmlFor="yearSelect">Seleccione el Año:</label>
+                        <select
+                            id="yearSelect"
+                            value={selectedYear}
+                            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                            className="block w-full p-2 border rounded"
+                        >
+                            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                                <option key={year} value={year}>{year}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="selectArea" className="block text-sm font-bold mb-2">Selecciona el Área:</label>
+                        <select
+                            id="selectArea"
+                            className="px-2 py-1 border border-gray-300 rounded w-full"
+                            value={selectedArea}
+                            onChange={(e) => setSelectedArea(e.target.value)}
+                        >
+                            <option value="">Todas</option>
+                            {areas.map(area => (
+                                <option key={area.id} value={area.id}>
+                                    {area.nombre_area}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="province" className="block text-sm font-bold mb-2">Provincia:</label>
+                        <select
+                            id="province"
+                            className="px-2 py-1 border border-gray-300 rounded w-full"
+                            onChange={handleProvinceChange}
+                        >
+                            <option value="">Seleccione</option>
+                            {provinces.map((province, index) => (
+                                <option key={index} value={province}>
+                                    {province}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="mb-4">
+                        <label htmlFor="canton" className="block text-sm font-bold mb-2">Cantón:</label>
+                        <select
+                            id="canton"
+                            className="px-2 py-1 border border-gray-300 rounded w-full"
+                            disabled={!selectedProvince}
+                            onChange={handleCantonChange}
+                        >
+                            <option value="">Seleccione</option>
+                            {cantons.map((canton, index) => (
+                                <option key={index} value={canton}>
+                                    {canton}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <hr className="my-4" />
+                    <div className="bg-gray-100 p-4 rounded-lg shadow-md">
+                        <h3 className="text-xl font-semibold mb-2 text-red-500">Resumen general de las estadísticas</h3>
+                        <p><strong>Total de Ofertas Publicadas:</strong> {summary.totalOfertas}</p>
+                        <p><strong>Total de Usuarios Registrados:</strong> {summary.totalUsuarios}</p>
+                        <p><strong>Total de Postulaciones Realizadas:</strong> {summary.totalPostulaciones}</p>
+                        <table className="min-w-full bg-white border border-gray-200 mt-4">
+                            <thead>
+                                <tr>
+                                    <th className="px-4 py-2 border-b">Mes/Año</th>
+                                    <th className="px-4 py-2 border-b">Total Ofertas</th>
+                                    <th className="px-4 py-2 border-b">Total Usuarios</th>
+                                    <th className="px-4 py-2 border-b">Total Postulaciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {summary.detallesOfertas.map((oferta, index) => (
+                                    <tr key={index}>
+                                        <td className="border px-4 py-2">{`${monthNames[oferta.month - 1]} ${oferta.year}`}</td>
+                                        <td className="border px-4 py-2">{oferta.total}</td>
+                                        <td className="border px-4 py-2">{summary.detallesUsuarios[index] ? summary.detallesUsuarios[index].total : 'N/A'}</td>
+                                        <td className="border px-4 py-2">{summary.detallesPostulaciones[index] ? summary.detallesPostulaciones[index].total : 'N/A'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <hr className="my-4" />
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold mb-2">{`Ofertas Publicadas En ${selectedYear}`}</h3>
+                        {barData.labels.length > 0 ? (
+                            <Bar data={barData} />
+                        ) : (
+                            <p className="text-gray-500">No se tienen datos</p>
+                        )}
+                    </div>
+                    <hr className="my-4" />
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold mb-2">{`Usuarios Registrados En ${selectedYear}`}</h3>
+                        {lineData.labels.length > 0 ? (
+                            <Line data={lineData} />
+                        ) : (
+                            <p className="text-gray-500">No se tienen datos</p>
+                        )}
+                    </div>
+                    <hr className="my-4" />
+                    <div className="mb-8">
+                        <h3 className="text-xl font-semibold mb-2">{`Postulaciones Realizadas En ${selectedYear}`}</h3>
+                        {horizontalBarData.labels.length > 0 ? (
+                            <Bar data={horizontalBarData} options={{ indexAxis: 'y' }} />
+                        ) : (
+                            <p className="text-gray-500">No se tienen datos</p>
+                        )}
+                    </div>
+                    <hr className="my-4" />
+                    <div>
+                        <hr className="my-4" />
+                        <div className="bg-white p-4 rounded shadow mb-8">
+                            <center>
+                                <p className="mb-4">{`Datos Puntuales para ${getFilterLabel()}`}</p>
+                            </center>
+                            {selectedArea || selectedProvince || selectedCanton ? (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                                    <div>
+                                        <h3 className="text-xl font-semibold mb-2">Postulaciones y Ofertas en el Área determinada</h3>
+                                        {areaData.labels.length > 0 ? (
+                                            <Bar data={areaData} />
+                                        ) : (
+                                            <p className="text-gray-500">No se tienen datos</p>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-semibold mb-2">Postulantes y Ofertas en la Ubicación determinada</h3>
+                                        {ubicacionData.labels.length > 0 ? (
+                                            <Bar data={ubicacionData} />
+                                        ) : (
+                                            <p className="text-gray-500">No se tienen datos</p>
+                                        )}
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-gray-500">No se tienen datos</p>
+                            )}
+                            {selectedCanton && (
+                                <div>
+                                    {genderData.labels.length > 0 ? (
+                                        
+                                        <div className="w-1/2 mx-auto">
+                                            <h3 className="text-xl font-semibold mb-2">{`Distribución de Postulantes por Género`}</h3>
+                                            <Pie data={genderData} />
+                                        </div>
+                                    ) : (
+                                        <p className="text-gray-500">-</p>
+                                    )}
+                                </div>
+                            )}
                         </div>
-                    )}
-                    {selectedCanton && (
-                        <div>
-                            <h3 className="text-xl font-semibold mb-2">Distribución de Postulantes por Género</h3>
-                            <div className="w-1/2 mx-auto">
-                                <Pie data={genderData} />
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
+                    </div>
+                </>
+            )}
         </div>
     );
 };
