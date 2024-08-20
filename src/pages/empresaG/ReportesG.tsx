@@ -6,40 +6,23 @@ import axios from '../../services/axios';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import Modal from 'react-modal';
-import { FiPaperclip } from 'react-icons/fi';
 
 interface ReportData {
   id: number;
-  name: string;
-  email: string;
-  created_at: string;
-  ubicacion: string;
-  empresa?: {
-    nombre_comercial: string;
-    sector: string;
-    tamanio: string;
-    ubicacion: string;
-    ofertas: {
-      cargo: string;
-      num_postulantes: number;
-    }[];
-  };
-  cargo?: string;
-  sueldo?: number;
-  objetivo_cargo?: string;
+  name?: string;
+  email?: string;
+  created_at?: string;
+  ubicacion?: string;
   nombre_comercial?: string;
-  experiencia?: number;
-  funciones?: string;
-  carga_horaria?: string;
-  modalidad?: string;
+  sector?: string;
+  tamanio?: string;
+  total_ofertas?: number;  // Cambiado de total_postulaciones a total_ofertas
+  cargo?: string;
   estado?: string;
+  num_postulaciones?: number;
+  vigencia?: string;
   genero?: string;
   estado_civil?: string;
-  provincia?: string;
-  canton?: string;
-  num_postulaciones?: number;
-  detalles_postulaciones?: { cargo: string }[];
-  vigencia?: string;
 }
 
 const Reportes: React.FC = () => {
@@ -64,9 +47,6 @@ const Reportes: React.FC = () => {
 
   // Filtros adicionales para ofertas
   const [cargo, setCargo] = useState<string>('');
-  const [experiencia, setExperiencia] = useState<string>('');
-  const [cargaHoraria, setCargaHoraria] = useState<string>('');
-  const [modalidad, setModalidad] = useState<string>('');
   const [estado, setEstado] = useState<string>('');
 
   // Filtros adicionales para postulantes
@@ -136,18 +116,6 @@ const Reportes: React.FC = () => {
     setCargo(event.target.value);
   };
 
-  const handleExperienciaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setExperiencia(event.target.value);
-  };
-
-  const handleCargaHorariaChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setCargaHoraria(event.target.value);
-  };
-
-  const handleModalidadChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setModalidad(event.target.value);
-  };
-
   const handleEstadoChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setEstado(event.target.value);
   };
@@ -186,9 +154,6 @@ const Reportes: React.FC = () => {
         params = {
           ...params,
           cargo: cargo || undefined,
-          experiencia: experiencia || undefined,
-          carga_horaria: cargaHoraria || undefined,
-          modalidad: modalidad || undefined,
           estado: estado || undefined,
         };
       } else if (reportType === 'postulantes') {
@@ -216,7 +181,7 @@ const Reportes: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate, reportType, selectedProvince, selectedCanton, selectedSector, selectedTamanio, cargo, experiencia, cargaHoraria, modalidad, estado, selectedGenero, selectedEstadoCivil]);
+  }, [startDate, endDate, reportType, selectedProvince, selectedCanton, selectedSector, selectedTamanio, cargo, estado, selectedGenero, selectedEstadoCivil]);
 
   const generatePDF = () => {
     const doc = new jsPDF();
@@ -228,42 +193,30 @@ const Reportes: React.FC = () => {
     let tableRows: any[] = [];
 
     if (reportType === 'empresas') {
-      tableColumn = ["Nombre", "Correo", "Fecha de Creación", "Nombre Comercial", "Sector", "Tamaño", "Ubicación", "Ofertas"];
+      tableColumn = ["Nombre Comercial", "Tamaño", "Ubicación", "Sector", "Cantidad de Ofertas"];
       tableRows = data.map(item => [
-        item.name,
-        item.email,
-        item.created_at,
-        item.empresa?.nombre_comercial,
-        item.empresa?.sector,
-        item.empresa?.tamanio,
-        item.empresa?.ubicacion,
-        item.empresa?.ofertas.map(oferta => `${oferta.cargo} (Postulantes: ${oferta.num_postulantes})`).join(', ')
+        item.nombre_comercial,
+        item.tamanio,
+        item.ubicacion,
+        item.sector,
+        item.total_ofertas || 0,  // Cambiado de total_postulaciones a total_ofertas
       ]);
     } else if (reportType === 'ofertas') {
-      tableColumn = ["Cargo", "Sueldo", "Objetivo del Cargo", "Nombre de la Empresa", "Experiencia", "Funciones", "Carga Horaria", "Modalidad", "Estado"];
+      tableColumn = ["Cargo", "Nombre de la Empresa", "Estado", "Cantidad de Postulaciones"];
       tableRows = data.map(item => [
         item.cargo,
-        item.sueldo,
-        item.objetivo_cargo,
         item.nombre_comercial,
-        item.experiencia,
-        item.funciones,
-        item.carga_horaria,
-        item.modalidad,
-        item.estado
+        item.estado,
+        item.num_postulaciones || 0,
       ]);
     } else if (reportType === 'postulantes') {
-      tableColumn = ["Nombre", "Correo", "Fecha de Creación", "Número de Postulaciones", "Postulaciones", "Vigencia", "Género", "Estado Civil", "Ubicación"];
+      tableColumn = ["Nombre", "Vigencia", "Género", "Estado Civil", "Ubicación"];
       tableRows = data.map(item => [
         item.name,
-        item.email,
-        item.created_at,
-        item.num_postulaciones,
-        item.detalles_postulaciones?.map((detalle: { cargo: string }) => detalle.cargo).join(', '),
         item.vigencia,
         item.genero,
         item.estado_civil,
-        item.ubicacion
+        item.ubicacion,
       ]);
     }
 
@@ -288,42 +241,30 @@ const Reportes: React.FC = () => {
     let tableRows: any[] = [];
 
     if (reportType === 'empresas') {
-      tableColumn = ["Nombre", "Correo", "Fecha de Creación", "Nombre Comercial", "Sector", "Tamaño", "Ubicación", "Ofertas"];
+      tableColumn = ["Nombre Comercial", "Tamaño", "Ubicación", "Sector", "Cantidad de Ofertas"];
       tableRows = data.map(item => [
-        item.name,
-        item.email,
-        item.created_at,
-        item.empresa?.nombre_comercial,
-        item.empresa?.sector,
-        item.empresa?.tamanio,
-        item.empresa?.ubicacion,
-        item.empresa?.ofertas.map(oferta => `${oferta.cargo} (Postulantes: ${oferta.num_postulantes})`).join(', ')
+        item.nombre_comercial,
+        item.tamanio,
+        item.ubicacion,
+        item.sector,
+        item.total_ofertas || 0,  // Cambiado de total_postulaciones a total_ofertas
       ]);
     } else if (reportType === 'ofertas') {
-      tableColumn = ["Cargo", "Sueldo", "Objetivo del Cargo", "Nombre de la Empresa", "Experiencia", "Funciones", "Carga Horaria", "Modalidad", "Estado"];
+      tableColumn = ["Cargo", "Nombre de la Empresa", "Estado", "Cantidad de Postulaciones"];
       tableRows = data.map(item => [
         item.cargo,
-        item.sueldo,
-        item.objetivo_cargo,
         item.nombre_comercial,
-        item.experiencia,
-        item.funciones,
-        item.carga_horaria,
-        item.modalidad,
-        item.estado
+        item.estado,
+        item.num_postulaciones || 0,
       ]);
     } else if (reportType === 'postulantes') {
-      tableColumn = ["Nombre", "Correo", "Fecha de Creación", "Número de Postulaciones", "Postulaciones", "Vigencia", "Género", "Estado Civil", "Ubicación"];
+      tableColumn = ["Nombre", "Vigencia", "Género", "Estado Civil", "Ubicación"];
       tableRows = data.map(item => [
         item.name,
-        item.email,
-        item.created_at,
-        item.num_postulaciones,
-        item.detalles_postulaciones?.map((detalle: { cargo: string }) => detalle.cargo).join(', '),
         item.vigencia,
         item.genero,
         item.estado_civil,
-        item.ubicacion
+        item.ubicacion,
       ]);
     }
 
@@ -373,12 +314,7 @@ const Reportes: React.FC = () => {
 
   return (
     <div className="mb-4 text-center max-w-screen-lg mx-auto">
-                  <h1 className="text-3xl font-bold mb-4 flex justify-center items-center text-orange-500 ml-2">
-      REPORTES
-                    <FiPaperclip className="text-orange-500 ml-2" />
-                </h1>
-            
-      <p>En esta sección se muestran reportes generados a partir de la información obtenida de la app</p>
+      <h2 className="text-2xl font-bold mb-4">Generar Reportes</h2>
       <div className="mb-4">
         <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Reporte</label>
         <select
@@ -499,40 +435,6 @@ const Reportes: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Experiencia</label>
-              <input
-                type="text"
-                value={experiencia}
-                onChange={handleExperienciaChange}
-                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Carga Horaria</label>
-              <select
-                value={cargaHoraria}
-                onChange={handleCargaHorariaChange}
-                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-              >
-                <option value="">Seleccione</option>
-                <option value="Tiempo Completo">Tiempo Completo</option>
-                <option value="Tiempo Parcial">Tiempo Parcial</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Modalidad</label>
-              <select
-                value={modalidad}
-                onChange={handleModalidadChange}
-                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-              >
-                <option value="">Seleccione</option>
-                <option value="Presencial">Presencial</option>
-                <option value="Virtual">Virtual</option>
-                <option value="Hibrida">Hibrida</option>
-              </select>
-            </div>
-            <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
               <select
                 value={estado}
@@ -635,40 +537,28 @@ const Reportes: React.FC = () => {
                       <tr>
                         {reportType === 'ofertas' && (
                           <>
-                            <th className="w-2/12 px-4 py-2">Cargo</th>
-                            <th className="w-2/12 px-4 py-2">Sueldo</th>
-                            <th className="w-2/12 px-4 py-2">Objetivo del Cargo</th>
-                            <th className="w-2/12 px-4 py-2">Nombre de la Empresa</th>
-                            <th className="w-2/12 px-4 py-2">Experiencia</th>
-                            <th className="w-2/12 px-4 py-2">Funciones</th>
-                            <th className="w-2/12 px-4 py-2">Carga Horaria</th>
-                            <th className="w-2/12 px-4 py-2">Modalidad</th>
-                            <th className="w-2/12 px-4 py-2">Estado</th>
+                            <th className="w-3/12 px-4 py-2">Cargo</th>
+                            <th className="w-3/12 px-4 py-2">Nombre de la Empresa</th>
+                            <th className="w-3/12 px-4 py-2">Estado</th>
+                            <th className="w-3/12 px-4 py-2">Cantidad de Postulaciones</th>
                           </>
                         )}
                         {reportType === 'postulantes' && (
                           <>
-                            <th className="w-2/12 px-4 py-2">Nombre</th>
-                            <th className="w-2/12 px-4 py-2">Correo</th>
-                            <th className="w-2/12 px-4 py-2">Fecha de Creación</th>
-                            <th className="w-2/12 px-4 py-2">Número de Postulaciones</th>
-                            <th className="w-2/12 px-4 py-2">Postulaciones</th>
+                            <th className="w-3/12 px-4 py-2">Nombre</th>
                             <th className="w-2/12 px-4 py-2">Vigencia</th>
                             <th className="w-2/12 px-4 py-2">Género</th>
                             <th className="w-2/12 px-4 py-2">Estado Civil</th>
-                            <th className="w-2/12 px-4 py-2">Ubicación</th>
+                            <th className="w-3/12 px-4 py-2">Ubicación</th>
                           </>
                         )}
                         {reportType === 'empresas' && (
                           <>
-                            <th className="w-2/12 px-4 py-2">Nombre</th>
-                            <th className="w-2/12 px-4 py-2">Correo</th>
-                            <th className="w-2/12 px-4 py-2">Fecha de Creación</th>
-                            <th className="w-2/12 px-4 py-2">Nombre Comercial</th>
-                            <th className="w-2/12 px-4 py-2">Sector</th>
+                            <th className="w-3/12 px-4 py-2">Nombre Comercial</th>
                             <th className="w-2/12 px-4 py-2">Tamaño</th>
                             <th className="w-2/12 px-4 py-2">Ubicación</th>
-                            <th className="w-2/12 px-4 py-2">Ofertas</th>
+                            <th className="w-3/12 px-4 py-2">Sector</th>
+                            <th className="w-2/12 px-4 py-2">Cantidad de Ofertas</th> {/* Cambiado a "Cantidad de Ofertas" */}
                           </>
                         )}
                       </tr>
@@ -679,41 +569,27 @@ const Reportes: React.FC = () => {
                           {reportType === 'ofertas' && (
                             <>
                               <td className="border px-4 py-2">{item.cargo}</td>
-                              <td className="border px-4 py-2">{item.sueldo}</td>
-                              <td className="border px-4 py-2">{item.objetivo_cargo}</td>
                               <td className="border px-4 py-2">{item.nombre_comercial}</td>
-                              <td className="border px-4 py-2">{item.experiencia}</td>
-                              <td className="border px-4 py-2">{item.funciones}</td>
-                              <td className="border px-4 py-2">{item.carga_horaria}</td>
-                              <td className="border px-4 py-2">{item.modalidad}</td>
                               <td className="border px-4 py-2">{item.estado}</td>
+                              <td className="border px-4 py-2">{item.num_postulaciones}</td>
                             </>
                           )}
                           {reportType === 'postulantes' && (
                             <>
                               <td className="border px-4 py-2">{item.name}</td>
-                              <td className="border px-4 py-2">{item.email}</td>
-                              <td className="border px-4 py-2">{item.created_at}</td>
-                              <td className="border px-4 py-2">{item.num_postulaciones}</td>
-                              <td className="border px-4 py-2">{item.detalles_postulaciones?.map((detalle: { cargo: string }) => detalle.cargo).join(', ')}</td>
                               <td className="border px-4 py-2">{item.vigencia}</td>
                               <td className="border px-4 py-2">{item.genero}</td>
                               <td className="border px-4 py-2">{item.estado_civil}</td>
                               <td className="border px-4 py-2">{item.ubicacion}</td>
                             </>
                           )}
-                          {reportType === 'empresas' && item.empresa && (
+                          {reportType === 'empresas' && (
                             <>
-                              <td className="border px-4 py-2">{item.name}</td>
-                              <td className="border px-4 py-2">{item.email}</td>
-                              <td className="border px-4 py-2">{item.created_at}</td>
-                              <td className="border px-4 py-2">{item.empresa.nombre_comercial}</td>
-                              <td className="border px-4 py-2">{item.empresa.sector}</td>
-                              <td className="border px-4 py-2">{item.empresa.tamanio}</td>
-                              <td className="border px-4 py-2">{item.empresa.ubicacion}</td>
-                              <td className="border px-4 py-2">
-                                {item.empresa.ofertas.map(oferta => `${oferta.cargo} (Postulantes: ${oferta.num_postulantes})`).join(', ')}
-                              </td>
+                              <td className="border px-4 py-2">{item.nombre_comercial}</td>
+                              <td className="border px-4 py-2">{item.tamanio}</td>
+                              <td className="border px-4 py-2">{item.ubicacion}</td>
+                              <td className="border px-4 py-2">{item.sector}</td>
+                              <td className="border px-4 py-2">{item.total_ofertas}</td> {/* Cambiado de total_postulaciones a total_ofertas */}
                             </>
                           )}
                         </tr>
