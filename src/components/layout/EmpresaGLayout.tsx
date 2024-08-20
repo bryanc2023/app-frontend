@@ -426,7 +426,7 @@ function EmpresaLayout() {
                             <input
                                 type="text"
                                 className="w-full focus:outline-none"
-                                placeholder="Buscar postulante por el nombre, apellido"
+                                placeholder="Buscar "
                                 onChange={(e) => setQuery(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 value={query}
@@ -435,7 +435,7 @@ function EmpresaLayout() {
                             <input
                                 type="text"
                                 className="w-full focus:outline-none"
-                                placeholder="Buscar empresa por el nombre de la empresa"
+                                placeholder="Buscar "
                                 onChange={(e) => setQueryEmpresa(e.target.value)}
                                 onKeyDown={handleKeyDownEmpresa}
                                 value={queryEmpresa}
