@@ -652,7 +652,7 @@ const CurriTab: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow-lg text-black max-w-md mx-auto">
           <h2 className="text-xl font-semibold mb-4">Acuerdo de Compromiso</h2>
           <p className="mb-4">
-            Al generar su CV, usted acepta que la página Postúlate puede usar sus datos personales para los fines descritos en los
+            Al generar su CV, usted acepta que la página Postula pueda usar sus datos personales para los fines descritos en los
             <span
               onClick={handleShowTerms}
               className="text-blue-500 cursor-pointer"

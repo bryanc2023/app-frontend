@@ -153,14 +153,22 @@ const CompletarP: React.FC = () => {
       try {
         const response = await axios.get(`ubicaciones/${selectedProvince}/${selectedCanton}`);
         const ubicacionId = response.data.ubicacion_id;
-
-        const imageFile = data.image[0];
-        const storageRef = ref(storage, `images/${imageFile.name}`);
-        await uploadBytes(storageRef, imageFile);
-        const imageUrl = await getDownloadURL(storageRef);
-
+  
+        let imageUrl = null;
+      
+        // Verifica si el usuario subió una imagen
+        if (data.image && data.image.length > 0) {
+          const imageFile = data.image[0];
+          const storageRef = ref(storage, `images/${imageFile.name}`);
+          await uploadBytes(storageRef, imageFile);
+          imageUrl = await getDownloadURL(storageRef);
+        } else {
+          // Asigna la URL de imagen por defecto si no se sube una
+          imageUrl = 'https://firebasestorage.googleapis.com/v0/b/proajob-486e1.appspot.com/o/images%2Fdefault.jpg?alt=media&token=fe311f4a-c6fc-44e6-a6e2-8e5dea528bb0'; // Reemplaza esto con tu URL de imagen por defecto
+        }
+  
         const formData = {
-          foto: imageUrl, // Aquí cambiamos imageUrl a foto
+          foto: imageUrl,
           firstName: data.firstName,
           lastName: data.lastName,
           ubicacion_id: ubicacionId,
@@ -170,16 +178,25 @@ const CompletarP: React.FC = () => {
           maritalStatus: data.maritalStatus,
           description: data.description,
           usuario_id: user.id,
-          telefono:data.telefono
+          telefono: data.telefono
         };
-
+  
         await axios.post('postulanteC', formData);
         navigate("/completar-2");
       } catch (error) {
-        console.error('Error uploading image or submitting form:', error);
+        if (error.isAxiosError) {
+          console.error('Error uploading image or submitting form:', error.response?.data);
+        } else {
+          console.error('Unknown error:', error);
+        }
       }
     }
   };
+
+
+  
+  
+  
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -221,7 +238,15 @@ const CompletarP: React.FC = () => {
                 Seleccionar imagen
               </div>
             )}
-            <input type="file" id="image" {...register('image', { required: 'La imagen es requerida' })} onChange={handleImageChange}  accept=".png, .jpg, .jpeg"  className={`block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 ${errors.image ? 'border-red-500' : ''}`} />
+          <input 
+            type="file" 
+            id="image" 
+            {...register('image')} // Sin la validación de requerido
+            onChange={handleImageChange} 
+            accept=".png, .jpg, .jpeg" 
+            className={`block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 ${errors.image ? 'border-red-500' : ''}`} 
+          />
+
             {errors.image && <p className="text-red-500 text-xs mt-1">{errors.image.message}</p>}
           </div>
         </div>

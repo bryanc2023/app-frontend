@@ -65,7 +65,7 @@ function AdminLayout() {
                 {/* Top Nav */}
                 <nav className="bg-[#0071bc] text-white p-4 flex justify-between items-center w-full fixed top-0 left-0 right-0 z-30">
                     <div>
-                        <span>Postúlate Admin</span>
+                        <span>Postula Admin</span>
                     </div>
                     <div className="relative" ref={dropdownRef}>
                         <button onClick={toggleDropdown} className="flex items-center focus:outline-none">

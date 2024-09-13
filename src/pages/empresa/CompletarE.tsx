@@ -189,6 +189,7 @@ const CompletarE: React.FC = () => {
     setShowTerms(false);
   };
 
+
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
     if (user && selectedDivision && selectedProvince && selectedCanton) {
       Swal.fire({
@@ -197,38 +198,42 @@ const CompletarE: React.FC = () => {
         allowOutsideClick: false,
         allowEscapeKey: false,
         didOpen: () => {
-            Swal.showLoading();
+          Swal.showLoading();
         }
       });
-      
+  
       try {
         const response = await axios.get(`ubicaciones/${selectedProvince}/${selectedCanton}`);
         const ubicacionId = response.data.ubicacion_id;
-
-        const logoFile = data.logo[0];
-        const storageRef = ref(storage, `logos/${logoFile.name}`);
-        await uploadBytes(storageRef, logoFile);
-        const logoUrl = await getDownloadURL(storageRef);
-
+  
+        let logoUrl = 'https://firebasestorage.googleapis.com/v0/b/proajob-486e1.appspot.com/o/images%2Fdefault.jpg?alt=media&token=fe311f4a-c6fc-44e6-a6e2-8e5dea528bb0'; 
+  
+        if (data.logo && data.logo.length > 0) {
+          const logoFile = data.logo[0];
+          const storageRef = ref(storage, `logos/${logoFile.name}`);
+          await uploadBytes(storageRef, logoFile);
+          logoUrl = await getDownloadURL(storageRef);
+        }
+  
         const formData = {
-          logo: logoUrl, // URL del logo subido a Firebase
+          logo: logoUrl, // URL del logo subido a Firebase o URL por defecto
           companyName: data.companyName,
           numberOfEmployees: data.numberOfEmployees,
           sector: selectedDivision.id.toString(),
           ubicacion: ubicacionId,
           division: data.division,
           email: data.email,
-          description: data.description,
+          description: data.description || 'No hay descripción', // Valor predeterminado si no hay descripción
           usuario_id: user.id,
           socialLinks: data.socialLinks
         };
-
+  
         await axios.post('empresaC', formData, {
           headers: {
             'Content-Type': 'application/json',
           },
         });
-
+  
         Swal.fire({
           icon: 'success',
           title: '¡Registro completo!',
@@ -236,7 +241,7 @@ const CompletarE: React.FC = () => {
         }).then(() => {
           navigate("/inicio-e");
         });
-
+  
       } catch (error) {
         console.error('Error al enviar el formulario:', error);
         Swal.fire({
@@ -247,6 +252,7 @@ const CompletarE: React.FC = () => {
       }
     }
   };
+
 
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -276,7 +282,7 @@ const CompletarE: React.FC = () => {
             <input
               type="file"
               id="logo"
-              {...register('logo', { required: 'El logo es requerido.' })}
+              {...register('logo')}
               onChange={handleLogoChange}
               accept=".png, .jpg, .jpeg" 
               className={`block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 ${errors.logo ? 'border-red-500' : ''}`}
@@ -458,7 +464,7 @@ const CompletarE: React.FC = () => {
           <label htmlFor="description" className="block text-gray-700 font-semibold mb-2">Descripción:</label>
           <textarea
             id="description"
-            {...register('description', { required: 'La descripción es requerida.' })}
+            {...register('description')}
             placeholder="Descripción de la empresa..."
             className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600 ${errors.description ? 'border-red-500' : ''}`}
           ></textarea>
@@ -482,7 +488,7 @@ const CompletarE: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow-lg text-black max-w-md mx-auto">
           <h2 className="text-xl font-semibold mb-4">Acuerdo de Compromiso</h2>
           <p className="mb-4">
-            Al registrar su empresa, usted acepta que la página Postúlate puede usar sus datos personales para los fines descritos en los
+            Al registrar su empresa, usted acepta que la página Postula puede usar sus datos personales para los fines descritos en los
             <span
               onClick={handleShowTerms}
               className="text-blue-500 cursor-pointer"
