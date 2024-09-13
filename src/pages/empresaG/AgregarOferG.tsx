@@ -323,11 +323,7 @@ function AgregarO() {
           preguntas: preguntas,
         };
 
-        console.log('Usuario:', usuario);
-        console.log('Datos del formulario:', dataToSend);
-        console.log('Títulos seleccionados:', selectedTitles);
-        console.log('Criterios seleccionados:', selectedCriterios);
-        console.log('Preguntas:', preguntas);
+    
 
         await axios.post('add-oferta', dataToSend, {
           headers: {
@@ -389,7 +385,7 @@ function AgregarO() {
                 onChange={() => setRequireEducation(!requireEducation)}
               />
               <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="requireEducation">
-                ¿Requiere titulo específico?
+                ¿Requiere titulo o educación específico?
               </label>
             </div>
           </div>
@@ -399,6 +395,7 @@ function AgregarO() {
             <>
               <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
                 <div className="form-group mb-8">
+                  <center className="block text-orange-700 font-semibold mb-2">TITULOS ESPECIFICOS PARA LA OFERTA:</center>
                   <label htmlFor="nivelEducacion" className="block text-gray-700 font-semibold mb-2">Nivel de Educación:</label>
                   <select
                     id="nivelEducacion"
@@ -470,6 +467,8 @@ function AgregarO() {
                     </ul>
                   </div>
                 )}
+                
+         
               </div>
               <hr className="my-4" />
             </>
@@ -499,7 +498,7 @@ function AgregarO() {
                 id="experienciaCheckbox"
                 onChange={handleCheckboxChange}
               />{' '}
-              ¿Requiere experiencia?
+              ¿Requiere años de experiencia en cargos similares?
             </label>
             <hr className="my-4" />
             {showExperiencia && (
@@ -532,7 +531,7 @@ function AgregarO() {
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="objetivo_cargo">• Objetivo del puesto de trabajo
               <span className="text-red-500 ml-1">*</span>
-              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio)</span>
+              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Máximo 500 palabras)</span>
             </label>
             <textarea
               className="w-full p-2 border rounded"
@@ -558,7 +557,7 @@ function AgregarO() {
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="funciones">• Funciones del puesto:
               <span className="text-red-500 ml-1">*</span>
-              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio)</span>
+              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Máximo 800 palabras)</span>
             </label>
             <textarea
               className="w-full p-2 border rounded"

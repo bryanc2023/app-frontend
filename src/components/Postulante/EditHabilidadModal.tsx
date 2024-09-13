@@ -51,11 +51,7 @@ const EditHabilidadModal: React.FC< EditHabilidadModalProps> = ({ isOpen, onRequ
   }, [habilidad, reset]);
 
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
-    console.log('Datos enviados:', {
-      id_postulante: profileData?.postulante?.id_postulante,
-      id_habilidad: habilidad.id,
-      nivel: data.nivel
-    });
+  
     
     try {
       const response = await axios.put('/postulante_habilidad/update', {

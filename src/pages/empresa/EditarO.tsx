@@ -427,7 +427,7 @@ function EditarO() {
         preguntas: preguntasSoloTexto, 
       };
   
-      console.log('Datos del formulario:', dataToSend);
+     
   
       await axios.put(`update-oferta/${id}`, dataToSend, {
         headers: {

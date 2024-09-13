@@ -503,7 +503,7 @@ const CurriTab: React.FC = () => {
           const apiUrl = `/postulantes/${profileData.postulante.id_usuario}/cv`;
           await axios.put(apiUrl, { cv: downloadURL });
 
-          console.log('URL del CV generado:', downloadURL);
+         
 
           Swal.fire({
             icon: 'success',

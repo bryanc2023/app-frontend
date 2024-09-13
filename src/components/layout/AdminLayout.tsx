@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faBars, faTimes, faCogs, faTable, faUsers } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch } from 'react-redux';
@@ -10,6 +10,7 @@ function AdminLayout() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const dispatch = useDispatch();
+    const location = useLocation(); // Obtener la ubicación actual
 
     const toggleDropdown = () => {
         setDropdownOpen(!dropdownOpen);
@@ -38,21 +39,21 @@ function AdminLayout() {
                     <span className="mt-2">Administrador</span>
                 </div>
                 <ul>
-                    <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
+                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/configuracion' ? 'bg-gray-700' : ''}`}>
                         <Link to="/configuracion" className="flex items-center w-full">
                             <FontAwesomeIcon icon={faCogs} className="mr-2" />
                             <span>Gestión configuración</span>
                         </Link>
                     </li>
-                    <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
+                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/InicioAdmin' ? 'bg-gray-700' : ''}`}>
                         <Link to="/InicioAdmin" className="flex items-center w-full">
                             <FontAwesomeIcon icon={faTable} className="mr-2" />
                             <span>Gestión tablas satélites</span>
                         </Link>
                     </li>
-                    <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
+                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/gestion-u' ? 'bg-gray-700' : ''}`}>
                         <Link to="/gestion-u" className="flex items-center w-full">
-                        <FontAwesomeIcon icon={faUsers} className="mr-2" />
+                            <FontAwesomeIcon icon={faUsers} className="mr-2" />
                             <span>Gestión de usuarios</span>
                         </Link>
                     </li>

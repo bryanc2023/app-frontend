@@ -44,7 +44,7 @@ const GestionUsuarios = () => {
         try {
             const response = await axios.get('/roles');
             setRoles(response.data);
-            console.log(roles);
+            
         } catch (error) {
             console.error('Error fetching roles:', error);
         }

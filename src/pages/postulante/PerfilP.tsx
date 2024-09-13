@@ -267,8 +267,8 @@ const Profile: React.FC = () => {
         openEditCompetenciaModal={openEditCompetenciaModal}
         openEditCursoModal={openEditCursoModal}
         handleDeleteCurso={reloadProfile}
-        handleViewCV={(id: number) => { console.log(id) }} // Implementa según tu lógica
-        handleDownloadCV={(url: string) => { console.log(url) }} // Implementa según tu lógica
+        handleViewCV={(id: number) => { console.log(id) }} 
+        handleDownloadCV={(url: string) => { console.log(url) }} 
       />
 
       <Modal

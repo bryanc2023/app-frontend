@@ -62,7 +62,7 @@ const ConfiguracionComponent = () => {
             const response = await axios.post('/configuraciones', form);
             setModalContent({ title: 'Éxito', message: `Configuración guardada correctamente`, success: true });
             fetchConfiguraciones(); // Refresh the list of configuraciones
-            console.log(response, form);
+            console.log(response);
         } catch (error) {
             console.error('Error guardando configuración:', error);
             setModalContent({ title: 'Error', message: `Error guardando configuración`, success: false });
@@ -174,7 +174,7 @@ const ConfiguracionComponent = () => {
                                         onClick={() => handleShowTerms(config.terminos_condiciones || 'No terms available')}
                                         className="ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                                     >
-                                        Mostrar
+                                        Mostrar Términos 
                                     </button>
                                 </td>
                             </tr>

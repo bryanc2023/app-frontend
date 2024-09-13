@@ -87,7 +87,7 @@ function InicioAdmin() {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
-                console.log(response.data);
+                
                 setModalContent({ title: 'Éxito', message: `${field} subido correctamente`, success: true });
             } catch (error) {
                 console.error(`Error uploading ${field}:`, error);

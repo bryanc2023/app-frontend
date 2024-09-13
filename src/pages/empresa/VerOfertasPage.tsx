@@ -89,7 +89,7 @@ function VerOfertasPPage() {
         const response = await axios.get('user/registration-status');
 
         const { profileCompleted } = response.data;
-        console.log(profileCompleted);
+    
         if (!profileCompleted) {
             navigate('/completarE');
             return;
@@ -167,7 +167,7 @@ checkRegistrationStatus();
                     ...(selectedCargaHoraria && { carga_horaria: selectedCargaHoraria }),
                 },
             });
-            console.log('Filters:', selectedFechaInicio, selectedFechaFin, selectedEstado, selectedArea, selectedCargaHoraria); // Para depuración
+           
             setOfertas(response.data.ofertas);
         } catch (error) {
             console.error('Error filtering ofertas:', error);
@@ -280,12 +280,12 @@ checkRegistrationStatus();
         const fechaActual = new Date();
         const diffInDays = Math.floor((fechaActual.getTime() - fechaPublicacion.getTime()) / (1000 * 3600 * 24));
 
-        console.log(fechaPublicacion,fechaActual,diffInDays);
+      
         return {
             editable: diffInDays <= configuracion.dias_max_edicion,
             eliminable: diffInDays <= configuracion.dias_max_eliminacion
         };
-    };
+    }
     };
 
 
@@ -573,7 +573,7 @@ checkRegistrationStatus();
                                 <tbody>
                                     {currentOfertas.map((oferta)=> {
                                         const { editable, eliminable } = isEditableOrDeletable(oferta.fecha_publi);
-                                        console.log(`Oferta ID: ${oferta.id_oferta} - Editable: ${editable}, Eliminable: ${eliminable}`);
+                                     
                                         return (
                                             <tr key={oferta.id_oferta} className={`py-4 px-6 ${oferta.estado === 'Culminada' ? 'bg-green-100' : (oferta.estado === 'En espera' ? 'bg-gray-100' : '')}`}>
                                                 <td className="py-4 px-6">{oferta.cargo}</td>

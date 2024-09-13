@@ -133,7 +133,7 @@ const PostulantesList: React.FC = () => {
                 const response = await axios.get(`postulacionesE/${user?.id}`);
                 const postulacionesData = transformarRespuesta(response.data.postulaciones);
                 setPostulaciones(postulacionesData);
-                console.log(postulacionesData);
+         
 
             } catch (error) {
                 console.error('Error fetching postulaciones:', error);
@@ -287,7 +287,7 @@ const PostulantesList: React.FC = () => {
                 const starsRef = ref(storage, postulante.cv);
                 promises.push(
                     getDownloadURL(starsRef).then(url => {
-                        console.log("URL de descarga:", url);
+                    
                         return fetch(url)
                             .then(response => response.blob())
                             .then(blob => {

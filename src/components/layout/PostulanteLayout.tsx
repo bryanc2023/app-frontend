@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faBars, faTimes, faEnvelope, faUser, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
@@ -162,6 +162,7 @@ function PostulanteLayout() {
     const dispatch = useDispatch();
     const { user } = useSelector((state: RootState) => state.auth);
     const [profileData, setProfileData] = useState<ProfileData | null>(null);
+    const location = useLocation();
 
     const [query, setQuery] = useState(''); // Guardará el nombre y apellido del postulante
     const [postulantes, setPostulantes] = useState<Postulante[]>([]);
@@ -439,7 +440,7 @@ function PostulanteLayout() {
                             <input
                                 type='text'
                                 className='w-full focus:outline-none'
-                                placeholder='Buscar postulante por el nombre, apellido'
+                                placeholder='Buscar'
                                 onChange={(e) => setQuery(e.target.value)}
                                 value={query}
                             />
@@ -447,7 +448,7 @@ function PostulanteLayout() {
                             <input
                                 type='text'
                                 className='w-full focus:outline-none'
-                                placeholder='Buscar postulante por el nombre de la empresa'
+                                placeholder='Buscar '
                                 onChange={(e) => setQueryEmpresa(e.target.value)}
                                 value={queryEmpresa}
                             />
@@ -513,25 +514,26 @@ function PostulanteLayout() {
                     )}
                 </div>
                 <ul>
-                    <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
+                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/verOfertasAll' ? 'bg-gray-700' : ''}`}>
                         <Link to="/verOfertasAll" className="flex items-center w-full" onClick={closeSidebar}>
                             <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
                             <span>Realizar Postulación</span>
                         </Link>
                     </li>
-                    <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
+                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/resultadosP' ? 'bg-gray-700' : ''}`}>
                         <Link to="/resultadosP" className="flex items-center w-full" onClick={closeSidebar}>
                             <FontAwesomeIcon icon={faSearch} className="mr-2" />
                             <span>Consulta de Resultados</span>
                         </Link>
                     </li>
-                    <li className="mb-4 flex items-center hover:bg-gray-700 rounded-md p-2">
+                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/perfilP' ? 'bg-gray-700' : ''}`}>
                         <Link to="/perfilP" className="flex items-center w-full" onClick={closeSidebar}>
                             <FontAwesomeIcon icon={faUser} className="mr-2" />
                             <span>Mi Perfil</span>
                         </Link>
                     </li>
                 </ul>
+
             </nav>
 
             {/* Main Content */}

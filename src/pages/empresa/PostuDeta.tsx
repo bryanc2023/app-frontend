@@ -76,7 +76,7 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
             const response = await axios.post(`actualizar-postulaciones`, comentarioData);
 
             if (response.status === 200) {
-                console.log('Comentario enviado:', comentario);
+              
                 // Mostrar SweetAlert
                 Swal.fire({
                     icon: 'success',

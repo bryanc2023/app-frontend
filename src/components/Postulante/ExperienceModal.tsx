@@ -81,7 +81,6 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
       id_postulante: profileData.postulante.id_postulante,
     };
 
-    console.log('Data to send:', dataToSend); 
 
     if (experiencia && experiencia.id_formacion_pro) {
       // Editar experiencia
@@ -90,7 +89,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
           ...dataToSend,
           id_experiencia: experiencia.id_formacion_pro,
         });
-        console.log(response);
+ 
         Swal.fire({
           toast: true,
           position: 'top-end',

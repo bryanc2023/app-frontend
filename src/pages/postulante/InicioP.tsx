@@ -73,7 +73,7 @@ function Modal({ oferta, onClose, userId }: ModalProps) {
     const navigate = useNavigate();
     if (!oferta) return null;
     const handlePostular = async () => {
-        console.log(`id_usuario: ${userId}, id_oferta: ${oferta.id_oferta}`);
+   
         try {
             await axios.post('postular', {
                 id_postulante: userId,
@@ -140,7 +140,7 @@ function Modal({ oferta, onClose, userId }: ModalProps) {
     const renderCriterioValor = (criterio: Criterio) => {
         if (criterio.criterio === 'Idioma') {
             const idiomaId = Number(criterio.pivot.valor);
-            console.log(idiomaId);
+
             return idiomas[idiomaId]  || criterio.pivot.valor;
         }
         if (criterio.criterio === 'Edad') {

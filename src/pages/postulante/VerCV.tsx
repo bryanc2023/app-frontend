@@ -270,7 +270,7 @@ const VerCV: React.FC = () => {
             // Enviar el URL del CV generado a tu API Laravel
             const apiUrl = `postulantes/${profileData.postulante.id_usuario}/cv`;
             await axios.put(apiUrl, { cv: downloadURL });
-           console.log('URL del CV generado:', downloadURL);
+       
        } catch (error) {
            console.error('Error al subir el PDF a Firebase Storage:', error);
        }

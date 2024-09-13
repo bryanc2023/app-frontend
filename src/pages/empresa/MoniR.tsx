@@ -43,7 +43,8 @@ const RecruitmentDashboard = () => {
     const [selectedArea, setSelectedArea] = useState('');
     const [areas, setAreas] = useState<Area[]>([]);
     const [selectedEstado, setSelectedEstado] = useState('');
-
+    const [loading, setLoading] = useState<boolean>(true);
+    
     useEffect(() => {
         const fetchPostulaciones = async () => {
             try {
@@ -54,6 +55,8 @@ const RecruitmentDashboard = () => {
                 setFilteredPostulaciones(response.data.postulaciones); // Inicialmente, no hay filtros aplicados
             } catch (error) {
                 console.error('Error fetching postulaciones:', error);
+            } finally {
+                setLoading(false);  // Desactivar el estado de carga después de que se complete la solicitud
             }
         };
 
@@ -61,15 +64,8 @@ const RecruitmentDashboard = () => {
     }, [user]);
 
     useEffect(() => {
-        // Filtrar y agrupar datos por mes
-        const filtered = postulaciones.filter(postulacion => 
-            (!fechaInicio || new Date(postulacion.fecha) >= new Date(fechaInicio)) &&
-            (!fechaFin || new Date(postulacion.fecha) <= new Date(fechaFin)) &&
-            (!selectedArea || postulacion.area_id === parseInt(selectedArea, 10)) &&
-            (!selectedEstado || postulacion.estado === selectedEstado)
-        );
-
-        const groupedData = filtered.reduce((acc, curr) => {
+        // Agrupar datos globales por mes
+        const groupedDataByMonth = postulaciones.reduce((acc, curr) => {
             const month = format(parseISO(curr.fecha), 'MMM yyyy');
             if (!acc[month]) {
                 acc[month] = { month, postulantes: 0, applications: 0 };
@@ -79,8 +75,20 @@ const RecruitmentDashboard = () => {
             return acc;
         }, {} as { [key: string]: GroupedData });
 
-        setFilteredData(Object.values(groupedData));
-    }, [postulaciones, fechaInicio, fechaFin, selectedArea, selectedEstado]);
+        setFilteredData(Object.values(groupedDataByMonth));
+    }, [postulaciones]);
+
+    const groupedDataByYear = postulaciones.reduce((acc, curr) => {
+        const year = format(parseISO(curr.fecha), 'yyyy');
+        if (!acc[year]) {
+            acc[year] = { year, postulantes: 0, applications: 0 };
+        }
+        acc[year].postulantes += curr.num_postulantes;
+        acc[year].applications += 1;
+        return acc;
+    }, {} as { [key: string]: { year: string; postulantes: number; applications: number } });
+
+    const yearlyData = Object.values(groupedDataByYear);
 
     const handleFilterByDate = async () => {
         try {
@@ -99,17 +107,7 @@ const RecruitmentDashboard = () => {
         }
     };
 
-    if (!Array.isArray(postulaciones) || postulaciones.length === 0) {
-        return (
-            <div className="w-full p-4">
-                <h1 className="text-3xl font-bold mb-4 flex justify-center items-center text-orange-500 ml-2">
-                    Monitoreo del proceso de reclutamiento
-                    <FiMonitor className="text-orange-500 ml-2" />
-                </h1>
-                <p>No hay datos de postulaciones disponibles.</p>
-            </div>
-        );
-    }
+
 
     const data = filteredPostulaciones.map((postulacion, index) => ({
         name: `Oferta ${index + 1}`,
@@ -142,10 +140,29 @@ const RecruitmentDashboard = () => {
     return (
         <div className="mb-4 text-center max-w-screen-lg mx-auto">
             <h1 className="text-3xl font-bold mb-4 flex justify-center items-center text-orange-500 ml-2">
-                Monitoreo del proceso de reclutamiento
+               CONTROL Y MONITERO DEL RECLUTAMIENTO
                 <FiMonitor className="text-orange-500 ml-2" />
             </h1>
             <p>En esta sección te mostramos a manera estadística el proceso de tus ofertas publicadas</p>
+            <hr className="my-4" />
+             {/* Indicador de carga */}
+             {loading ? (
+                <div className="flex flex-col items-center space-y-2">
+                    <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                    <span className="font-bold">Cargando estadísticas...</span>
+                </div>
+         ) : !Array.isArray(postulaciones) || postulaciones.length === 0 ? (
+            <div className="mb-4 text-center max-w-screen-lg mx-auto">
+            <h1 className="text-3xl font-bold mb-4 flex justify-center items-center text-orange-500 ml-2">
+                MONITOREO Y CONTROL
+                <FiMonitor className="text-orange-500 ml-2" />
+            </h1>
+            <p>En esta sección te mostramos a manera estadística el proceso de tus ofertas publicadas</p>
+            <hr className="my-4" />
+                <p>No hay datos de postulaciones disponibles.</p>
+            </div>
+        ) : (
+            <>
 
             {/* Tarjeta para el filtro por fecha */}
             <hr className="my-4" />
@@ -224,6 +241,8 @@ const RecruitmentDashboard = () => {
                 </div>
             </div>
 
+
+          
             {/* Mostrar gráficos solo si showCharts es true */}
             {showCharts && (
                 <>
@@ -241,7 +260,6 @@ const RecruitmentDashboard = () => {
                                             <Bar dataKey="postulantes" fill="#8884d8">
                                                 {data.map((_, index) => (
                                                     <Cell key={`cell-${index}`} fill={COLORS2[index % COLORS2.length]} />
-                                                   
                                                 ))}
                                             </Bar>
                                         </BarChart>
@@ -296,13 +314,13 @@ const RecruitmentDashboard = () => {
                                 <div className="bg-white p-4 rounded shadow">
                                     <h2 className="text-xl font-semibold mb-4">Ofertas por Año</h2>
                                     <ResponsiveContainer width="100%" height={300}>
-                                        <BarChart data={filteredData}>
-                                            <XAxis dataKey="month" />
+                                        <BarChart data={yearlyData}>
+                                            <XAxis dataKey="year" />
                                             <YAxis />
                                             <Tooltip />
                                             <Legend />
                                             <Bar dataKey="postulantes" fill="#8884d8">
-                                                {filteredData.map((_, index) => (
+                                                {yearlyData.map((_, index) => (
                                                     <Cell key={`cell-${index}`} fill={COLORS2[index % COLORS2.length]} />
                                                 ))}
                                             </Bar>
@@ -344,6 +362,8 @@ const RecruitmentDashboard = () => {
                             <p>No hay datos de postulaciones disponibles con los filtros indicados.</p>
                         </div>
                     )}
+                </>
+            )}
                 </>
             )}
         </div>
