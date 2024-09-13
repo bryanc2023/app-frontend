@@ -539,7 +539,7 @@ function PostulanteLayout() {
                 {/* Top Nav */}
                 <nav className="bg-gray-900 text-white p-4 flex justify-between items-center w-full fixed top-0 left-0 right-0 z-30">
                     <div>
-                        <span>Postúlate</span>
+                        <span>Postula</span>
                     </div>
                     <div className="relative flex gap-2 items-center">
                         <div className="relative" ref={notifyRef}>

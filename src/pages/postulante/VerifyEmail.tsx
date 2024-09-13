@@ -51,7 +51,7 @@ const VerifyEmail = () => {
         <>
             <header className="bg-gray-800 p-4 flex justify-between items-center fixed w-full z-10">
                 <h1 className="text-white text-2xl font-bold">
-                    ProaJob
+                    Postula
                 </h1>
             </header>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', position: 'relative', overflow: 'hidden' }}>

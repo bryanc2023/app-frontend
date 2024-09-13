@@ -1,47 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import { FaEye, FaDownload } from 'react-icons/fa';
 import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import "react-datepicker/dist/react-datepicker.css";
 import axios from '../../services/axios';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import Modal from 'react-modal';
+import { FiList } from 'react-icons/fi';
 
 interface ReportData {
   id: number;
-  name: string;
-  email: string;
-  created_at: string;
-  ubicacion: string;
-  empresa?: {
-    nombre_comercial: string;
-    sector: string;
-    tamanio: string;
-    ubicacion: string;
-    ofertas: {
-      cargo: string;
-      num_postulantes: number;
-    }[];
-  };
-  cargo?: string;
-  sueldo?: number;
-  objetivo_cargo?: string;
+  name?: string;
+  email?: string;
+  created_at?: string;
+  ubicacion?: string;
   nombre_comercial?: string;
-  experiencia?: number;
-  funciones?: string;
-  carga_horaria?: string;
-  modalidad?: string;
+  sector?: string;
+  tamanio?: string;
+  total_ofertas?: number;
+  cargo?: string;
   estado?: string;
+  num_postulaciones?: number;
+  vigencia?: string;
   genero?: string;
   estado_civil?: string;
-  provincia?: string;
-  canton?: string;
-  num_postulaciones?: number;
-  detalles_postulaciones?: { cargo: string }[];
-  vigencia?: string;
 }
 
 const Reportes: React.FC = () => {
+
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
   const [reportType, setReportType] = useState('empresas');
@@ -63,9 +49,6 @@ const Reportes: React.FC = () => {
 
   // Filtros adicionales para ofertas
   const [cargo, setCargo] = useState<string>('');
-  const [experiencia, setExperiencia] = useState<string>('');
-  const [cargaHoraria, setCargaHoraria] = useState<string>('');
-  const [modalidad, setModalidad] = useState<string>('');
   const [estado, setEstado] = useState<string>('');
 
   // Filtros adicionales para postulantes
@@ -135,18 +118,6 @@ const Reportes: React.FC = () => {
     setCargo(event.target.value);
   };
 
-  const handleExperienciaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setExperiencia(event.target.value);
-  };
-
-  const handleCargaHorariaChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setCargaHoraria(event.target.value);
-  };
-
-  const handleModalidadChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setModalidad(event.target.value);
-  };
-
   const handleEstadoChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setEstado(event.target.value);
   };
@@ -159,6 +130,20 @@ const Reportes: React.FC = () => {
     setSelectedEstadoCivil(event.target.value);
   };
 
+  const clearFilters = () => {
+    setUseFilters(false);
+    setStartDate(null);
+    setEndDate(null);
+    setSelectedProvince('');
+    setSelectedCanton('');
+    setSelectedSector('');
+    setSelectedTamanio('');
+    setCargo('');
+    setEstado('');
+    setSelectedGenero('');
+    setSelectedEstadoCivil('');
+    setError(null); // Limpiar cualquier error
+};
   const fetchData = async () => {
     if (useFilters && (!startDate || !endDate || startDate > endDate)) {
       setError('Por favor, selecciona fechas válidas.');
@@ -185,9 +170,6 @@ const Reportes: React.FC = () => {
         params = {
           ...params,
           cargo: cargo || undefined,
-          experiencia: experiencia || undefined,
-          carga_horaria: cargaHoraria || undefined,
-          modalidad: modalidad || undefined,
           estado: estado || undefined,
         };
       } else if (reportType === 'postulantes') {
@@ -215,124 +197,262 @@ const Reportes: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, [startDate, endDate, reportType, selectedProvince, selectedCanton, selectedSector, selectedTamanio, cargo, experiencia, cargaHoraria, modalidad, estado, selectedGenero, selectedEstadoCivil]);
+  }, [startDate, endDate, reportType, selectedProvince, selectedCanton, selectedSector, selectedTamanio, cargo, estado, selectedGenero, selectedEstadoCivil]);
 
   const generatePDF = () => {
     const doc = new jsPDF();
-    doc.text('Proajob', 14, 16);
+    const date = new Date();
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    doc.setFontSize(18);
+    doc.setTextColor(255, 87, 34); // Color naranja
+    doc.setFont('helvetica', 'bold');
+    doc.text('POSTÚLATE', doc.internal.pageSize.getWidth() / 2, 16, { align: 'center' });
+
+    // Subtítulo con el tipo de reporte y la fecha
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0); // Color negro para el subtítulo y la fecha
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Reporte de ${reportType}`, doc.internal.pageSize.getWidth() / 2, 24, { align: 'center' });
+    doc.text(`Fecha: ${formattedDate}`, doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
+
+    // Mostrar los filtros seleccionados
     doc.setFontSize(10);
-    doc.text(`Reporte de ${reportType}`, 14, 22);
+    let yPos = 35;
+
+    if (useFilters) {
+        doc.text(`Datos basados en:`, 14, yPos);
+        yPos += 5;
+        if (startDate && endDate) {
+            doc.text(`- Fechas: ${startDate.toLocaleDateString()} a ${endDate.toLocaleDateString()}`, 14, yPos);
+            yPos += 5;
+        }
+        if (reportType === 'empresas') {
+            if (selectedProvince) {
+                doc.text(`- Provincia: ${selectedProvince}`, 14, yPos);
+                yPos += 5;
+            }
+            if (selectedCanton) {
+                doc.text(`- Cantón: ${selectedCanton}`, 14, yPos);
+                yPos += 5;
+            }
+            if (selectedSector) {
+                doc.text(`- Sector: ${selectedSector}`, 14, yPos);
+                yPos += 5;
+            }
+            if (selectedTamanio) {
+                doc.text(`- Tamaño: ${selectedTamanio}`, 14, yPos);
+                yPos += 5;
+            }
+        } else if (reportType === 'ofertas') {
+            if (cargo) {
+                doc.text(`- Cargo: ${cargo}`, 14, yPos);
+                yPos += 5;
+            }
+            if (estado) {
+                doc.text(`- Estado: ${estado}`, 14, yPos);
+                yPos += 5;
+            }
+        } else if (reportType === 'postulantes') {
+            if (selectedGenero) {
+                doc.text(`- Género: ${selectedGenero}`, 14, yPos);
+                yPos += 5;
+            }
+            if (selectedEstadoCivil) {
+                doc.text(`- Estado Civil: ${selectedEstadoCivil}`, 14, yPos);
+                yPos += 5;
+            }
+            if (selectedProvince) {
+                doc.text(`- Provincia: ${selectedProvince}`, 14, yPos);
+                yPos += 5;
+            }
+            if (selectedCanton) {
+                doc.text(`- Cantón: ${selectedCanton}`, 14, yPos);
+                yPos += 5;
+            }
+        }
+    }
+
+    // Agregar un espacio adicional entre los filtros y la tabla
+    yPos += 10;
 
     let tableColumn: string[] = [];
     let tableRows: any[] = [];
 
     if (reportType === 'empresas') {
-      tableColumn = ["Nombre", "Correo", "Fecha de Creación", "Nombre Comercial", "Sector", "Tamaño", "Ubicación", "Ofertas"];
-      tableRows = data.map(item => [
-        item.name,
-        item.email,
-        item.created_at,
-        item.empresa?.nombre_comercial,
-        item.empresa?.sector,
-        item.empresa?.tamanio,
-        item.empresa?.ubicacion,
-        item.empresa?.ofertas.map(oferta => `${oferta.cargo} (Postulantes: ${oferta.num_postulantes})`).join(', ')
-      ]);
+        tableColumn = ["#", "Nombre Comercial", "Tamaño", "Ubicación", "Sector", "Cantidad de Ofertas"];
+        tableRows = data.map((item, index) => [
+            index + 1,  // Número de fila
+            item.nombre_comercial,
+            item.tamanio,
+            item.ubicacion,
+            item.sector,
+            item.total_ofertas || 0,
+        ]);
     } else if (reportType === 'ofertas') {
-      tableColumn = ["Cargo", "Sueldo", "Objetivo del Cargo", "Nombre de la Empresa", "Experiencia", "Funciones", "Carga Horaria", "Modalidad", "Estado"];
-      tableRows = data.map(item => [
-        item.cargo,
-        item.sueldo,
-        item.objetivo_cargo,
-        item.nombre_comercial,
-        item.experiencia,
-        item.funciones,
-        item.carga_horaria,
-        item.modalidad,
-        item.estado
-      ]);
+        tableColumn = ["#", "Cargo", "Nombre de la Empresa", "Estado", "Cantidad de Postulaciones"];
+        tableRows = data.map((item, index) => [
+            index + 1,  // Número de fila
+            item.cargo,
+            item.nombre_comercial,
+            item.estado,
+            item.num_postulaciones || 0,
+        ]);
     } else if (reportType === 'postulantes') {
-      tableColumn = ["Nombre", "Correo", "Fecha de Creación", "Número de Postulaciones", "Postulaciones", "Vigencia", "Género", "Estado Civil", "Ubicación"];
-      tableRows = data.map(item => [
-        item.name,
-        item.email,
-        item.created_at,
-        item.num_postulaciones,
-        item.detalles_postulaciones?.map((detalle: { cargo: string }) => detalle.cargo).join(', '),
-        item.vigencia,
-        item.genero,
-        item.estado_civil,
-        item.ubicacion
-      ]);
+        tableColumn = ["#", "Nombre", "Vigencia", "Género", "Estado Civil", "Ubicación"];
+        tableRows = data.map((item, index) => [
+            index + 1,  // Número de fila
+            item.name,
+            item.vigencia,
+            item.genero,
+            item.estado_civil,
+            item.ubicacion,
+        ]);
     }
 
+    // Estilo de la tabla en color naranja
     (doc as any).autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 30,
-      theme: 'striped',
-      headStyles: { fillColor: [22, 160, 133] }
+        head: [tableColumn],
+        body: tableRows,
+        startY: yPos,  // Usar yPos para la posición de inicio de la tabla
+        theme: 'striped',
+        headStyles: { fillColor: [255, 87, 34] }, // Color naranja
+        styles: { cellPadding: 3 },
     });
 
-    doc.save('reporte.pdf');
-  };
+    // Pie de página con la fecha y un pequeño mensaje
+    doc.setFontSize(10);
+    doc.text('Generado por Postúlate APP', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    doc.text('Este reporte contiene información confidencial.', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 5, { align: 'center' });
+
+    doc.save(`ReportePostulate_${reportType}_${formattedDate}.pdf`);
+};
 
   const previewPDF = async () => {
     const doc = new jsPDF();
-    doc.text('Proajob', 14, 16);
+    const date = new Date();
+    const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+    doc.setFontSize(18);
+    doc.setTextColor(255, 87, 34); // Color naranja
+    doc.setFont('helvetica', 'bold');
+    doc.text('POSTÚLATE', doc.internal.pageSize.getWidth() / 2, 16, { align: 'center' });
+
+    // Subtítulo con el tipo de reporte y la fecha
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0); // Color negro para el subtítulo y la fecha
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Reporte de ${reportType}`, doc.internal.pageSize.getWidth() / 2, 24, { align: 'center' });
+    doc.text(`Fecha: ${formattedDate}`, doc.internal.pageSize.getWidth() / 2, 30, { align: 'center' });
+
+    // Mostrar los filtros seleccionados
     doc.setFontSize(10);
-    doc.text(`Reporte de ${reportType}`, 14, 22);
+    let yPos = 35;
+
+    if (useFilters) {
+        doc.text(`Datos basados en:`, 14, yPos);
+        yPos += 5;
+        if (startDate && endDate) {
+            doc.text(`- Fechas: ${startDate.toLocaleDateString()} a ${endDate.toLocaleDateString()}`, 14, yPos);
+            yPos += 5;
+        }
+        if (reportType === 'empresas') {
+            if (selectedProvince) {
+                doc.text(`- Provincia: ${selectedProvince}`, 14, yPos);
+                yPos += 5;
+            }
+            if (selectedCanton) {
+                doc.text(`- Cantón: ${selectedCanton}`, 14, yPos);
+                yPos += 5;
+            }
+            if (selectedSector) {
+                doc.text(`- Sector: ${selectedSector}`, 14, yPos);
+                yPos += 5;
+            }
+            if (selectedTamanio) {
+                doc.text(`- Tamaño: ${selectedTamanio}`, 14, yPos);
+                yPos += 5;
+            }
+        } else if (reportType === 'ofertas') {
+            if (cargo) {
+                doc.text(`- Cargo: ${cargo}`, 14, yPos);
+                yPos += 5;
+            }
+            if (estado) {
+                doc.text(`- Estado: ${estado}`, 14, yPos);
+                yPos += 5;
+            }
+        } else if (reportType === 'postulantes') {
+            if (selectedGenero) {
+                doc.text(`- Género: ${selectedGenero}`, 14, yPos);
+                yPos += 5;
+            }
+            if (selectedEstadoCivil) {
+                doc.text(`- Estado Civil: ${selectedEstadoCivil}`, 14, yPos);
+                yPos += 5;
+            }
+            if (selectedProvince) {
+                doc.text(`- Provincia: ${selectedProvince}`, 14, yPos);
+                yPos += 5;
+            }
+            if (selectedCanton) {
+                doc.text(`- Cantón: ${selectedCanton}`, 14, yPos);
+                yPos += 5;
+            }
+        }
+    }
+
+    // Agregar un espacio adicional entre los filtros y la tabla
+    yPos += 10;
 
     let tableColumn: string[] = [];
     let tableRows: any[] = [];
 
     if (reportType === 'empresas') {
-      tableColumn = ["Nombre", "Correo", "Fecha de Creación", "Nombre Comercial", "Sector", "Tamaño", "Ubicación", "Ofertas"];
-      tableRows = data.map(item => [
-        item.name,
-        item.email,
-        item.created_at,
-        item.empresa?.nombre_comercial,
-        item.empresa?.sector,
-        item.empresa?.tamanio,
-        item.empresa?.ubicacion,
-        item.empresa?.ofertas.map(oferta => `${oferta.cargo} (Postulantes: ${oferta.num_postulantes})`).join(', ')
-      ]);
+        tableColumn = ["#", "Nombre Comercial", "Tamaño", "Ubicación", "Sector", "Cantidad de Ofertas"];
+        tableRows = data.map((item, index) => [
+            index + 1,  // Número de fila
+            item.nombre_comercial,
+            item.tamanio,
+            item.ubicacion,
+            item.sector,
+            item.total_ofertas || 0,
+        ]);
     } else if (reportType === 'ofertas') {
-      tableColumn = ["Cargo", "Sueldo", "Objetivo del Cargo", "Nombre de la Empresa", "Experiencia", "Funciones", "Carga Horaria", "Modalidad", "Estado"];
-      tableRows = data.map(item => [
-        item.cargo,
-        item.sueldo,
-        item.objetivo_cargo,
-        item.nombre_comercial,
-        item.experiencia,
-        item.funciones,
-        item.carga_horaria,
-        item.modalidad,
-        item.estado
-      ]);
+        tableColumn = ["#", "Cargo", "Nombre de la Empresa", "Estado", "Cantidad de Postulaciones"];
+        tableRows = data.map((item, index) => [
+            index + 1,  // Número de fila
+            item.cargo,
+            item.nombre_comercial,
+            item.estado,
+            item.num_postulaciones || 0,
+        ]);
     } else if (reportType === 'postulantes') {
-      tableColumn = ["Nombre", "Correo", "Fecha de Creación", "Número de Postulaciones", "Postulaciones", "Vigencia", "Género", "Estado Civil", "Ubicación"];
-      tableRows = data.map(item => [
-        item.name,
-        item.email,
-        item.created_at,
-        item.num_postulaciones,
-        item.detalles_postulaciones?.map((detalle: { cargo: string }) => detalle.cargo).join(', '),
-        item.vigencia,
-        item.genero,
-        item.estado_civil,
-        item.ubicacion
-      ]);
+        tableColumn = ["#", "Nombre", "Vigencia", "Género", "Estado Civil", "Ubicación"];
+        tableRows = data.map((item, index) => [
+            index + 1,  // Número de fila
+            item.name,
+            item.vigencia,
+            item.genero,
+            item.estado_civil,
+            item.ubicacion,
+        ]);
     }
 
+    // Estilo de la tabla en color naranja
     (doc as any).autoTable({
-      head: [tableColumn],
-      body: tableRows,
-      startY: 30,
-      theme: 'striped',
-      headStyles: { fillColor: [22, 160, 133] }
+        head: [tableColumn],
+        body: tableRows,
+        startY: yPos,  // Usar yPos para la posición de inicio de la tabla
+        theme: 'striped',
+        headStyles: { fillColor: [255, 87, 34] }, // Color naranja
+        styles: { cellPadding: 3 },
     });
+
+    // Pie de página con la fecha y un pequeño mensaje
+    doc.setFontSize(10);
+    doc.text('Generado por Postúlate APP', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    doc.text('Este reporte contiene información confidencial.', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 5, { align: 'center' });
 
     const pdfBlob = doc.output('blob');
     const url = URL.createObjectURL(pdfBlob);
@@ -372,8 +492,14 @@ const Reportes: React.FC = () => {
 
   return (
     <div className="mb-4 text-center max-w-screen-lg mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Generar Reportes</h2>
+
       <div className="mb-4">
+        <h1 className="text-3xl font-bold mb-4 flex justify-center items-center text-orange-500 ml-2">
+          REPORTES
+          <FiList className="text-orange-500 ml-2" />
+        </h1>
+        <center><p>En esta sección se generan los reportes respectivos de la aplicación web</p></center>
+        <hr className="my-4" />
         <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de Reporte</label>
         <select
           value={reportType}
@@ -398,14 +524,26 @@ const Reportes: React.FC = () => {
       </div>
       {useFilters && (
         <>
+          <hr className="my-4" />
+          <div className="mt-4">
+  <button
+    onClick={clearFilters}
+    className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-300"
+  >
+    Limpiar filtros
+  </button>
+</div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Inicio</label>
               <DatePicker
                 selected={startDate}
                 onChange={handleStartDateChange}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                dateFormat="yyyy/MM/dd"
+                dateFormat="dd/MM/yyyy"
+                locale="es"
+                placeholderText='dd/mm/aaaa'
               />
             </div>
             <div>
@@ -414,14 +552,18 @@ const Reportes: React.FC = () => {
                 selected={endDate}
                 onChange={handleEndDateChange}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-                dateFormat="yyyy/MM/dd"
+                dateFormat="dd/MM/yyyy"
+                locale="es"
+                placeholderText='dd/mm/aaaa'
               />
             </div>
           </div>
+          
         </>
       )}
       {reportType === 'empresas' && useFilters && (
         <>
+          <hr className="my-4" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Provincia</label>
@@ -430,7 +572,7 @@ const Reportes: React.FC = () => {
                 onChange={handleProvinceChange}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
               >
-                <option value="">Seleccione</option>
+                <option value="">Todos</option>
                 {provinces.map(provincia => (
                   <option key={provincia} value={provincia}>{provincia}</option>
                 ))}
@@ -444,7 +586,7 @@ const Reportes: React.FC = () => {
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                 disabled={!selectedProvince}
               >
-                <option value="">Seleccione</option>
+                <option value="">Todos</option>
                 {cantons.map(canton => (
                   <option key={canton} value={canton}>{canton}</option>
                 ))}
@@ -457,7 +599,7 @@ const Reportes: React.FC = () => {
                 onChange={handleSectorChange}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
               >
-                <option value="">Seleccione</option>
+                <option value="">Todos</option>
                 {sectores.map(sector => (
                   <option key={sector} value={sector}>{sector}</option>
                 ))}
@@ -470,7 +612,7 @@ const Reportes: React.FC = () => {
                 onChange={handleTamanioChange}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
               >
-                <option value="">Seleccione</option>
+                <option value="">Todas</option>
                 <option value="Microempresa">Microempresa</option>
                 <option value="Pequeña">Pequeña</option>
                 <option value="Mediana">Mediana</option>
@@ -478,10 +620,12 @@ const Reportes: React.FC = () => {
               </select>
             </div>
           </div>
+          <hr className="my-4" />
         </>
       )}
       {reportType === 'ofertas' && useFilters && (
         <>
+          <hr className="my-4" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Cargo</label>
@@ -490,41 +634,8 @@ const Reportes: React.FC = () => {
                 value={cargo}
                 onChange={handleCargoChange}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
+                placeholder='Cargos que incluyan estas palabras clave'
               />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Experiencia</label>
-              <input
-                type="text"
-                value={experiencia}
-                onChange={handleExperienciaChange}
-                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Carga Horaria</label>
-              <select
-                value={cargaHoraria}
-                onChange={handleCargaHorariaChange}
-                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-              >
-                <option value="">Seleccione</option>
-                <option value="Tiempo Completo">Tiempo Completo</option>
-                <option value="Tiempo Parcial">Tiempo Parcial</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Modalidad</label>
-              <select
-                value={modalidad}
-                onChange={handleModalidadChange}
-                className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
-              >
-                <option value="">Seleccione</option>
-                <option value="Presencial">Presencial</option>
-                <option value="Virtual">Virtual</option>
-                <option value="Hibrida">Hibrida</option>
-              </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
@@ -533,16 +644,18 @@ const Reportes: React.FC = () => {
                 onChange={handleEstadoChange}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
               >
-                <option value="">Seleccione</option>
+                <option value="">Todas</option>
                 <option value="Culminada">Culminada</option>
                 <option value="En espera">En espera</option>
               </select>
             </div>
           </div>
+          <hr className="my-4" />
         </>
       )}
       {reportType === 'postulantes' && useFilters && (
         <>
+          <hr className="my-4" />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Género</label>
@@ -551,7 +664,7 @@ const Reportes: React.FC = () => {
                 onChange={handleGeneroChange}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
               >
-                <option value="">Seleccione</option>
+                <option value="">Todos</option>
                 <option value="Masculino">Masculino</option>
                 <option value="Femenino">Femenino</option>
                 <option value="Otro">Otro</option>
@@ -564,7 +677,7 @@ const Reportes: React.FC = () => {
                 onChange={handleEstadoCivilChange}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
               >
-                <option value="">Seleccione</option>
+                <option value="">Todos</option>
                 <option value="Soltero">Soltero/a</option>
                 <option value="Casado">Casado/a</option>
                 <option value="Divorciado">Divorciado/a</option>
@@ -578,7 +691,7 @@ const Reportes: React.FC = () => {
                 onChange={handleProvinceChange}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
               >
-                <option value="">Seleccione</option>
+                <option value="">Todos</option>
                 {provinces.map(provincia => (
                   <option key={provincia} value={provincia}>{provincia}</option>
                 ))}
@@ -592,27 +705,26 @@ const Reportes: React.FC = () => {
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md"
                 disabled={!selectedProvince}
               >
-                <option value="">Seleccione</option>
+                <option value="">Todos</option>
                 {cantons.map(canton => (
                   <option key={canton} value={canton}>{canton}</option>
                 ))}
               </select>
             </div>
           </div>
+          <hr className="my-4" />
         </>
       )}
       {error && <div className="text-red-500 mb-4">{error}</div>}
-      <div className="mb-4">
-        <button
-          onClick={fetchData}
-          className="bg-blue-500 text-white px-4 py-2 rounded-md"
-        >
-          Generar Reporte
-        </button>
-      </div>
+  
       <div>
         {loading ? (
-          <p>Cargando...</p>
+          <div className="flex justify-center items-center h-32">
+            <div className="flex items-center space-x-2">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+              <span className="font-bold">Cargando reporte...</span>
+            </div>
+          </div>
         ) : error ? (
           <p>{error}</p>
         ) : (
@@ -623,113 +735,32 @@ const Reportes: React.FC = () => {
               </p>
             ) : (
               <>
-                <div id="reportTable" className="bg-white p-4 rounded-md shadow-md">
-                  <table className="min-w-full">
-                    <thead>
-                      <tr>
-                        {reportType === 'ofertas' && (
-                          <>
-                            <th className="w-2/12 px-4 py-2">Cargo</th>
-                            <th className="w-2/12 px-4 py-2">Sueldo</th>
-                            <th className="w-2/12 px-4 py-2">Objetivo del Cargo</th>
-                            <th className="w-2/12 px-4 py-2">Nombre de la Empresa</th>
-                            <th className="w-2/12 px-4 py-2">Experiencia</th>
-                            <th className="w-2/12 px-4 py-2">Funciones</th>
-                            <th className="w-2/12 px-4 py-2">Carga Horaria</th>
-                            <th className="w-2/12 px-4 py-2">Modalidad</th>
-                            <th className="w-2/12 px-4 py-2">Estado</th>
-                          </>
-                        )}
-                        {reportType === 'postulantes' && (
-                          <>
-                            <th className="w-2/12 px-4 py-2">Nombre</th>
-                            <th className="w-2/12 px-4 py-2">Correo</th>
-                            <th className="w-2/12 px-4 py-2">Fecha de Creación</th>
-                            <th className="w-2/12 px-4 py-2">Número de Postulaciones</th>
-                            <th className="w-2/12 px-4 py-2">Postulaciones</th>
-                            <th className="w-2/12 px-4 py-2">Vigencia</th>
-                            <th className="w-2/12 px-4 py-2">Género</th>
-                            <th className="w-2/12 px-4 py-2">Estado Civil</th>
-                            <th className="w-2/12 px-4 py-2">Ubicación</th>
-                          </>
-                        )}
-                        {reportType === 'empresas' && (
-                          <>
-                            <th className="w-2/12 px-4 py-2">Nombre</th>
-                            <th className="w-2/12 px-4 py-2">Correo</th>
-                            <th className="w-2/12 px-4 py-2">Fecha de Creación</th>
-                            <th className="w-2/12 px-4 py-2">Nombre Comercial</th>
-                            <th className="w-2/12 px-4 py-2">Sector</th>
-                            <th className="w-2/12 px-4 py-2">Tamaño</th>
-                            <th className="w-2/12 px-4 py-2">Ubicación</th>
-                            <th className="w-2/12 px-4 py-2">Ofertas</th>
-                          </>
-                        )}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {data.map((item) => (
-                        <tr key={item.id}>
-                          {reportType === 'ofertas' && (
-                            <>
-                              <td className="border px-4 py-2">{item.cargo}</td>
-                              <td className="border px-4 py-2">{item.sueldo}</td>
-                              <td className="border px-4 py-2">{item.objetivo_cargo}</td>
-                              <td className="border px-4 py-2">{item.nombre_comercial}</td>
-                              <td className="border px-4 py-2">{item.experiencia}</td>
-                              <td className="border px-4 py-2">{item.funciones}</td>
-                              <td className="border px-4 py-2">{item.carga_horaria}</td>
-                              <td className="border px-4 py-2">{item.modalidad}</td>
-                              <td className="border px-4 py-2">{item.estado}</td>
-                            </>
-                          )}
-                          {reportType === 'postulantes' && (
-                            <>
-                              <td className="border px-4 py-2">{item.name}</td>
-                              <td className="border px-4 py-2">{item.email}</td>
-                              <td className="border px-4 py-2">{item.created_at}</td>
-                              <td className="border px-4 py-2">{item.num_postulaciones}</td>
-                              <td className="border px-4 py-2">{item.detalles_postulaciones?.map((detalle: { cargo: string }) => detalle.cargo).join(', ')}</td>
-                              <td className="border px-4 py-2">{item.vigencia}</td>
-                              <td className="border px-4 py-2">{item.genero}</td>
-                              <td className="border px-4 py-2">{item.estado_civil}</td>
-                              <td className="border px-4 py-2">{item.ubicacion}</td>
-                            </>
-                          )}
-                          {reportType === 'empresas' && item.empresa && (
-                            <>
-                              <td className="border px-4 py-2">{item.name}</td>
-                              <td className="border px-4 py-2">{item.email}</td>
-                              <td className="border px-4 py-2">{item.created_at}</td>
-                              <td className="border px-4 py-2">{item.empresa.nombre_comercial}</td>
-                              <td className="border px-4 py-2">{item.empresa.sector}</td>
-                              <td className="border px-4 py-2">{item.empresa.tamanio}</td>
-                              <td className="border px-4 py-2">{item.empresa.ubicacion}</td>
-                              <td className="border px-4 py-2">
-                                {item.empresa.ofertas.map(oferta => `${oferta.cargo} (Postulantes: ${oferta.num_postulantes})`).join(', ')}
-                              </td>
-                            </>
-                          )}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div className="mt-4 flex space-x-2">
-                  <button
-                    onClick={generatePDF}
-                    className="px-2 py-1 bg-green-500 text-white rounded-md hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-300"
-                  >
-                    <FaDownload className="w-4 h-4" />
-                  </button>
-                  {data.length > 0 && (
+
+                <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                  <p className="text-lg font-semibold text-gray-700 mb-4">
+                    Una vez seleccionados los datos para el reporte requeridos, puede realizar las siguientes opciones:
+                  </p>
+
+                  <div className="flex justify-center space-x-4">
                     <button
-                      onClick={previewPDF}
-                      className="px-2 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                      onClick={generatePDF}
+                      className="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-300 flex items-center space-x-2"
                     >
-                      <FaEye className="w-4 h-4" />
+                      <FaDownload className="w-4 h-4" />
+                      <span>Descargar reporte</span>
                     </button>
-                  )}
+
+                    {data.length > 0 && (
+                      <button
+                        onClick={previewPDF}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-blue-300 flex items-center space-x-2"
+                      >
+                        <FaEye className="w-4 h-4" />
+                        <span>Visualizar reporte</span>
+                      </button>
+                    )}
+                    
+                  </div>
                 </div>
               </>
             )}
