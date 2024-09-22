@@ -164,7 +164,7 @@ const CompletarP: React.FC = () => {
           imageUrl = await getDownloadURL(storageRef);
         } else {
           // Asigna la URL de imagen por defecto si no se sube una
-          imageUrl = 'https://firebasestorage.googleapis.com/v0/b/proajob-486e1.appspot.com/o/images%2Fdefault.jpg?alt=media&token=fe311f4a-c6fc-44e6-a6e2-8e5dea528bb0'; // Reemplaza esto con tu URL de imagen por defecto
+          imageUrl = 'https://firebasestorage.googleapis.com/v0/b/postu-a5f32.appspot.com/o/images%2Fdefault.jpg?alt=media&token=29ddc3cf-4752-4dd2-81d6-b1c2a4d91440'; // Reemplaza esto con tu URL de imagen por defecto
         }
   
         const formData = {
