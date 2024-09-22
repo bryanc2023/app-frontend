@@ -4,6 +4,7 @@ import { RootState } from "../../store";
 import { useDispatch } from 'react-redux';
 import { logout } from '../../store/authSlice';
 import "../css/Navbar.css"
+import { FaInfoCircle } from 'react-icons/fa';
 
 function Navbar() {
 
@@ -24,6 +25,9 @@ function Navbar() {
             <>
               <Link to='/login' className="text-white hover:underline">Iniciar sesión</Link>
               <Link to='/registro' className="text-white hover:underline">Registrarse</Link>
+              <Link to='/acerca' className="flex items-center text-white hover:underline">
+    <FaInfoCircle className="mr-1" />
+  </Link>
             </>
           )}
         </nav>
