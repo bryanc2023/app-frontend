@@ -625,6 +625,9 @@ function AgregarO() {
           <hr className="my-4" />
           <div className="bg-white p-6 rounded-lg shadow-lg py-8" >
             <h3 className="text-1xl text-red-500 font-bold mb-4">Datos de contacto extra:</h3>
+            <h1 className='text-xs'>(Si desea 
+              que las hojas de vida solo lleguen al portal no seleccionar ninguna opción de estas dos)</h1>
+            <hr></hr>
             <div className="flex items-center">
               <input
                 className="mr-2 leading-tight"
@@ -707,7 +710,7 @@ function AgregarO() {
                   {...register('mostrar_empresa')}
                 />
                 <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="mostrar_empresa">
-                  No mostrar nombre de Empresa publicadora
+                  No mostrar nombre de Empresa que ofrece la vacante
                 </label>
               </div>
 

@@ -50,6 +50,8 @@ const CompletarE: React.FC = () => {
   const [agreementAccepted, setAgreementAccepted] = useState<boolean>(false);
   const [showTerms, setShowTerms] = useState<boolean>(false);
   const [termsText, setTermsText] = useState<string>('');
+  const [isOtherSelected, setIsOtherSelected] = useState<boolean>(false); // Para controlar la opción "Otro"
+  const [otherSector, setOtherSector] = useState<string>('');
 
   useEffect(() => {
     const handlePopState = () => {
@@ -92,7 +94,7 @@ const CompletarE: React.FC = () => {
     fetchCantons();
   }, [selectedProvince]);
 
-  
+
 
   const handleProvinceChange = (event: any) => {
     setSelectedProvince(event.target.value);
@@ -118,19 +120,30 @@ const CompletarE: React.FC = () => {
 
   const handleSectorChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selected = event.target.value;
-    setSelectedSector(selected); // Asegúrate de que esto está funcionando correctamente
+    setSelectedSector(selected);
     setIsDivisionEnabled(false);
-    setSelectedDivision(null); // Reinicia la división seleccionada
+    setSelectedDivision(null);
 
-    if (selected) {
-      try {
-        const response = await axios.get(`sectores/${encodeURIComponent(selected)}`);
-        setDivisiones(response.data);
-        setIsDivisionEnabled(true);
-      } catch (error) {
-        console.error('Error fetching divisiones:', error);
+    if (selected === '0') {
+      setIsOtherSelected(true);
+    } else {
+      setIsOtherSelected(false);
+      setOtherSector('');
+      if (selected) {
+        try {
+          const response = await axios.get(`sectores/${encodeURIComponent(selected)}`);
+          setDivisiones(response.data);
+          setIsDivisionEnabled(true);
+        } catch (error) {
+          console.error('Error fetching divisiones:', error);
+        }
       }
     }
+  };
+
+  const handleDivisionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selected = divisiones.find(div => div.division === event.target.value);
+    setSelectedDivision(selected || null);
   };
 
   const socialPlatforms = [
@@ -191,7 +204,7 @@ const CompletarE: React.FC = () => {
 
 
   const onSubmit: SubmitHandler<IFormInput> = async (data) => {
-    if (user && selectedDivision && selectedProvince && selectedCanton) {
+    if (user && selectedProvince && selectedCanton && (selectedDivision || otherSector !== '')) {
       Swal.fire({
         title: 'Cargando...',
         text: 'Por favor, espera mientras se procesa tu registro.',
@@ -201,39 +214,43 @@ const CompletarE: React.FC = () => {
           Swal.showLoading();
         }
       });
-  
+
       try {
         const response = await axios.get(`ubicaciones/${selectedProvince}/${selectedCanton}`);
         const ubicacionId = response.data.ubicacion_id;
-  
-        let logoUrl = 'https://firebasestorage.googleapis.com/v0/b/proajob-486e1.appspot.com/o/logos%2Fdefault-empresa.jpg?alt=media&token=6b35e2ca-b902-4ba0-98c9-c920e2568242'; 
-  
+
+        let logoUrl = 'https://firebasestorage.googleapis.com/v0/b/proajob-486e1.appspot.com/o/logos%2Fdefault-empresa.jpg?alt=media&token=6b35e2ca-b902-4ba0-98c9-c920e2568242';
+
         if (data.logo && data.logo.length > 0) {
           const logoFile = data.logo[0];
           const storageRef = ref(storage, `logos/${logoFile.name}`);
           await uploadBytes(storageRef, logoFile);
           logoUrl = await getDownloadURL(storageRef);
         }
-  
-        const formData = {
-          logo: logoUrl, // URL del logo subido a Firebase o URL por defecto
-          companyName: data.companyName,
-          numberOfEmployees: data.numberOfEmployees,
-          sector: selectedDivision.id.toString(),
-          ubicacion: ubicacionId,
-          division: data.division,
-          email: data.email,
-          description: data.description || 'No hay descripción', // Valor predeterminado si no hay descripción
-          usuario_id: user.id,
-          socialLinks: data.socialLinks
-        };
-  
+
+        // Verificar si el sector es "Otro" y tomar el valor del input personalizado
+      const sectorValue = selectedDivision? selectedDivision?.id.toString() : '0';
+
+      const formData = {
+        logo: logoUrl, // URL del logo subido a Firebase o URL por defecto
+        companyName: data.companyName,
+        numberOfEmployees: data.numberOfEmployees,
+        sector: sectorValue, 
+        division: otherSector? otherSector:'No',// Usar valor personalizado o división seleccionada
+        ubicacion: ubicacionId,
+        email: data.email,
+        description: data.description || 'No hay descripción', // Valor predeterminado si no hay descripción
+        usuario_id: user.id,
+        socialLinks: data.socialLinks
+      };
+
+
         await axios.post('empresaC', formData, {
           headers: {
             'Content-Type': 'application/json',
           },
         });
-  
+
         Swal.fire({
           icon: 'success',
           title: '¡Registro completo!',
@@ -241,7 +258,7 @@ const CompletarE: React.FC = () => {
         }).then(() => {
           navigate("/inicio-e");
         });
-  
+
       } catch (error) {
         console.error('Error al enviar el formulario:', error);
         Swal.fire({
@@ -284,7 +301,7 @@ const CompletarE: React.FC = () => {
               id="logo"
               {...register('logo')}
               onChange={handleLogoChange}
-              accept=".png, .jpg, .jpeg" 
+              accept=".png, .jpg, .jpeg"
               className={`block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100 ${errors.logo ? 'border-red-500' : ''}`}
             />
             {errors.logo && <p className="text-red-500 text-xs mt-1">{errors.logo.message}</p>}
@@ -331,29 +348,43 @@ const CompletarE: React.FC = () => {
                 {sector}
               </option>
             ))}
+            <option value="0">OTRO</option>
           </select>
         </div>
 
-        <div className="form-group mb-8">
-          <label htmlFor="division" className="block text-gray-700 font-semibold mb-2">División:</label>
-          <select
-            id="division"
-            value={selectedDivision?.division || ''}
-            onChange={(e) => {
-              const selected = divisiones.find(div => div.division === e.target.value);
-              setSelectedDivision(selected || null);
-            }}
-            disabled={!isDivisionEnabled}
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600"
-          >
-            <option value="">Seleccione</option>
-            {divisiones.map((division) => (
-              <option key={division.id} value={division.division}>
-                {division.division}
-              </option>
-            ))}
-          </select>
-        </div>
+        {!isOtherSelected && (
+          <div className="form-group mb-8">
+            <label htmlFor="division" className="block text-gray-700 font-semibold mb-2">División:</label>
+            <select
+              id="division"
+              value={selectedDivision?.division || ''}
+              onChange={handleDivisionChange}
+              disabled={!isDivisionEnabled}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600"
+            >
+              <option value="">Seleccione</option>
+              {divisiones.map((division) => (
+                <option key={division.id} value={division.division}>
+                  {division.division}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {isOtherSelected && (
+          <div className="form-group mb-8">
+            <label htmlFor="otherSector" className="block text-gray-700 font-semibold mb-2">Escriba el sector al que pertenece:</label>
+            <input
+              type="text"
+              id="otherSector"
+              value={otherSector}
+              onChange={(e) => setOtherSector(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600"
+            />
+          </div>
+        )}
+
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
           <div className="form-group">

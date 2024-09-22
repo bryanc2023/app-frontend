@@ -161,7 +161,7 @@ const Home: React.FC = () => {
                 <div key={oferta.id_oferta} className="bg-white shadow-md rounded-lg p-6 flex flex-col items-center">
                   <FaFileAlt className="text-orange-500 text-6xl mb-4" />
                   <h2 className="text-xl font-semibold mb-2">Se esta buscando:</h2>
-                  <h2 className="text-2xl font-bold italic mb-2">"{oferta.cargo}"</h2>
+                  <center> <h2 className="text-2xl font-bold italic mb-2">"{oferta.cargo}"</h2></center>
                   <p className="text-gray-700"><p className="font-semibold">Modalidad:</p> <center>{oferta.modalidad}</center></p>
                   <p className="text-gray-700">
                     <p className="font-semibold">Fecha de publicación:</p>
