@@ -1,6 +1,6 @@
 {
     "hosting": {
-      "public": "public", // Directorio donde están los archivos estáticos de tu sitio
+      "public": "public",
       "ignore": [
         "firebase.json",
         "**/.*",
