@@ -237,7 +237,7 @@ const CompletarE: React.FC = () => {
         Swal.fire({
           icon: 'success',
           title: '¡Registro completo!',
-          text: 'Bienvenido a proajob',
+          text: 'Bienvenido a Postula',
         }).then(() => {
           navigate("/inicio-e");
         });

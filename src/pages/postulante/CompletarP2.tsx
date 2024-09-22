@@ -374,7 +374,7 @@ const handleRedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         Swal.fire({
           icon: 'success',
           title: '¡Registro completo!',
-          text: 'Bienvenido a proajob',
+          text: 'Bienvenido a Postula.net',
         }).then(() => {
           navigate("/perfilP");
           Swal.fire({

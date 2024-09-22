@@ -38,6 +38,7 @@ import GestionUsuarios from "../pages/admin/GestionUsuarios";
 import EditarOG from "../pages/empresaG/EditarOG";
 import EmailRequest from "../pages/EmailRequest";
 import ResetPassword from "../pages/ResetPassword";
+import Acerca from "../pages/Acerca";
 
 type TypeRoute = {
     path: string;
@@ -51,6 +52,10 @@ export const routes: TypeRoute[] = [
     {
         path: '/',
         element: Home,
+    },
+    {
+        path: '/acerca',
+        element: Acerca,
     },
     {
         path: '/registro',
