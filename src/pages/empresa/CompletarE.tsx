@@ -219,7 +219,7 @@ const CompletarE: React.FC = () => {
         const response = await axios.get(`ubicaciones/${selectedProvince}/${selectedCanton}`);
         const ubicacionId = response.data.ubicacion_id;
 
-        let logoUrl = 'https://firebasestorage.googleapis.com/v0/b/proajob-486e1.appspot.com/o/logos%2Fdefault-empresa.jpg?alt=media&token=6b35e2ca-b902-4ba0-98c9-c920e2568242';
+        let logoUrl = 'https://firebasestorage.googleapis.com/v0/b/postu-a5f32.appspot.com/o/logos%2Fdefault-empresa.jpg?alt=media&token=5f04fd56-8881-4397-b219-a258c71714d0';
 
         if (data.logo && data.logo.length > 0) {
           const logoFile = data.logo[0];

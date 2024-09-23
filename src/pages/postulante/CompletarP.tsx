@@ -226,7 +226,7 @@ const CompletarP: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-5 bg-gray-100">
       <h1 className="text-3xl font-bold text-center mb-8">Completar registro</h1>
-      <p className="text-center mb-8">Para comenzar la experiencia de ProaJob complete el registro con los campos solicitados:</p>
+      <p className="text-center mb-8">Para comenzar la experiencia de Postula complete el registro con los campos solicitados:</p>
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-10 rounded-lg shadow-lg w-full max-w-4xl">
         <div className="form-group mb-8">
           <label htmlFor="image" className="block text-gray-700 font-semibold mb-2">FOTO:</label>
