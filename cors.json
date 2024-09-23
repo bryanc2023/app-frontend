@@ -1,7 +1,7 @@
 [
     {
-      "origin": ["*"],
-      "method": ["GET"],
+      "origin": ["https://www.postula.net"],
+      "method": ["GET", "POST"],
       "maxAgeSeconds": 3600
     }
   ]
