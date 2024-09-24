@@ -485,7 +485,7 @@ checkRegistrationStatus();
                             <li>{selectedOferta.funciones}</li>
                         )}
                     </ul>
-                    <p><strong>Detalles adicionales: </strong></p>
+                    <p><strong>Conocimientos adicionales: </strong></p>
                     <ul className="list-disc pl-6">
                         {selectedOferta.detalles_adicionales.includes(',') ? (
                             selectedOferta.detalles_adicionales.split(',').map((detalle, index) => (
