@@ -554,12 +554,13 @@ function AgregarO() {
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="funciones">• Funciones del puesto:
               <span className="text-red-500 ml-1">*</span>
-              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Máximo 500 caractéres)</span>
+              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Máximo 500 caractéres, Agregue comas para separar cada función)</span>
             </label>
             <textarea
               className="w-full p-2 border rounded"
               id="funciones"
               placeholder="Describa a manera breve las funciones o actividades a realizarse en el puesto. Cada función sepárela con una coma . Ejemplo: Funcion 1, Funcion2"
+              rows={6} 
               {...register('funciones', { required: 'Funciones son requeridas' })}
             />
             {errors.funciones && <p className="text-red-500">{String(errors.funciones.message)}</p>}
