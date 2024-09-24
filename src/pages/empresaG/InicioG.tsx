@@ -462,26 +462,29 @@ function VerOfertasPPage() {
                     )}
                 </div>
                 <div className="p-4 bg-gray-100 rounded shadow">
-                    <p><strong>Funciones: </strong></p>
-                    <ul className="list-disc pl-6">
-                        {selectedOferta.funciones.includes(',') ? (
-                            selectedOferta.funciones.split(',').map((funcion, index) => (
-                                <li key={index}>{funcion.trim()}</li>
-                            ))
-                        ) : (
-                            <li>{selectedOferta.funciones}</li>
-                        )}
-                    </ul>
-                    <p><strong>Detalles adicionales: </strong></p>
-                    <ul className="list-disc pl-6">
-                        {selectedOferta.detalles_adicionales.includes(',') ? (
-                            selectedOferta.detalles_adicionales.split(',').map((detalle, index) => (
-                                <li key={index}>{detalle.trim()}</li>
-                            ))
-                        ) : (
-                            <li>{selectedOferta.detalles_adicionales}</li>
-                        )}
-                    </ul>
+                <p><strong>Funciones: </strong></p>
+                <ul className="list-disc pl-6">
+                    {/* Se usa una expresión regular para dividir tanto por comas como por puntos */}
+                    {/[,.]/.test(selectedOferta.funciones) ? (
+                    selectedOferta.funciones.split(/[,.]/).map((funcion, index) => (
+                        <li key={index}>{funcion.trim()}</li> // trim elimina espacios adicionales
+                    ))
+                    ) : (
+                    <li>{selectedOferta.funciones}</li>
+                    )}
+                </ul>
+                
+                <p><strong>Conocimientos adicionales: </strong></p>
+                <ul className="list-disc pl-6">
+                    {/* Misma lógica para los conocimientos adicionales */}
+                    {/[,.]/.test(selectedOferta.detalles_adicionales) ? (
+                    selectedOferta.detalles_adicionales.split(/[,.]/).map((detalle, index) => (
+                        <li key={index}>{detalle.trim()}</li>
+                    ))
+                    ) : (
+                    <li>{selectedOferta.detalles_adicionales}</li>
+                    )}
+                </ul>
                 </div>
             </div>
             <div className="p-4 bg-gray-100 rounded shadow mt-4">
