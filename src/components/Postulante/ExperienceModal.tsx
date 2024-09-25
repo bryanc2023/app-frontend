@@ -221,9 +221,9 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
               <textarea
                 {...register('descripcion_responsabilidades', {
                   required: 'Este campo es obligatorio',
-                  maxLength: { value: 500, message: 'Máximo 500 caracteres' }
                 })}
                 className="w-full px-4 py-2 border rounded-md text-gray-700"
+                rows={5}
               />
               {errors.descripcion_responsabilidades && <p className="text-red-500">{errors.descripcion_responsabilidades.message}</p>}
             </div>
