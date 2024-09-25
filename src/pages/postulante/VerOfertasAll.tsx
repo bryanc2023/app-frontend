@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from '../../store';
 import axios from "../../services/axios";
 import { FaHandPaper, FaSearch } from 'react-icons/fa';
 import { FiUser, FiEye, FiMapPin } from 'react-icons/fi';
 import Modal from '../../components/Postulante/PostulacionModal';
 import { useNavigate } from "react-router-dom";
+import { logout } from "../../store/authSlice";
 
 interface Oferta {
     id_oferta: number;
@@ -71,7 +72,8 @@ interface Canton {
 }
 const VerOfertasAll = () => {
     const navigate = useNavigate();
-    const { user } = useSelector((state: RootState) => state.auth);
+    const dispatch = useDispatch();
+    const { user,token,isLogged,role } = useSelector((state: RootState) => state.auth);
     const [ofertas, setOfertas] = useState<Oferta[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchEmpresa, setSearchEmpresa] = useState('');
@@ -98,6 +100,14 @@ const VerOfertasAll = () => {
     };
 
     useEffect(() => {
+        const userInfo= async () => {
+          if(!user|| !token || !isLogged || !role){
+             // Cerrar sesión y redirigir al login
+             dispatch(logout());
+             navigate("/login");
+             return;
+          }
+        };
         const getFirstLoginDate = async () => {
             try {
 
