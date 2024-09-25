@@ -2,13 +2,14 @@ import '../components/css/Footer.css';
 import { useState, useEffect } from 'react';
 import Navbar from "../components/layout/Navbar";
 import axios from "../services/axios";
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
 import { FaFileAlt } from 'react-icons/fa';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserPlus, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import { FaBuilding, FaUser } from 'react-icons/fa';
+import { logout } from '../store/authSlice';
 
 interface Oferta {
   id_oferta: number;
@@ -27,7 +28,8 @@ interface Oferta {
 const Home: React.FC = () => {
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const navigate = useNavigate();
-  const { isLogged, role, user } = useSelector((state: RootState) => state.auth);
+  const { isLogged, role, user} = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
   useEffect(() => {
     const checkRegistrationStatus = async () => {
       try {
@@ -70,6 +72,12 @@ const Home: React.FC = () => {
           } else if (role === 'empresa_gestora') {
             navigate('/inicioG');
           }
+        }else{
+         
+           window.localStorage.removeItem("token");
+           window.localStorage.removeItem('role');
+           navigate("/");
+           return;
         }
       } catch (error) {
         console.error('Error checking registration status:', error);

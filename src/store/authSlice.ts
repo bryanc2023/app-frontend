@@ -64,6 +64,18 @@ export const authSlice = createSlice({
         state.isLoading = false;
         state.role = null;
         window.localStorage.removeItem("token");
+        window.localStorage.removeItem('role');
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // Opción adicional para borrar caches del navegador si es necesario:
+        if ('caches' in window) {
+            caches.keys().then((names) => {
+                names.forEach((name) => {
+                    caches.delete(name);
+                });
+            });
+        }
       }
  
   },
