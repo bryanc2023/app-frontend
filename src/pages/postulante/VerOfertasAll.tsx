@@ -40,6 +40,9 @@ interface Oferta {
         titulo: string;
         nivel_educacion: string;
         campo_amplio: string;
+        pivot: {
+            titulo_per: string | null;
+        };
     }[];
     sueldo: number;
     n_mostrar_sueldo: number;
@@ -104,6 +107,9 @@ const VerOfertasAll = () => {
           if(!user|| !token || !isLogged || !role){
              // Cerrar sesión y redirigir al login
              dispatch(logout());
+             window.localStorage.removeItem("token");
+             window.localStorage.removeItem('role');
+             window.localStorage.removeItem('role');
              navigate("/login");
              return;
           }
@@ -135,6 +141,7 @@ const VerOfertasAll = () => {
                 // Manejar el error según tus necesidades, por ejemplo, mostrar un mensaje de error
             }
         };
+        userInfo();
         getFirstLoginDate
         fetchOfertas();
         fetchAreas();
