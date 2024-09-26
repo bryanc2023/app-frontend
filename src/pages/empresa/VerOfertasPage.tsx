@@ -33,7 +33,6 @@ interface Oferta {
     n_mostrar_sueldo: boolean;
     n_mostrar_empresa: boolean;
     soli_sueldo: boolean;
-    preguntas: string;
     // Define otros campos de la oferta según sea necesario
 }
 
