@@ -42,6 +42,7 @@ interface canton {
 
 }
 
+
 function AgregarO() {
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -76,6 +77,18 @@ function AgregarO() {
   const [customTitulo, setCustomTitulo] = useState<string>(''); // Estado para almacenar el título personalizado
   const [showCustomInput, setShowCustomInput] = useState(false); // State to toggle custom input
   const [showCheckbox, setShowCheckbox] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+ 
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Evita el comportamiento por defecto del formulario
+      const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
+      if (boton) {
+        boton.click(); // Ejecuta el clic en el botón
+      }
+    }
+  };
   // Toggle custom title input
   const handleToggleCustomInput = () => {
     setShowCustomInput(!showCustomInput);
@@ -121,6 +134,13 @@ function AgregarO() {
     setShowExperiencia(event.target.checked);
   };
 
+  const handleCheckboxSalarioChange = (event: any) => {
+    setShowAdd(event.target.checked);
+  };
+
+ 
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -147,8 +167,14 @@ function AgregarO() {
         console.error('Error fetching data:', error);
       }
     };
-
+const savedDraft = localStorage.getItem('draftPregunta');
+    if (savedDraft) {
+      const draft = JSON.parse(savedDraft);
+      setRequirePregunta(draft.requirePregunta);
+      setPreguntas(draft.preguntas);
+    }
     fetchData();
+    
   }, []);
 
   useEffect(() => {
@@ -334,7 +360,7 @@ function AgregarO() {
           setCustomTitulo('');
         }
 
-        console.log('Título agregado:', tituloToAdd);
+        
       }
     }
   };
@@ -376,15 +402,20 @@ function AgregarO() {
           titulos: selectedTitles,
           criterios: selectedCriterios,
           preguntas: preguntas,
+          comisiones: values.comisiones || null,
+          horasExtras: values.horasExtras || null,
+          viaticos: values.viaticos|| null,
+          comentariosComisiones: values.comentariosComisiones|| null,
+          comentariosHorasExtras: values.comentariosHorasExtra|| null,
+          comentariosViaticos: values.comentariosViaticos|| null,
         };
 
 
 
-        await axios.post('add-oferta', dataToSend, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+     
+        console.log(dataToSend);
+
+       
 
         Swal.fire({
           title: '¡Publicada!',
@@ -414,7 +445,7 @@ function AgregarO() {
         <p>Para publicar una oferta completa los datos necesarios:</p>
         <hr className="my-4" />
         <h3 className="text-1xl text-red-500 font-bold mb-4">Datos de la oferta:</h3>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit} onKeyDown={handleKeyDown}>
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="cargo">
               • Puesto de trabajo
@@ -642,6 +673,99 @@ function AgregarO() {
             />
             {errors.sueldo && <p className="text-red-500">{String(errors.sueldo.message)}</p>}
           </div>
+        
+          <div className="mb-4">
+            <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="sueldoCheckbox">
+              <input
+                type="checkbox"
+                id="sueldoCheckbox"
+                onChange={handleCheckboxSalarioChange}
+              />{' '}
+              ¿Hay componentes adicionales de pago?
+            </label>
+            <hr className="my-4" />
+            {showAdd && (
+                <>
+                 <div id="experienciaContainer" className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                    {/* Mensaje de aviso mejorado */}
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+              <div className="flex items-center">
+                <svg
+                  className="h-5 w-5 text-yellow-500 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                  />
+                </svg>
+                <h1 className="text-xs font-semibold">
+                  (Si solo se tiene un valor de pago adicional, se puede dejar vacio el campo)
+                </h1>
+              </div>
+            </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-bold mb-2" htmlFor="comisiones">
+                            Comisiones: 
+                        </label>
+                        <input
+                            className="w-full p-2 border rounded"
+                            type="number"
+                            id="comisiones"
+                            placeholder="Ingrese el valor a pagar por las comisiones de este puesto de trabajo"
+                            {...register('comisiones', { validate: validateNoNegative })}
+                        />
+                          {errors.comisiones && <p className="text-red-500">{String(errors.comisiones.message)}</p>}
+                        <textarea
+                            className="w-full p-2 border rounded mt-2"
+                            placeholder="Comentario sobre el pago de las comisiones"
+                            {...register('comentariosComisiones')}
+                        />
+                    </div>
+                    
+                    <div className="mb-4">
+                        <label className="block text-sm font-bold mb-2" htmlFor="horasExtras">
+                            Horas extras: 
+                        </label>
+                        <input
+                            className="w-full p-2 border rounded"
+                            type="number"
+                            id="horasExtras"
+                            placeholder="Ingrese el valor a pagar por las horas extras de este puesto de trabajo"
+                            {...register('horasExtras', { validate: validateNoNegative })}
+                        />
+                        <textarea
+                            className="w-full p-2 border rounded mt-2"
+                            placeholder="Comentario sobre el pago de las horas extras"
+                            {...register('comentariosHorasExtras')}
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-bold mb-2" htmlFor="viaticos">
+                            Viáticos: 
+                        </label>
+                        <input
+                            className="w-full p-2 border rounded"
+                            type="number"
+                            id="viaticos"
+                            placeholder="Ingrese el valor a pagar por los viaticos de este puesto de trabajo"
+                            {...register('viaticos', { validate: validateNoNegative })}
+                        />
+                        <textarea
+                            className="w-full p-2 border rounded mt-2"
+                            placeholder="Comentario sobre el pago de los viaticos"
+                            {...register('comentariosViaticos')}
+                        />
+                    </div>
+                    </div>
+                </>
+            )}
+          </div>
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="funciones">• Funciones del puesto:
               <span className="text-red-500 ml-1">*</span>
@@ -652,7 +776,9 @@ function AgregarO() {
               id="funciones"
               placeholder="Describa a manera breve las funciones o actividades a realizarse en el puesto. Cada función sepárela con una coma . Ejemplo: Funcion 1, Funcion2"
               rows={6} 
-              {...register('funciones', { required: 'Funciones son requeridas' })}
+              {...register('funciones', { required: 'Funciones son requeridas', validate: {
+                maxLength: value => value.length <= 500 || 'Se permiten hasta 500 caracteres.',
+            }, })}
             />
             {errors.funciones && <p className="text-red-500">{String(errors.funciones.message)}</p>}
           </div>
@@ -703,11 +829,12 @@ function AgregarO() {
             {errors.modalidad && <p className="text-red-500">{String(errors.modalidad.message)}</p>}
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-bold mb-2" htmlFor="detalles_adicionales">• Detalles Adicionales</label>
+            <label className="block text-sm font-bold mb-2" htmlFor="detalles_adicionales">• Detalles/Conocimientos Adicionales</label>
             <textarea
               className="w-full p-2 border rounded"
               id="detalles_adicionales"
               placeholder="Detalles Adicionales que desee agregar a la oferta. Cada Detalle sepárela con una coma . Ejemplo: Detalle 1, Detalle 2"
+              rows={6}
               {...register('detalles_adicionales')}
             ></textarea>
             {errors.detalles_adicionales && <p className="text-red-500">{String(errors.detalles_adicionales.message)}</p>}
@@ -1131,6 +1258,7 @@ function AgregarO() {
             </button>
             <button
               type="submit"
+               id="btnPublicarOferta"
               className="bg-blue-500 text-white p-2 rounded-lg mt-4"
             >
               Publicar Oferta

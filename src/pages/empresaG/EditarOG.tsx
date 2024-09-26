@@ -106,6 +106,17 @@ function EditarOG() {
   const [customTitulo, setCustomTitulo] = useState<string>(''); // Estado para almacenar el título personalizado
   const [showCustomInput, setShowCustomInput] = useState(false); // State to toggle custom input
   const [showCheckbox, setShowCheckbox] = useState(false);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Evita el comportamiento por defecto del formulario
+      const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
+      if (boton) {
+        boton.click(); // Ejecuta el clic en el botón
+      }
+    }
+  };
+
   // Toggle custom title input
   const handleToggleCustomInput = () => {
     setShowCustomInput(!showCustomInput);
@@ -443,7 +454,7 @@ function EditarOG() {
           setCustomTitulo('');
         }
 
-        console.log('Título agregado:', tituloToAdd);
+        
       }
     }
   };
@@ -532,7 +543,7 @@ function EditarOG() {
         <p>Edita los datos de la oferta seleccionada:</p>
         <hr className="my-4" />
         <h3 className="text-1xl text-red-500 font-bold mb-4">Datos de la oferta:</h3>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit} onKeyDown={handleKeyDown}>
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="cargo">
               • Puesto de trabajo
@@ -762,12 +773,13 @@ function EditarOG() {
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="funciones">• Funciones del puesto:
               <span className="text-red-500 ml-1">*</span>
-              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio)</span>
-            </label>
+              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Máximo 500 caractéres, Agregue comas para separar cada función)</span>
+              </label>
             <textarea
               className="w-full p-2 border rounded"
               id="funciones"
               placeholder="Describa a manera breve las funciones o actividades a realizarse en el puesto. Cada función sepárela con una coma . Ejemplo: Funcion 1, Funcion2"
+              rows={6}
               {...register('funciones', { required: 'Funciones son requeridas' })}
             />
             {errors.funciones && <p className="text-red-500">{String(errors.funciones.message)}</p>}
@@ -819,11 +831,12 @@ function EditarOG() {
             {errors.modalidad && <p className="text-red-500">{String(errors.modalidad.message)}</p>}
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-bold mb-2" htmlFor="detalles_adicionales">• Detalles Adicionales</label>
+            <label className="block text-sm font-bold mb-2" htmlFor="detalles_adicionales">• Detalles/Conocimientos Adicionales</label>
             <textarea
               className="w-full p-2 border rounded"
               id="detalles_adicionales"
               placeholder="Detalles Adicionales que desee agregar a la oferta. Cada Detalle sepárela con una coma . Ejemplo: Detalle 1, Detalle 2"
+              rows={6}
               {...register('detalles_adicionales')}
             ></textarea>
             {errors.detalles_adicionales && <p className="text-red-500">{String(errors.detalles_adicionales.message)}</p>}
@@ -1249,6 +1262,7 @@ function EditarOG() {
             <button
               type="submit"
               className="bg-blue-500 text-white p-2 rounded-lg mt-4"
+               id="btnPublicarOferta"
             >
               Actualizar Oferta
             </button>

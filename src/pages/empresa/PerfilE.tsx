@@ -249,24 +249,27 @@ const EmpresaDetails: React.FC = () => {
         }
     };
 
-    const renderIcon = (nombreRed: string) => {
-        switch (nombreRed.toLowerCase()) {
-            case 'linkedin':
-                return <FaLinkedin className="text-blue-700" />;
-            case 'facebook':
-                return <FaFacebook className="text-blue-600" />;
-            case 'twitter':
-                return <FaTwitter className="text-blue-400" />;
-            case 'instagram':
-                return <FaInstagram className="text-pink-600" />;
-            case 'xing':
-                return <FaXing className="text-green-600" />;
-            case 'x':
-                return <FaXTwitter className="text-blue-400" />;
-            default:
-                return <FaGlobe className="text-gray-400" />;
-        }
-    };
+   const renderIcon = (nombreRed: string | null | undefined) => {
+    // Proporcionar un valor predeterminado si nombreRed es null o undefined
+    const nombre = nombreRed ? nombreRed.toLowerCase() : '';
+
+    switch (nombre) {
+        case 'linkedin':
+            return <FaLinkedin className="text-blue-700" />;
+        case 'facebook':
+            return <FaFacebook className="text-blue-600" />;
+        case 'twitter':
+            return <FaTwitter className="text-blue-400" />;
+        case 'instagram':
+            return <FaInstagram className="text-pink-600" />;
+        case 'xing':
+            return <FaXing className="text-green-600" />;
+        case 'x':
+            return <FaXTwitter className="text-blue-400" />;
+        default:
+            return <FaGlobe className="text-gray-400" />;
+    }
+};
 
     const getPlanIcon = (plan: string) => {
         switch (plan) {

@@ -32,7 +32,13 @@ interface Oferta {
     n_mostrar_sueldo: boolean;
     n_mostrar_empresa: boolean;
     soli_sueldo: boolean;
+    preguntas:Pregunta[];
     // Define otros campos de la oferta según sea necesario
+}
+
+interface Pregunta {
+   id: number;
+   pregunta:string;
 }
 
 interface Criterio {
@@ -49,6 +55,9 @@ interface Experiencia {
     nivel_educacion: string;
     campo_amplio: string;
     titulo: string;
+    pivot: {
+        titulo_per: string | null;
+    };
 }
 
 interface Area {
@@ -490,9 +499,10 @@ function VerOfertasPPage() {
             <div className="p-4 bg-gray-100 rounded shadow mt-4">
                 <p className="whitespace-pre-wrap"><strong>Objetivo Cargo: </strong>{selectedOferta.objetivo_cargo}</p>
             </div>
-            <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+            
                 {selectedOferta.criterios.length > 0 && (
                     <>
+                    <div className="mt-4 p-4 bg-gray-100 rounded shadow">
                         <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Criterios de evaluación:</h3>
                         <ul className="list-disc pl-6">
                             {selectedOferta.criterios.map((criterio) => (
@@ -501,23 +511,39 @@ function VerOfertasPPage() {
                                 </li>
                             ))}
                         </ul>
+                        </div>
                     </>
                 )}
-            </div>
-            <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+          
+         
                 {selectedOferta.expe.length > 0 && (
                     <>
+                       <div className="mt-4 p-4 bg-gray-100 rounded shadow">
                         <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Formación requerida para esta oferta:</h3>
                         <ul className="list-disc pl-6">
                             {selectedOferta.expe.map((experiencia) => (
-                                <li key={experiencia.id}>
-                                    <strong>{experiencia.titulo}</strong> - {experiencia.nivel_educacion} en {experiencia.campo_amplio}
-                                </li>
+                               <li key={experiencia.id}>
+                               <strong>{experiencia.pivot.titulo_per ? experiencia.pivot.titulo_per : experiencia.titulo}</strong>
+                               - {experiencia.nivel_educacion} en {experiencia.campo_amplio}
+                           </li>
                             ))}
                         </ul>
+                        </div>
                     </>
                 )}
-            </div>
+            
+            {selectedOferta.preguntas.length > 0 && (
+                                      <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Preguntas para los postulantes de esta oferta:</h3>
+                                    <ul className="list-disc pl-6">
+                                        {selectedOferta.preguntas.map((pregunta) => (
+                                            <li key={pregunta.id}>
+                                                <strong>{pregunta.pregunta}</strong>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                   </div>
+                            )}
             <button
                 onClick={handleCloseModal}
                 className="bg-gray-300 text-gray-700 py-2 px-4 mt-4 rounded hover:bg-gray-400"

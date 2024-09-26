@@ -77,6 +77,17 @@ function AgregarO() {
   const [customTitulo, setCustomTitulo] = useState<string>(''); // Estado para almacenar el título personalizado
   const [showCustomInput, setShowCustomInput] = useState(false); // State to toggle custom input
   const [showCheckbox, setShowCheckbox] = useState(false);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Evita el comportamiento por defecto del formulario
+      const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
+      if (boton) {
+        boton.click(); // Ejecuta el clic en el botón
+      }
+    }
+  };
+
   // Toggle custom title input
   const handleToggleCustomInput = () => {
     setShowCustomInput(!showCustomInput);
@@ -334,7 +345,7 @@ function AgregarO() {
           setCustomTitulo('');
         }
 
-        console.log('Título agregado:', tituloToAdd);
+       
       }
     }
   };
@@ -414,7 +425,7 @@ function AgregarO() {
         <p>Para publicar una oferta completa los datos necesarios:</p>
         <hr className="my-4" />
         <h3 className="text-1xl text-red-500 font-bold mb-4">Datos de la oferta:</h3>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit} onKeyDown={handleKeyDown}>
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="cargo">
               • Puesto de trabajo
@@ -705,11 +716,12 @@ function AgregarO() {
             {errors.modalidad && <p className="text-red-500">{String(errors.modalidad.message)}</p>}
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-bold mb-2" htmlFor="detalles_adicionales">• Detalles Adicionales</label>
+            <label className="block text-sm font-bold mb-2" htmlFor="detalles_adicionales">• Detalles/Conocimientos Adicionales</label>
             <textarea
               className="w-full p-2 border rounded"
               id="detalles_adicionales"
               placeholder="Detalles Adicionales que desee agregar a la oferta. Cada Detalle sepárela con una coma . Ejemplo: Detalle 1, Detalle 2"
+              rows={6}
               {...register('detalles_adicionales')}
             ></textarea>
             {errors.detalles_adicionales && <p className="text-red-500">{String(errors.detalles_adicionales.message)}</p>}
@@ -1133,6 +1145,7 @@ function AgregarO() {
             </button>
             <button
               type="submit"
+               id="btnPublicarOferta"
               className="bg-blue-500 text-white p-2 rounded-lg mt-4"
             >
               Publicar Oferta
