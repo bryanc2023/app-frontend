@@ -833,6 +833,28 @@ function EditarO() {
           <hr className="my-4" />
           <div className="bg-white p-6 rounded-lg shadow-lg py-8" >
             <h3 className="text-1xl text-red-500 font-bold mb-4">Datos de contacto extra:</h3>
+              {/* Mensaje de aviso mejorado */}
+              <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+              <div className="flex items-center">
+                <svg
+                  className="h-5 w-5 text-yellow-500 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                  />
+                </svg>
+                <h1 className="text-xs font-semibold">
+                  (Si desea que las hojas de vida solo lleguen al portal, no seleccionar ninguna opción de estas dos)
+                </h1>
+              </div>
+            </div>
             <div className="flex items-center">
               <input
                 className="mr-2 leading-tight"
@@ -915,7 +937,7 @@ function EditarO() {
                   {...register('mostrar_empresa')}
                 />
                 <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="mostrar_empresa">
-                  No mostrar nombre de Empresa publicadora
+                  No mostrar nombre de la empresa que ofrece la vacante
                 </label>
               </div>
 

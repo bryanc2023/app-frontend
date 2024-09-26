@@ -11,6 +11,9 @@ interface Experiencia {
   nivel_educacion: string;
   campo_amplio: string;
   titulo: string;
+  pivot: {
+    titulo_per: string | null;
+};
 }
 
 
@@ -18,6 +21,7 @@ interface Experiencia {
 interface Titulo {
   id: number;
   titulo: string;
+  customTitulo: string | '';
 }
 
 interface Criterio {
@@ -99,7 +103,17 @@ function EditarOG() {
   const [requirePregunta, setRequirePregunta] = useState(false);
   const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
   const [nuevaPregunta, setNuevaPregunta] = useState('');
-
+  const [customTitulo, setCustomTitulo] = useState<string>(''); // Estado para almacenar el título personalizado
+  const [showCustomInput, setShowCustomInput] = useState(false); // State to toggle custom input
+  const [showCheckbox, setShowCheckbox] = useState(false);
+  // Toggle custom title input
+  const handleToggleCustomInput = () => {
+    setShowCustomInput(!showCustomInput);
+    setCustomTitulo('');
+  };
+  const handleCustomTituloChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomTitulo(event.target.value);
+  };
   const handleCheckboxChange = (event: any) => {
     setShowExperiencia(event.target.checked);
   };
@@ -153,7 +167,8 @@ function EditarOG() {
         setRequireEducation(true);
         const titles: Titulo[] = oferta.expe.map((expe: Experiencia) => ({
           id: expe.id,
-          titulo: expe.titulo
+          titulo: expe.titulo,
+          customTitulo: expe.pivot.titulo_per
         }));
         setSelectedTitles(titles);
       } else {
@@ -287,7 +302,9 @@ function EditarOG() {
     const fetchTitulos = async () => {
       if (selectedNivel && selectedCampo) {
         try {
-          const response = await axios.get(`titulos/${selectedNivel}/${selectedCampo}`);
+          // Si no se ha seleccionado un campo específico ("No especificado"), traer todos los títulos del nivel
+          const campoQuery = selectedCampo === 'No' ? 'todos' : selectedCampo;
+          const response = await axios.get(`titulos/${selectedNivel}/${campoQuery}`);
           setTitulos(response.data);
         } catch (error) {
           console.error('Error fetching titulos:', error);
@@ -368,13 +385,34 @@ function EditarOG() {
   const handleTituloChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedTituloId = parseInt(event.target.value, 10);
     setSelectedTituloId(selectedTituloId);
+    if (isNaN(selectedTituloId)) {
+      setShowCheckbox(false);
+    } else {
+      setShowCheckbox(true);
+    }
+    if (!showCheckbox) {
+      setCustomTitulo('');
+      setShowCustomInput(false);
+    } else {
+      setShowCustomInput(false);
+    }
 
-    
-  
   };
 
+
   const handleAgregarTitulo = () => {
-    if (selectedTituloId !== undefined) {
+    // Verifica si se debe ingresar un título específico y si el campo está vacío
+    if (showCustomInput && customTitulo.trim() === '') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Inserte su título específico.',
+      });
+      return; // Sale de la función si el título específico no se ha ingresado
+    }
+
+    // Si se selecciona un título de la lista
+    if (selectedTituloId !== undefined || showCustomInput) {
       const exists = selectedTitles.some(titulo => titulo.id === selectedTituloId);
       if (exists) {
         Swal.fire({
@@ -382,11 +420,30 @@ function EditarOG() {
           title: 'Oops...',
           text: 'Este título ya ha sido seleccionado.',
         });
+      }
+
+      if (exists) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Este título ya ha sido seleccionado.',
+        });
       } else {
-        const tituloToAdd = titulos.find(titulo => titulo.id === selectedTituloId);
-        if (tituloToAdd) {
-          setSelectedTitles([...selectedTitles, tituloToAdd]);
+        // Crear el nuevo título a agregar
+        const tituloToAdd: Titulo = {
+          id: selectedTituloId || 0, // Si no hay un id, poner 0 (indica título personalizado)
+          titulo: showCustomInput ? customTitulo : titulos.find(titulo => titulo.id === selectedTituloId)?.titulo || '', // Usa el título personalizado o el seleccionado
+          customTitulo: showCustomInput ? customTitulo : '' // Si es personalizado, lo añadimos
+        };
+
+        setSelectedTitles([...selectedTitles, tituloToAdd]);
+
+        // Limpiar el campo de título personalizado después de agregarlo
+        if (showCustomInput) {
+          setCustomTitulo('');
         }
+
+        console.log('Título agregado:', tituloToAdd);
       }
     }
   };
@@ -533,6 +590,7 @@ function EditarOG() {
                     onChange={handleCampoChange}
                     disabled={!selectedNivel}>
                     <option value="">Seleccione</option>
+                    <option value="No">No especificado</option>
                     {campos.map((campo, index) => (
                       <option key={index} value={campo}>
                         {campo}
@@ -556,20 +614,55 @@ function EditarOG() {
                     ))}
                   </select>
                 </div>
-                <button
-                  type="button"
-                  className="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                  onClick={handleAgregarTitulo}
-                >
-                  Agregar Título
-                </button>
+                {/* Checkbox for custom title */}
+                {showCheckbox && (
+                  <div className="form-group mb-8 flex items-center">
+                    <input
+                      type="checkbox"
+                      id="customTitleCheckbox"
+                      className="mr-2"
+                      checked={showCustomInput}
+                      onChange={handleToggleCustomInput}
+                    />
+                    <label htmlFor="customTitleCheckbox" className="text-gray-700 font-semibold">
+                      Escribir título específico?
+                    </label>
+                  </div>
+                )}
+
+                {/* Custom title input displayed when the checkbox is checked */}
+                {showCustomInput && (
+                  <div className="form-group mb-8 flex items-center">
+                    <input
+                      id="customTitulo"
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600"
+                      type="text"
+                      value={customTitulo}
+                      onChange={handleCustomTituloChange}
+                      placeholder="Escribe el título específico"
+                    />
+
+                  </div>
+                )}
+
+
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    className={`mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${!selectedTituloId && !customTitulo ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={handleAgregarTitulo}
+                    disabled={(!selectedTituloId)}
+                  >
+                    Agregar Título
+                  </button>
+                </div>
                 {selectedTitles.length > 0 && (
                   <div className="mt-4">
                     <h4 className="font-semibold">Títulos Seleccionados:</h4>
                     <ul className="list-disc pl-4">
                       {selectedTitles.map((titulo, index) => (
                         <li key={index} className="flex items-center">
-                          <span>{titulo.titulo}</span>
+                          <span>{titulo.customTitulo ? titulo.customTitulo : titulo.titulo}</span>
                           <button
                             type="button"
                             className="ml-2 text-red-600"
@@ -740,6 +833,28 @@ function EditarOG() {
           <hr className="my-4" />
           <div className="bg-white p-6 rounded-lg shadow-lg py-8" >
             <h3 className="text-1xl text-red-500 font-bold mb-4">Datos de contacto extra:</h3>
+              {/* Mensaje de aviso mejorado */}
+              <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+              <div className="flex items-center">
+                <svg
+                  className="h-5 w-5 text-yellow-500 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                  />
+                </svg>
+                <h1 className="text-xs font-semibold">
+                  (Si desea que las hojas de vida solo lleguen al portal, no seleccionar ninguna opción de estas dos)
+                </h1>
+              </div>
+            </div>
             <div className="flex items-center">
               <input
                 className="mr-2 leading-tight"
@@ -822,7 +937,7 @@ function EditarOG() {
                   {...register('mostrar_empresa')}
                 />
                 <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="mostrar_empresa">
-                  No mostrar nombre de Empresa publicadora
+                  No mostrar nombre de la empresa que ofrece la vacante
                 </label>
               </div>
 

@@ -822,7 +822,7 @@ function AgregarO() {
                   {...register('mostrar_empresa')}
                 />
                 <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="mostrar_empresa">
-                  No mostrar nombre de Empresa publicadora
+                  No mostrar nombre de la empresa que ofrece la vacante
                 </label>
               </div>
 
