@@ -42,6 +42,7 @@ interface Oferta {
         campo_amplio: string;
         pivot: {
             titulo_per: string | null;
+            titulo_per2: string | null;
         };
     }[];
     sueldo: number;
