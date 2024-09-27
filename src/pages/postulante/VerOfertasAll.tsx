@@ -50,6 +50,12 @@ interface Oferta {
     correo_contacto: string;
     numero_contacto: string;
     preguntas: Pregunta[];
+    comisiones: number | null;
+    horasExtras: number | null;
+    viaticos: number | null;
+    comentariosComisiones: string | null;
+    comentariosHorasExtras: string | null;
+    comentariosViaticos: string | null;
 }
 
 interface Pregunta {

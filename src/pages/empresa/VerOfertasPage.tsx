@@ -33,13 +33,19 @@ interface Oferta {
     n_mostrar_sueldo: boolean;
     n_mostrar_empresa: boolean;
     soli_sueldo: boolean;
-    preguntas:Pregunta[];
+    preguntas: Pregunta[];
     // Define otros campos de la oferta según sea necesario
+    comisiones: number | null;
+    horasExtras: number | null;
+    viaticos: number | null;
+    comentariosComisiones: string | null;
+    comentariosHorasExtras: string | null;
+    comentariosViaticos: string | null;
 }
 
 interface Pregunta {
-   id: number;
-   pregunta:string;
+    id: number;
+    pregunta: string;
 }
 
 interface Criterio {
@@ -506,13 +512,60 @@ function VerOfertasPPage() {
                                 </ul>
                             </div>
                         </div>
+                        {(selectedOferta.comisiones || selectedOferta.comentariosComisiones) && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Comisiones:</h3>
+
+                                    {selectedOferta.comisiones && (
+                                        <p><strong>Valor: </strong>{selectedOferta.comisiones}$ ofrecidos</p>
+                                    )}
+                                    {selectedOferta.comentariosComisiones && (
+                                        <p><strong>Comentario: </strong>{selectedOferta.comentariosComisiones}</p>
+                                    )}
+
+                                </div>
+                            </>
+                        )}
+                        {(selectedOferta.horasExtras || selectedOferta.comentariosHorasExtras) && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Horas extras:</h3>
+
+                                    {selectedOferta.horasExtras && (
+                                        <p><strong>Valor: </strong>{selectedOferta.horasExtras}$ ofrecidos</p>
+                                    )}
+                                    {selectedOferta.comentariosHorasExtras && (
+                                        <p><strong>Comentario: </strong>{selectedOferta.comentariosHorasExtras}</p>
+                                    )}
+
+                                </div>
+                            </>
+                        )}
+
+                        {(selectedOferta.viaticos || selectedOferta.comentariosViaticos) && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Viaticos:</h3>
+
+                                    {selectedOferta.viaticos && (
+                                        <p><strong>Valor: </strong>{selectedOferta.viaticos}$ ofrecidos</p>
+                                    )}
+                                    {selectedOferta.comentariosViaticos && (
+                                        <p><strong>Comentario: </strong>{selectedOferta.comentariosViaticos}</p>
+                                    )}
+
+                                </div>
+                            </>
+                        )}
+
                         <div className="p-4 bg-gray-100 rounded shadow mt-4">
                             <p className="whitespace-pre-wrap"><strong>Objetivo Cargo: </strong>{selectedOferta.objetivo_cargo}</p>
                         </div>
-                       
-                            {selectedOferta.criterios.length > 0 && (
-                                <>
-                                 <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+
+                        {selectedOferta.criterios.length > 0 && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
                                     <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Criterios de evaluación:</h3>
                                     <ul className="list-disc pl-6">
                                         {selectedOferta.criterios.map((criterio) => (
@@ -521,14 +574,14 @@ function VerOfertasPPage() {
                                             </li>
                                         ))}
                                     </ul>
-                                    </div>
-                                </>
-                            )}
-                       
-                  
-                            {selectedOferta.expe.length > 0 && (
-                                <>
-                                      <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                </div>
+                            </>
+                        )}
+
+
+                        {selectedOferta.expe.length > 0 && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
                                     <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Formación requerida para esta oferta:</h3>
                                     <ul className="list-disc pl-6">
                                         {selectedOferta.expe.map((experiencia) => (
@@ -538,24 +591,24 @@ function VerOfertasPPage() {
                                             </li>
                                         ))}
                                     </ul>
-                                    </div>
-                                </>
-                            )}
-                     
-                  
-                            {selectedOferta.preguntas.length > 0 && (
-                                      <div className="mt-4 p-4 bg-gray-100 rounded shadow">
-                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Preguntas para los postulantes de esta oferta:</h3>
-                                    <ul className="list-disc pl-6">
-                                        {selectedOferta.preguntas.map((pregunta) => (
-                                            <li key={pregunta.id}>
-                                                <strong>{pregunta.pregunta}</strong>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                   </div>
-                            )}
-                     
+                                </div>
+                            </>
+                        )}
+
+
+                        {selectedOferta.preguntas.length > 0 && (
+                            <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Preguntas para los postulantes de esta oferta:</h3>
+                                <ul className="list-disc pl-6">
+                                    {selectedOferta.preguntas.map((pregunta) => (
+                                        <li key={pregunta.id}>
+                                            <strong>{pregunta.pregunta}</strong>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
                         <button
                             onClick={handleCloseModal}
                             className="bg-gray-300 text-gray-700 py-2 px-4 mt-4 rounded hover:bg-gray-400"

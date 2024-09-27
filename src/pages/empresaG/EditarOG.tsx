@@ -106,6 +106,8 @@ function EditarOG() {
   const [customTitulo, setCustomTitulo] = useState<string>(''); // Estado para almacenar el título personalizado
   const [showCustomInput, setShowCustomInput] = useState(false); // State to toggle custom input
   const [showCheckbox, setShowCheckbox] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+  const [hasAdditionalComponents, setHasAdditionalComponents] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     if (e.key === 'Enter') {
@@ -129,6 +131,9 @@ function EditarOG() {
     setShowExperiencia(event.target.checked);
   };
   
+  const handleCheckboxSalarioChange = (event: any) => {
+    setShowAdd(event.target.checked);
+  };
 
   
   useEffect(() => {
@@ -156,6 +161,7 @@ function EditarOG() {
         setValue('carga_horaria', oferta.carga_horaria || '');
         setValue('modalidad', oferta.modalidad || '');
         setValue('detalles_adicionales', oferta.detalles_adicionales || '');
+        
         setShowCorreo(!!oferta.correo_contacto);
         if (oferta.correo_contacto) {
           setValue('correo_contacto', oferta.correo_contacto);
@@ -206,6 +212,25 @@ function EditarOG() {
       setValue('mostrar_sueldo', oferta.n_mostrar_sueldo ? true : false);
       setValue('mostrar_empresa', oferta.n_mostrar_empresa ? true : false);
       setValue('solicitar_sueldo', oferta.solicitar_sueldo ? true : false);
+      if (oferta.comisiones || oferta.horasExtra || oferta.viaticos|| oferta.comentariosComisiones|| oferta.comentariosHorasExtras||oferta.comentariosViaticos) {
+        setShowAdd(true);
+        setValue('comisiones', oferta.comisiones && oferta.comisiones !== 0 ? oferta.comisiones : '');
+        setValue('horasExtras', oferta.horasExtras && oferta.horasExtras !== 0 ? oferta.horasExtras : '');
+        setValue('viaticos', oferta.viaticos && oferta.viaticos !== 0 ? oferta.viaticos : '');
+        setValue('comentariosComisiones', oferta.comentariosComisiones|| '');
+        setValue('comentariosHorasExtras', oferta.comentariosHorasExtras|| '');
+        setValue('comentariosViaticos', oferta.comentariosViaticos|| '');
+        setHasAdditionalComponents(true);
+      } else {
+        setShowAdd(false);
+        setValue('comisiones', '');
+        setValue('horasExtras',  '');
+        setValue('viaticos',  '');
+        setValue('comentariosComisiones',  '');
+        setValue('comentariosHorasExtras',  '');
+        setValue('comentariosViaticos', '');
+        setHasAdditionalComponents(false);
+      }
       } catch (error) {
         console.error('Error fetching oferta:', error);
       }
@@ -493,6 +518,12 @@ function EditarOG() {
         titulos: selectedTitles,
         criterios: criteriosValidos,
         preguntas: preguntasSoloTexto, 
+        comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
+        horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
+        viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
+        comentariosComisiones: values.comentariosComisiones || null,
+        comentariosHorasExtras: values.comentariosHorasExtras || null,
+        comentariosViaticos: values.comentariosViaticos || null,
       };
   
   
@@ -770,6 +801,120 @@ function EditarOG() {
             />
             {errors.sueldo && <p className="text-red-500">{String(errors.sueldo.message)}</p>}
           </div>
+          <div className="mb-4">
+            <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="sueldoCheckbox">
+              <input
+                type="checkbox"
+                id="sueldoCheckbox"
+                onChange={handleCheckboxSalarioChange}
+                checked={hasAdditionalComponents}
+              />{' '}
+              ¿Hay componentes adicionales de pago?
+            </label>
+            <hr className="my-4" />
+            {showAdd && (
+              <>
+                <div id="experienciaContainer" className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                  {/* Mensaje de aviso mejorado */}
+                  <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+                    <div className="flex items-center">
+                      <svg
+                        className="h-5 w-5 text-yellow-500 mr-2"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                        />
+                      </svg>
+                      <h1 className="text-xs font-semibold">
+                        (Si solo se tiene un valor de pago adicional, se puede dejar vacio el/los campos no necesarios)
+                      </h1>
+                    </div>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold mb-2" htmlFor="comisiones">
+                      Comisiones:
+                    </label>
+                    <input
+                      className="w-full p-2 border rounded"
+                      type="number"
+                      id="comisiones"
+                      step="0.01"
+                      placeholder="Ingrese el valor a pagar por las comisiones de este puesto de trabajo"
+                      {...register('comisiones', { validate: validateNoNegative })}
+                    />
+                    {errors.comisiones && <p className="text-red-500">{String(errors.comisiones.message)}</p>}
+                    <textarea
+                      className="w-full p-2 border rounded mt-2"
+                      placeholder="Comentario sobre el pago de las comisiones"
+                      {...register('comentariosComisiones', {
+                        validate: {
+                          maxLength: value => value.length <= 800 || 'Se permiten hasta 800 caracteres.',
+                        },
+                      })}
+                    />
+                    {errors.comentariosComisiones && <p className="text-red-500">{String(errors.comentariosComisiones.message)}</p>}
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold mb-2" htmlFor="horasExtras">
+                      Horas extras:
+                    </label>
+                    <input
+                      className="w-full p-2 border rounded"
+                      type="number"
+                      id="horasExtras"
+                      step="0.01"
+                      placeholder="Ingrese el valor a pagar por las horas extras de este puesto de trabajo"
+                      {...register('horasExtras', { validate: validateNoNegative })}
+                    />
+                    {errors.horasExtras && <p className="text-red-500">{String(errors.horasExtras.message)}</p>}
+                    <textarea
+                      className="w-full p-2 border rounded mt-2"
+                      placeholder="Comentario sobre el pago de las horas extras"
+                      {...register('comentariosHorasExtras', {
+                        validate: {
+                          maxLength: value => value.length <= 800 || 'Se permiten hasta 800 caracteres.',
+                        },
+                      })}
+                    />
+                    {errors.comentariosHorasExtras && <p className="text-red-500">{String(errors.comentariosHorasExtras.message)}</p>}
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold mb-2" htmlFor="viaticos">
+                      Viáticos:
+                    </label>
+                    <input
+                      className="w-full p-2 border rounded"
+                      type="number"
+                      id="viaticos"
+                      step="0.01"
+                      placeholder="Ingrese el valor a pagar por los viaticos de este puesto de trabajo"
+                      {...register('viaticos', { validate: validateNoNegative })}
+                    />
+                    {errors.viaticos && <p className="text-red-500">{String(errors.viaticos.message)}</p>}
+                    <textarea
+                      className="w-full p-2 border rounded mt-2"
+                      placeholder="Comentario sobre el pago de los viaticos"
+                      {...register('comentariosViaticos', {
+                        validate: {
+                          maxLength: value => value.length <= 800 || 'Se permiten hasta 800 caracteres.',
+                        },
+                      })}
+                    />
+                    {errors.comentariosViaticos && <p className="text-red-500">{String(errors.comentariosViaticos.message)}</p>}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+         
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="funciones">• Funciones del puesto:
               <span className="text-red-500 ml-1">*</span>

@@ -49,6 +49,12 @@ interface Oferta {
     correo_contacto: string;
     numero_contacto: string;
     preguntas: Pregunta[];
+    comisiones: number | null;
+    horasExtras: number | null;
+    viaticos: number | null;
+    comentariosComisiones: string | null;
+    comentariosHorasExtras: string | null;
+    comentariosViaticos: string | null;
 }
 
 interface Pregunta {
@@ -338,7 +344,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                                 {IconoSueldo} <strong>Sueldo:</strong>   {(oferta.sueldo === 0 || oferta.n_mostrar_sueldo === 1) ? 'No especificado' : `${oferta.sueldo} $`}
                             </p>
                             <p className="text-gray-700 mb-1 ">
-                                <strong className='flex items-center'> {IconoExperiencia}Experiencia en cargos similares:</strong> {oferta.experiencia === 0 ? 'Ninguna' : `${oferta.experiencia} año/s`}
+                                <strong className='flex items-center'> {IconoExperiencia}Experiencia en cargos similares:</strong> {oferta.experiencia === 0 ? 'No especificada' : `${oferta.experiencia} año/s`}
                             </p>
                             <p className="text-gray-700 mb-1 ">
                                 <strong className='flex items-center'> {IconoCargaHoraria}Carga Horaria:</strong> {oferta.carga_horaria}
@@ -359,16 +365,56 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                     <hr className="my-4" />
 
                     <p className="text-slate-950 mb-1 "><strong><p className="text-gray-700 mb-1 flex items-center"> {IconoLectura} Detalles adicionales:</p></strong> {renderDetalles()}</p>
-
+                    {(oferta.comisiones || oferta.horasExtras|| oferta.viaticos|| oferta.comentariosComisiones|| oferta.comentariosHorasExtras||oferta.comentariosViaticos) && (
+                         <>
+                         <hr className="my-4" />
+                         <p className="text-slate-950 mb-1 "><strong><p className="text-gray-700 mb-1 flex items-center"> {IconoLectura} Detalles adicionales de pago:</p></strong></p>
+                         <p>Para esta oferta, la empresa detallo los siguientes beneficios:</p>
+                         {(oferta.comisiones || oferta.comentariosComisiones) && (
+                              <>
+                               <p className="text-gray-700 mb-1"><strong>Valor de las comisiones:</strong>  {(oferta.comisiones) ? `${oferta.comisiones} $`: 'No especificado' }</p>
+                               <p className="text-gray-700 mb-1"><strong>Detalle:</strong>  {(oferta.comentariosComisiones) ? `${oferta.comentariosComisiones}`: 'Ninguno' }</p>
+                               <hr className="my-4" />
+                              </>
+                             )}
+                              {(oferta.horasExtras || oferta.comentariosHorasExtras) && (
+                              <>
+                               <p className="text-gray-700 mb-1"><strong>Valor de las horas extras:</strong>  {(oferta.horasExtras) ? `${oferta.horasExtras} $`: 'No especificado' }</p>
+                               <p className="text-gray-700 mb-1"><strong>Detalle:</strong>  {(oferta.comentariosHorasExtras) ? `${oferta.comentariosHorasExtras}`: 'Ninguno' }</p>
+                               <hr className="my-4" />
+                              </>
+                             )}
+                              {(oferta.viaticos || oferta.comentariosViaticos) && (
+                              <>
+                               <p className="text-gray-700 mb-1"><strong>Valor de los viáticos:</strong>  {(oferta.viaticos) ? `${oferta.viaticos} $`: 'No especificado' }</p>
+                               <p className="text-gray-700 mb-1"><strong>Detalle:</strong>  {(oferta.comentariosViaticos) ? `${oferta.comentariosViaticos}`: 'Ninguno' }</p>
+                               <hr className="my-4" />
+                              </>
+                             )}
+                             
+                     </>
+                    )}
+                   
                     {oferta.criterios.length > 0 && (
                         <>
                             <hr className="my-4" />
                             <p className="text-slate-950 mb-1 "><strong className='flex items-center'> {IconoEvaluacion} Requisitos adicionales de evaluación:</strong></p>
                             <ul className="mb-4">
                                 {oferta.criterios.map((criterio, index) => (
-                                    <li key={index}>
-                                        <p><strong className="text-orange-800 mb-1 ">⁃ {criterio.criterio}:</strong> {renderCriterioValor(criterio)}</p>
-                                    </li>
+                                     <li key={index}>
+                                     <p>
+                                         <strong className="text-orange-800 mb-1">
+                                             ⁃ {criterio.criterio}:
+                                         </strong>
+                                         {criterio.criterio === "Experiencia" ? (
+                                             <>
+                                                 {oferta.experiencia && oferta.experiencia > 0 
+                                                     ? `${oferta.experiencia} años de experiencia en cargos similares` 
+                                                     : "Años de experiencia adquiridos en cargos similares"}
+                                             </>
+                                         ) : renderCriterioValor(criterio)}
+                                     </p>
+                                 </li>
                                 ))}
                             </ul>
                         </>
@@ -394,7 +440,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                                 <FontAwesomeIcon icon={faInfoCircle} className="text-gray-700 mr-2" />
                                 <h3 className=" text-gray-700 mb-1 "><strong>Datos Extras de Contacto</strong></h3>
                             </div>
-                            <p>Para esta oferta enviar hojas de vida al siguiente correo de contacto con asunto "Nombre del cargo"</p>
+                            <p>Para esta oferta enviar hojas de vida al siguiente correo de contacto con asunto "{oferta.cargo}"</p>
                             <p className="text-gray-700 mb-1"><strong>Correo electrónico:</strong> {oferta.correo_contacto}</p>
                         </div>
                     )}

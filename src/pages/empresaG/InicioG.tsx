@@ -34,6 +34,12 @@ interface Oferta {
     soli_sueldo: boolean;
     preguntas:Pregunta[];
     // Define otros campos de la oferta según sea necesario
+    comisiones: number | null;
+    horasExtras: number | null;
+    viaticos: number | null;
+    comentariosComisiones: string | null;
+    comentariosHorasExtras: string | null;
+    comentariosViaticos: string | null;
 }
 
 interface Pregunta {
@@ -496,6 +502,52 @@ function VerOfertasPPage() {
                 </ul>
                 </div>
             </div>
+            {(selectedOferta.comisiones || selectedOferta.comentariosComisiones) && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Comisiones:</h3>
+
+                                    {selectedOferta.comisiones && (
+                                        <p><strong>Valor: </strong>{selectedOferta.comisiones}$ ofrecidos</p>
+                                    )}
+                                    {selectedOferta.comentariosComisiones && (
+                                        <p><strong>Comentario: </strong>{selectedOferta.comentariosComisiones}</p>
+                                    )}
+
+                                </div>
+                            </>
+                        )}
+                        {(selectedOferta.horasExtras || selectedOferta.comentariosHorasExtras) && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Horas extras:</h3>
+
+                                    {selectedOferta.horasExtras && (
+                                        <p><strong>Valor: </strong>{selectedOferta.horasExtras}$ ofrecidos</p>
+                                    )}
+                                    {selectedOferta.comentariosHorasExtras && (
+                                        <p><strong>Comentario: </strong>{selectedOferta.comentariosHorasExtras}</p>
+                                    )}
+
+                                </div>
+                            </>
+                        )}
+                        {(selectedOferta.viaticos || selectedOferta.comentariosViaticos) && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Viaticos:</h3>
+
+                                    {selectedOferta.viaticos && (
+                                        <p><strong>Valor: </strong>{selectedOferta.viaticos}$ ofrecidos</p>
+                                    )}
+                                    {selectedOferta.comentariosViaticos && (
+                                        <p><strong>Comentario: </strong>{selectedOferta.comentariosViaticos}</p>
+                                    )}
+
+                                </div>
+                            </>
+                        )}
+
             <div className="p-4 bg-gray-100 rounded shadow mt-4">
                 <p className="whitespace-pre-wrap"><strong>Objetivo Cargo: </strong>{selectedOferta.objetivo_cargo}</p>
             </div>
