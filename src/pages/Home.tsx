@@ -30,9 +30,12 @@ const Home: React.FC = () => {
   const navigate = useNavigate();
   const { isLogged, role, user} = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     const checkRegistrationStatus = async () => {
       try {
+        setIsLoading(true);
         if (isLogged && user) {
           // Llamada a la API para verificar el estado del registro
 
@@ -82,7 +85,9 @@ const Home: React.FC = () => {
       } catch (error) {
         console.error('Error checking registration status:', error);
         // Maneja el error según sea necesario (p. ej., mostrar un mensaje al usuario)
-      }
+      }  finally {
+          setIsLoading(false); // Ocultar indicador de carga después de la redirección
+        }
     };
 
 
@@ -103,8 +108,15 @@ const Home: React.FC = () => {
 
     fetchOfertas();
   }, []);
+ 
+
   return (
     <div className="flex flex-col min-h-screen">
+      {isLoading && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
+          <div className="text-white text-2xl font-bold">Cargando tu pagina principal un momento porfavor...</div>
+        </div>
+      )}
       <header className="bg-cover bg-center text-white py-40 px-5 text-center" style={{ backgroundImage: "url('/images/home.jpg')" }}>
         <div className="bg-black bg-opacity-50 p-6 rounded-lg inline-block">
           <h1 className="text-6xl mb-2 font-bold">Bienvenido a Postula</h1>

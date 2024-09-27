@@ -218,7 +218,7 @@ const CurriTab: React.FC = () => {
       img.crossOrigin = "anonymous";
       img.src = imageSrc;
       img.onload = async () => {
-          const imgWidth = 70;
+          const imgWidth = 50;
           const imgHeight = 50;
           const pdfWidth = doc.internal.pageSize.getWidth();
           const margin = 10;
@@ -538,12 +538,8 @@ const CurriTab: React.FC = () => {
   };
 
   const handleDownloadCV = (url: string) => {
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = url.split('/').pop() || 'CV.pdf';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const newWindow = window.open(url, '_blank');
+    if (newWindow) newWindow.opener = null;
   };
   const handleAgreementAccept = () => {
     setAgreementAccepted(!agreementAccepted);
