@@ -5,6 +5,7 @@ import { Provider } from "react-redux";
 import { persistor, store } from "./store";
 import { PersistGate } from "redux-persist/integration/react";
 import ProtectedRoute from "./pages/ProtectedRoute";
+// Importa el hook
 
 function App() {
 

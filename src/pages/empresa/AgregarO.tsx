@@ -54,7 +54,6 @@ function AgregarO() {
   const [selectedCampo, setSelectedCampo] = useState('');
   const [selectedTituloId, setSelectedTituloId] = useState<number>();
   const [requireEducation, setRequireEducation] = useState(false);
-  const [soliSueldo, setSolicitarSueldo] = useState(false);
   const [requireCriterio, setRequireCriterio] = useState(false);
   const [requirePregunta, setRequirePregunta] = useState(false);
   const [selectedTitles, setSelectedTitles] = useState<Titulo[]>([]);
@@ -78,6 +77,8 @@ function AgregarO() {
   const [showCustomInput, setShowCustomInput] = useState(false); // State to toggle custom input
   const [showCheckbox, setShowCheckbox] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [soliSueldo, setSolicitarSueldo] = useState(0);
+
 
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
@@ -250,11 +251,7 @@ function AgregarO() {
     const id = parseInt(event.target.value);
     setSelectedCriterioId(id);
     setValorCriterio('');
-    if (id === 3) {
-      setSolicitarSueldo(true);
-    } else {
-      setSolicitarSueldo(false);
-    }
+   
   };
 
   const handleAgregarCriterio = () => {
@@ -262,12 +259,20 @@ function AgregarO() {
       const criterioSeleccionado = criterios.find(criterio => criterio.id_criterio === selectedCriterioId);
       if (criterioSeleccionado) {
         const exists = selectedCriterios.some(c => c.id_criterio === selectedCriterioId);
+    
         if (!exists) {
+        
           const criterioConValor: SelectedCriterio = {
             ...criterioSeleccionado,
-            valor: selectedCriterioId === 3 ? '' : valorCriterio || '',
+            valor: selectedCriterioId === 3 ? 'Sueldo prospecto a ganar del postulante' : valorCriterio || '',
             prioridad: prioridadCriterio
           };
+            // Si el criterio agregado es el con id 3, seteamos soliSueldo1 a 1
+        if (selectedCriterioId === 3) {
+          setSolicitarSueldo(1);
+        }
+
+       
           setSelectedCriterios([...selectedCriterios, criterioConValor]);
           setSelectedCriterioId(null);
           setValorCriterio('');
@@ -294,10 +299,9 @@ function AgregarO() {
     const updatedCriterios = selectedCriterios.filter(c => c.id_criterio !== id);
     setSelectedCriterios(updatedCriterios);
     if (id === 3) {
-      setSolicitarSueldo(false);
-    } else {
-      setSolicitarSueldo(true);
+      setSolicitarSueldo(0);
     }
+    
   };
 
   const handleTituloChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -398,7 +402,7 @@ function AgregarO() {
           experiencia: showExperiencia ? values.experiencia : 0,
           correo_contacto: showCorreo ? values.correo_contacto : null,
           numero_contacto: showNumeroContacto ? values.numero_contacto : null,
-          solicitar_sueldo: soliSueldo ? soliSueldo : 0,
+          solicitar_sueldo: soliSueldo ===1 ? true : false,
           titulos: selectedTitles,
           criterios: selectedCriterios,
           preguntas: preguntas,

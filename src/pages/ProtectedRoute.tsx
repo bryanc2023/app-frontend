@@ -20,26 +20,10 @@ function ProtectedRoute({ children, allowedRoles = [] }: Props) {
         const token = localStorage.getItem("token");
 
         // Verificar si el token, isLogged o role son nulos
-        if (!token || !isLogged || !role|| !user) {
+        if (!token || !isLogged || !role || !user) {
             // Cerrar sesión y redirigir al login
-             // Limpiar el almacenamiento local y de sesión
-             localStorage.clear();
-             sessionStorage.clear();
- 
-             // Opción adicional para borrar caches del navegador si es necesario:
-             if ('caches' in window) {
-                 caches.keys().then((names) => {
-                     names.forEach((name) => {
-                         caches.delete(name);
-                     });
-                 });
-             }
- 
-
-            dispatch(logout());
-            navigate("/login");
+            logoutAndRedirect();
             return;
-
         }
 
         // Verificar si el rol permitido está incluido
@@ -51,6 +35,33 @@ function ProtectedRoute({ children, allowedRoles = [] }: Props) {
         // Si todo está bien, marcar como verificado
         setIsVerifying(false);
     }, [isLogged, role, allowedRoles, navigate, dispatch]);
+
+    useEffect(() => {
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            logoutAndRedirect(); // Llama a la función para cerrar sesión
+            // Para permitir un mensaje, aunque no funcione en todos los navegadores
+            event.preventDefault();
+            event.returnValue = ""; // Algunos navegadores requieren esto
+        };
+
+        // Agregar el listener al evento beforeunload
+        window.addEventListener("beforeunload", handleBeforeUnload);
+
+        return () => {
+            // Limpiar el listener cuando el componente se desmonta
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, []);
+
+    const logoutAndRedirect = () => {
+        // Limpiar el almacenamiento local y de sesión
+        localStorage.clear();
+        sessionStorage.clear();
+
+        // Despachar la acción de logout
+        dispatch(logout());
+        navigate("/login");
+    };
 
     // Mostrar un estado de "cargando" o redirigir mientras se verifica
     if (isVerifying) {
