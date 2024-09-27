@@ -7,9 +7,11 @@ import { RootState } from '../../store';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus } from 'react-icons/fi';
 
+
 interface Titulo {
   id: number;
   titulo: string;
+  customTitulo: string | '';
 }
 
 interface Criterio {
@@ -72,6 +74,29 @@ function AgregarO() {
   const [selectedCanton, setSelectedCanton] = useState('');
   const [preguntas, setPreguntas] = useState([]);
   const [nuevaPregunta, setNuevaPregunta] = useState('');
+  const [customTitulo, setCustomTitulo] = useState<string>(''); // Estado para almacenar el título personalizado
+  const [showCustomInput, setShowCustomInput] = useState(false); // State to toggle custom input
+  const [showCheckbox, setShowCheckbox] = useState(false);
+  const [showAdd, setShowAdd] = useState(false);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault(); // Evita el comportamiento por defecto del formulario
+      const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
+      if (boton) {
+        boton.click(); // Ejecuta el clic en el botón
+      }
+    }
+  };
+
+  // Toggle custom title input
+  const handleToggleCustomInput = () => {
+    setShowCustomInput(!showCustomInput);
+    setCustomTitulo('');
+  };
+  const handleCustomTituloChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomTitulo(event.target.value);
+  };
 
   const handleAgregarPregunta = () => {
     if (preguntas.length < 5 && nuevaPregunta.trim() !== '') {
@@ -106,6 +131,9 @@ function AgregarO() {
 
   const handleCheckboxChange = (event: any) => {
     setShowExperiencia(event.target.checked);
+  };
+  const handleCheckboxSalarioChange = (event: any) => {
+    setShowAdd(event.target.checked);
   };
 
 
@@ -172,7 +200,9 @@ function AgregarO() {
     const fetchTitulos = async () => {
       if (selectedNivel && selectedCampo) {
         try {
-          const response = await axios.get(`titulos/${selectedNivel}/${selectedCampo}`);
+          // Si no se ha seleccionado un campo específico ("No especificado"), traer todos los títulos del nivel
+          const campoQuery = selectedCampo === 'No' ? 'todos' : selectedCampo;
+          const response = await axios.get(`titulos/${selectedNivel}/${campoQuery}`);
           setTitulos(response.data);
         } catch (error) {
           console.error('Error fetching titulos:', error);
@@ -262,13 +292,33 @@ function AgregarO() {
   const handleTituloChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedTituloId = parseInt(event.target.value, 10);
     setSelectedTituloId(selectedTituloId);
-
-
+    if (isNaN(selectedTituloId)) {
+      setShowCheckbox(false);
+    } else {
+      setShowCheckbox(true);
+    }
+    if (!showCheckbox) {
+      setCustomTitulo('');
+      setShowCustomInput(false);
+    } else {
+      setShowCustomInput(false);
+    }
 
   };
 
   const handleAgregarTitulo = () => {
-    if (selectedTituloId !== undefined) {
+    // Verifica si se debe ingresar un título específico y si el campo está vacío
+    if (showCustomInput && customTitulo.trim() === '') {
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Inserte su título específico.',
+      });
+      return; // Sale de la función si el título específico no se ha ingresado
+    }
+
+    // Si se selecciona un título de la lista
+    if (selectedTituloId !== undefined || showCustomInput) {
       const exists = selectedTitles.some(titulo => titulo.id === selectedTituloId);
       if (exists) {
         Swal.fire({
@@ -276,14 +326,34 @@ function AgregarO() {
           title: 'Oops...',
           text: 'Este título ya ha sido seleccionado.',
         });
+      }
+
+      if (exists) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Este título ya ha sido seleccionado.',
+        });
       } else {
-        const tituloToAdd = titulos.find(titulo => titulo.id === selectedTituloId);
-        if (tituloToAdd) {
-          setSelectedTitles([...selectedTitles, tituloToAdd]);
+        // Crear el nuevo título a agregar
+        const tituloToAdd: Titulo = {
+          id: selectedTituloId || 0, // Si no hay un id, poner 0 (indica título personalizado)
+          titulo: showCustomInput ? customTitulo : titulos.find(titulo => titulo.id === selectedTituloId)?.titulo || '', // Usa el título personalizado o el seleccionado
+          customTitulo: showCustomInput ? customTitulo : '' // Si es personalizado, lo añadimos
+        };
+
+        setSelectedTitles([...selectedTitles, tituloToAdd]);
+
+        // Limpiar el campo de título personalizado después de agregarlo
+        if (showCustomInput) {
+          setCustomTitulo('');
         }
+
+       
       }
     }
   };
+
 
   const handleEliminarTitulo = (tituloId: number) => {
     const updatedTitles = selectedTitles.filter(titulo => titulo.id !== tituloId);
@@ -321,9 +391,15 @@ function AgregarO() {
           titulos: selectedTitles,
           criterios: selectedCriterios,
           preguntas: preguntas,
+          comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
+          horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
+          viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
+          comentariosComisiones: values.comentariosComisiones || null,
+          comentariosHorasExtras: values.comentariosHorasExtras || null,
+          comentariosViaticos: values.comentariosViaticos || null,
         };
 
-    
+
 
         await axios.post('add-oferta', dataToSend, {
           headers: {
@@ -359,7 +435,7 @@ function AgregarO() {
         <p>Para publicar una oferta completa los datos necesarios:</p>
         <hr className="my-4" />
         <h3 className="text-1xl text-red-500 font-bold mb-4">Datos de la oferta:</h3>
-        <form onSubmit={onSubmit}>
+        <form onSubmit={onSubmit} onKeyDown={handleKeyDown}>
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="cargo">
               • Puesto de trabajo
@@ -395,7 +471,6 @@ function AgregarO() {
             <>
               <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
                 <div className="form-group mb-8">
-                  <center className="block text-orange-700 font-semibold mb-2">TITULOS ESPECIFICOS PARA LA OFERTA:</center>
                   <label htmlFor="nivelEducacion" className="block text-gray-700 font-semibold mb-2">Nivel de Educación:</label>
                   <select
                     id="nivelEducacion"
@@ -418,6 +493,7 @@ function AgregarO() {
                     onChange={handleCampoChange}
                     disabled={!selectedNivel}>
                     <option value="">Seleccione</option>
+                    <option value="No">No especificado</option>
                     {campos.map((campo, index) => (
                       <option key={index} value={campo}>
                         {campo}
@@ -441,13 +517,48 @@ function AgregarO() {
                     ))}
                   </select>
                 </div>
-                <button
-                  type="button"
-                  className="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                  onClick={handleAgregarTitulo}
-                >
-                  Agregar Título
-                </button>
+                {/* Checkbox for custom title */}
+                {showCheckbox && (
+                  <div className="form-group mb-8 flex items-center">
+                    <input
+                      type="checkbox"
+                      id="customTitleCheckbox"
+                      className="mr-2"
+                      checked={showCustomInput}
+                      onChange={handleToggleCustomInput}
+                    />
+                    <label htmlFor="customTitleCheckbox" className="text-gray-700 font-semibold">
+                      Escribir título específico?
+                    </label>
+                  </div>
+                )}
+
+                {/* Custom title input displayed when the checkbox is checked */}
+                {showCustomInput && (
+                  <div className="form-group mb-8 flex items-center">
+                    <input
+                      id="customTitulo"
+                      className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600"
+                      type="text"
+                      value={customTitulo}
+                      onChange={handleCustomTituloChange}
+                      placeholder="Escribe el título específico"
+                    />
+
+                  </div>
+                )}
+
+
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    className={`mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${!selectedTituloId && !customTitulo ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={handleAgregarTitulo}
+                    disabled={(!selectedTituloId)}
+                  >
+                    Agregar Título
+                  </button>
+                </div>
                 {selectedTitles.length > 0 && (
                   <div className="mt-4">
                     <h4 className="font-semibold">Títulos Seleccionados:</h4>
@@ -467,8 +578,8 @@ function AgregarO() {
                     </ul>
                   </div>
                 )}
-                
-         
+
+
               </div>
               <hr className="my-4" />
             </>
@@ -553,6 +664,118 @@ function AgregarO() {
               {...register('sueldo', { validate: validateNoNegative })}
             />
             {errors.sueldo && <p className="text-red-500">{String(errors.sueldo.message)}</p>}
+            <div className="mb-4">
+            <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="sueldoCheckbox">
+              <input
+                type="checkbox"
+                id="sueldoCheckbox"
+                onChange={handleCheckboxSalarioChange}
+              />{' '}
+              ¿Hay componentes adicionales de pago?
+            </label>
+            <hr className="my-4" />
+            {showAdd && (
+              <>
+                <div id="experienciaContainer" className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                  {/* Mensaje de aviso mejorado */}
+                  <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+                    <div className="flex items-center">
+                      <svg
+                        className="h-5 w-5 text-yellow-500 mr-2"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                        />
+                      </svg>
+                      <h1 className="text-xs font-semibold">
+                        (Si solo se tiene un valor de pago adicional, se puede dejar vacio el/los campos no necesarios)
+                      </h1>
+                    </div>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold mb-2" htmlFor="comisiones">
+                      Comisiones:
+                    </label>
+                    <input
+                      className="w-full p-2 border rounded"
+                      type="number"
+                      id="comisiones"
+                      step="0.01"
+                      placeholder="Ingrese el valor a pagar por las comisiones de este puesto de trabajo"
+                      {...register('comisiones', { validate: validateNoNegative })}
+                    />
+                    {errors.comisiones && <p className="text-red-500">{String(errors.comisiones.message)}</p>}
+                    <textarea
+                      className="w-full p-2 border rounded mt-2"
+                      placeholder="Comentario sobre el pago de las comisiones"
+                      {...register('comentariosComisiones', {
+                        validate: {
+                          maxLength: value => value.length <= 800 || 'Se permiten hasta 800 caracteres.',
+                        },
+                      })}
+                    />
+                    {errors.comentariosComisiones && <p className="text-red-500">{String(errors.comentariosComisiones.message)}</p>}
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold mb-2" htmlFor="horasExtras">
+                      Horas extras:
+                    </label>
+                    <input
+                      className="w-full p-2 border rounded"
+                      type="number"
+                      id="horasExtras"
+                      step="0.01"
+                      placeholder="Ingrese el valor a pagar por las horas extras de este puesto de trabajo"
+                      {...register('horasExtras', { validate: validateNoNegative })}
+                    />
+                    {errors.horasExtras && <p className="text-red-500">{String(errors.horasExtras.message)}</p>}
+                    <textarea
+                      className="w-full p-2 border rounded mt-2"
+                      placeholder="Comentario sobre el pago de las horas extras"
+                      {...register('comentariosHorasExtras', {
+                        validate: {
+                          maxLength: value => value.length <= 800 || 'Se permiten hasta 800 caracteres.',
+                        },
+                      })}
+                    />
+                    {errors.comentariosHorasExtras && <p className="text-red-500">{String(errors.comentariosHorasExtras.message)}</p>}
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-sm font-bold mb-2" htmlFor="viaticos">
+                      Viáticos:
+                    </label>
+                    <input
+                      className="w-full p-2 border rounded"
+                      type="number"
+                      id="viaticos"
+                      step="0.01"
+                      placeholder="Ingrese el valor a pagar por los viaticos de este puesto de trabajo"
+                      {...register('viaticos', { validate: validateNoNegative })}
+                    />
+                    {errors.viaticos && <p className="text-red-500">{String(errors.viaticos.message)}</p>}
+                    <textarea
+                      className="w-full p-2 border rounded mt-2"
+                      placeholder="Comentario sobre el pago de los viaticos"
+                      {...register('comentariosViaticos', {
+                        validate: {
+                          maxLength: value => value.length <= 800 || 'Se permiten hasta 800 caracteres.',
+                        },
+                      })}
+                    />
+                    {errors.comentariosViaticos && <p className="text-red-500">{String(errors.comentariosViaticos.message)}</p>}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
           </div>
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="funciones">• Funciones del puesto:
@@ -615,11 +838,12 @@ function AgregarO() {
             {errors.modalidad && <p className="text-red-500">{String(errors.modalidad.message)}</p>}
           </div>
           <div className="mb-4">
-            <label className="block text-sm font-bold mb-2" htmlFor="detalles_adicionales">• Detalles Adicionales</label>
+            <label className="block text-sm font-bold mb-2" htmlFor="detalles_adicionales">• Detalles/Conocimientos Adicionales</label>
             <textarea
               className="w-full p-2 border rounded"
               id="detalles_adicionales"
               placeholder="Detalles Adicionales que desee agregar a la oferta. Cada Detalle sepárela con una coma . Ejemplo: Detalle 1, Detalle 2"
+              rows={6}
               {...register('detalles_adicionales')}
             ></textarea>
             {errors.detalles_adicionales && <p className="text-red-500">{String(errors.detalles_adicionales.message)}</p>}
@@ -629,6 +853,28 @@ function AgregarO() {
           <hr className="my-4" />
           <div className="bg-white p-6 rounded-lg shadow-lg py-8" >
             <h3 className="text-1xl text-red-500 font-bold mb-4">Datos de contacto extra:</h3>
+            {/* Mensaje de aviso mejorado */}
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+              <div className="flex items-center">
+                <svg
+                  className="h-5 w-5 text-yellow-500 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                  />
+                </svg>
+                <h1 className="text-xs font-semibold">
+                  (Si desea que las hojas de vida solo lleguen al portal, no seleccionar ninguna opción de estas dos)
+                </h1>
+              </div>
+            </div>
             <div className="flex items-center">
               <input
                 className="mr-2 leading-tight"
@@ -711,7 +957,7 @@ function AgregarO() {
                   {...register('mostrar_empresa')}
                 />
                 <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="mostrar_empresa">
-                  No mostrar nombre de Empresa publicadora
+                  No mostrar nombre de la empresa que ofrece la vacante
                 </label>
               </div>
 
@@ -1021,6 +1267,7 @@ function AgregarO() {
             </button>
             <button
               type="submit"
+               id="btnPublicarOferta"
               className="bg-blue-500 text-white p-2 rounded-lg mt-4"
             >
               Publicar Oferta

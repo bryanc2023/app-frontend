@@ -33,7 +33,19 @@ interface Oferta {
     n_mostrar_sueldo: boolean;
     n_mostrar_empresa: boolean;
     soli_sueldo: boolean;
+    preguntas: Pregunta[];
     // Define otros campos de la oferta según sea necesario
+    comisiones: number | null;
+    horasExtras: number | null;
+    viaticos: number | null;
+    comentariosComisiones: string | null;
+    comentariosHorasExtras: string | null;
+    comentariosViaticos: string | null;
+}
+
+interface Pregunta {
+    id: number;
+    pregunta: string;
 }
 
 interface Criterio {
@@ -50,6 +62,9 @@ interface Experiencia {
     nivel_educacion: string;
     campo_amplio: string;
     titulo: string;
+    pivot: {
+        titulo_per: string | null;
+    };
 }
 
 interface Area {
@@ -86,17 +101,17 @@ function VerOfertasPPage() {
         fetchOfertas();
         fetchConfiguracion();
         const checkRegistrationStatus = async () => {
-        const response = await axios.get('user/registration-status');
+            const response = await axios.get('user/registration-status');
 
-        const { profileCompleted } = response.data;
-    
-        if (!profileCompleted) {
-            navigate('/completarE');
-            return;
+            const { profileCompleted } = response.data;
+
+            if (!profileCompleted) {
+                navigate('/completarE');
+                return;
+            }
         }
-    }
-    
-checkRegistrationStatus();
+
+        checkRegistrationStatus();
     }, []);
 
     const fetchConfiguracion = async () => {
@@ -117,7 +132,7 @@ checkRegistrationStatus();
         const year = date.getFullYear();
         return `${day}-${month}-${year}`;
     };
-    
+
 
 
     const fetchOfertas = async () => {
@@ -167,7 +182,7 @@ checkRegistrationStatus();
                     ...(selectedCargaHoraria && { carga_horaria: selectedCargaHoraria }),
                 },
             });
-           
+
             setOfertas(response.data.ofertas);
         } catch (error) {
             console.error('Error filtering ofertas:', error);
@@ -273,19 +288,19 @@ checkRegistrationStatus();
     };
 
     const isEditableOrDeletable = (fecha_publi: string) => {
-        if (!configuracion) {return { editable: false, eliminable: false }}else{
+        if (!configuracion) { return { editable: false, eliminable: false } } else {
 
-        
-        const fechaPublicacion = new Date(fecha_publi);
-        const fechaActual = new Date();
-        const diffInDays = Math.floor((fechaActual.getTime() - fechaPublicacion.getTime()) / (1000 * 3600 * 24));
 
-      
-        return {
-            editable: diffInDays <= configuracion.dias_max_edicion,
-            eliminable: diffInDays <= configuracion.dias_max_eliminacion
-        };
-    }
+            const fechaPublicacion = new Date(fecha_publi);
+            const fechaActual = new Date();
+            const diffInDays = Math.floor((fechaActual.getTime() - fechaPublicacion.getTime()) / (1000 * 3600 * 24));
+
+
+            return {
+                editable: diffInDays <= configuracion.dias_max_edicion,
+                eliminable: diffInDays <= configuracion.dias_max_eliminacion
+            };
+        }
     };
 
 
@@ -299,7 +314,7 @@ checkRegistrationStatus();
                     <FiEdit className="text-orange-500 ml-2" />
                 </h1>
                 <p>En esta sección te mostramos todas las ofertas creadas hasta el momento, puedes seleccionar una fecha de publicación para filtrar la lista de ofertas publicadas manejarte de mejor manera</p>
-                
+
                 <div className="flex justify-center items-center mt-4 space-x-4">
                     <div className="relative">
                         <div className="bg-gray-100 p-4 rounded-lg shadow-md max-w-xl text-center">
@@ -439,107 +454,170 @@ checkRegistrationStatus();
             </div>
 
             {selectedOferta && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-        <div className="bg-white p-4 rounded-lg shadow-lg max-w-5xl w-full mx-4 overflow-auto" style={{ maxHeight: '80vh' }}>
-            <h2 className="text-xl mb-4 text-center text-blue-500">
-                <strong>CARGO:</strong> {selectedOferta.cargo}
-            </h2>
-            <div className="text-center mb-4 text-sm text-gray-500">
-                <p>
-                    <FaCalendarAlt className="inline-block mr-1" />
-                    <strong>Fecha de Publicación:</strong> {formatDate(selectedOferta.fecha_publi)}
-                </p>
-                <p>
-                    <FaCalendarAlt className="inline-block mr-1 text-orange-800" />
-                    <strong className=" text-orange-800">Fecha Máxima de postulación:</strong> {formatDate(selectedOferta.fecha_max_pos)}
-                </p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-gray-100 rounded shadow">
-                    <p><strong>Estado:</strong> {selectedOferta.estado}</p>
-                    <p><strong>Área: </strong>{selectedOferta.areas.nombre_area}</p>
-                    <p><strong>Carga Horaria: </strong>{selectedOferta.carga_horaria}</p>
-                    <p><strong>Experiencia Mínima: </strong>{selectedOferta.experiencia === 0 ? 'Ninguna' : `${selectedOferta.experiencia} año/s`}</p>
-                    <p><strong>Sueldo: </strong>{selectedOferta.sueldo === 0 ? 'No especificado' : `${selectedOferta.sueldo} $ ofrecidos`}</p>
-                    {(selectedOferta.correo_contacto || selectedOferta.numero_contacto) && (
-                        <>
-                            <hr className="my-4" />
-                            <p><strong className="text-lg font-semibold mt-4 mb-2 text-orange-500">Datos de contacto extra:</strong></p>
-                            {selectedOferta.correo_contacto && (
-                                <p><strong>Correo contacto: </strong>{selectedOferta.correo_contacto}</p>
-                            )}
-                            {selectedOferta.numero_contacto && (
-                                <p><strong>Número contacto: </strong>{selectedOferta.numero_contacto}</p>
-                            )}
-                        </>
-                    )}
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-4 rounded-lg shadow-lg max-w-5xl w-full mx-4 overflow-auto" style={{ maxHeight: '80vh' }}>
+                        <h2 className="text-xl mb-4 text-center text-blue-500">
+                            <strong>CARGO:</strong> {selectedOferta.cargo}
+                        </h2>
+                        <div className="text-center mb-4 text-sm text-gray-500">
+                            <p>
+                                <FaCalendarAlt className="inline-block mr-1" />
+                                <strong>Fecha de Publicación:</strong> {formatDate(selectedOferta.fecha_publi)}
+                            </p>
+                            <p>
+                                <FaCalendarAlt className="inline-block mr-1 text-orange-800" />
+                                <strong className=" text-orange-800">Fecha Máxima de postulación:</strong> {formatDate(selectedOferta.fecha_max_pos)}
+                            </p>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="p-4 bg-gray-100 rounded shadow">
+                                <p><strong>Estado:</strong> {selectedOferta.estado}</p>
+                                <p><strong>Área: </strong>{selectedOferta.areas.nombre_area}</p>
+                                <p><strong>Carga Horaria: </strong>{selectedOferta.carga_horaria}</p>
+                                <p><strong>Experiencia Mínima: </strong>{selectedOferta.experiencia === 0 ? 'Ninguna' : `${selectedOferta.experiencia} año/s`}</p>
+                                <p><strong>Sueldo: </strong>{selectedOferta.sueldo === 0 ? 'No especificado' : `${selectedOferta.sueldo} $ ofrecidos`}</p>
+                                {(selectedOferta.correo_contacto || selectedOferta.numero_contacto) && (
+                                    <>
+                                        <hr className="my-4" />
+                                        <p><strong className="text-lg font-semibold mt-4 mb-2 text-orange-500">Datos de contacto extra:</strong></p>
+                                        {selectedOferta.correo_contacto && (
+                                            <p><strong>Correo contacto: </strong>{selectedOferta.correo_contacto}</p>
+                                        )}
+                                        {selectedOferta.numero_contacto && (
+                                            <p><strong>Número contacto: </strong>{selectedOferta.numero_contacto}</p>
+                                        )}
+                                    </>
+                                )}
+                            </div>
+                            <div className="p-4 bg-gray-100 rounded shadow">
+                                <p><strong>Funciones: </strong></p>
+                                <ul className="list-disc pl-6">
+                                    {selectedOferta.funciones.includes(',') ? (
+                                        selectedOferta.funciones.split(',').map((funcion, index) => (
+                                            <li key={index}>{funcion.trim()}</li>
+                                        ))
+                                    ) : (
+                                        <li>{selectedOferta.funciones}</li>
+                                    )}
+                                </ul>
+                                <p><strong>Detalles adicionales: </strong></p>
+                                <ul className="list-disc pl-6">
+                                    {selectedOferta.detalles_adicionales.includes(',') ? (
+                                        selectedOferta.detalles_adicionales.split(',').map((detalle, index) => (
+                                            <li key={index}>{detalle.trim()}</li>
+                                        ))
+                                    ) : (
+                                        <li>{selectedOferta.detalles_adicionales}</li>
+                                    )}
+                                </ul>
+                            </div>
+                        </div>
+                        {(selectedOferta.comisiones || selectedOferta.comentariosComisiones) && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Comisiones:</h3>
+
+                                    {selectedOferta.comisiones && (
+                                        <p><strong>Valor: </strong>{selectedOferta.comisiones}$ ofrecidos</p>
+                                    )}
+                                    {selectedOferta.comentariosComisiones && (
+                                        <p><strong>Comentario: </strong>{selectedOferta.comentariosComisiones}</p>
+                                    )}
+
+                                </div>
+                            </>
+                        )}
+                        {(selectedOferta.horasExtras || selectedOferta.comentariosHorasExtras) && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Horas extras:</h3>
+
+                                    {selectedOferta.horasExtras && (
+                                        <p><strong>Valor: </strong>{selectedOferta.horasExtras}$ ofrecidos</p>
+                                    )}
+                                    {selectedOferta.comentariosHorasExtras && (
+                                        <p><strong>Comentario: </strong>{selectedOferta.comentariosHorasExtras}</p>
+                                    )}
+
+                                </div>
+                            </>
+                        )}
+
+                        {(selectedOferta.viaticos || selectedOferta.comentariosViaticos) && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Viaticos:</h3>
+
+                                    {selectedOferta.viaticos && (
+                                        <p><strong>Valor: </strong>{selectedOferta.viaticos}$ ofrecidos</p>
+                                    )}
+                                    {selectedOferta.comentariosViaticos && (
+                                        <p><strong>Comentario: </strong>{selectedOferta.comentariosViaticos}</p>
+                                    )}
+
+                                </div>
+                            </>
+                        )}
+
+                        <div className="p-4 bg-gray-100 rounded shadow mt-4">
+                            <p className="whitespace-pre-wrap"><strong>Objetivo Cargo: </strong>{selectedOferta.objetivo_cargo}</p>
+                        </div>
+
+                        {selectedOferta.criterios.length > 0 && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Criterios de evaluación:</h3>
+                                    <ul className="list-disc pl-6">
+                                        {selectedOferta.criterios.map((criterio) => (
+                                            <li key={criterio.id_criterio}>
+                                                <strong>{criterio.criterio}:</strong> {renderCriterioValor(criterio)}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </>
+                        )}
+
+
+                        {selectedOferta.expe.length > 0 && (
+                            <>
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Formación requerida para esta oferta:</h3>
+                                    <ul className="list-disc pl-6">
+                                        {selectedOferta.expe.map((experiencia) => (
+                                            <li key={experiencia.id}>
+                                                <strong>{experiencia.pivot.titulo_per ? experiencia.pivot.titulo_per : experiencia.titulo}</strong>
+                                                - {experiencia.nivel_educacion} en {experiencia.campo_amplio}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            </>
+                        )}
+
+
+                        {selectedOferta.preguntas.length > 0 && (
+                            <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Preguntas para los postulantes de esta oferta:</h3>
+                                <ul className="list-disc pl-6">
+                                    {selectedOferta.preguntas.map((pregunta) => (
+                                        <li key={pregunta.id}>
+                                            <strong>{pregunta.pregunta}</strong>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
+                        <button
+                            onClick={handleCloseModal}
+                            className="bg-gray-300 text-gray-700 py-2 px-4 mt-4 rounded hover:bg-gray-400"
+                        >
+                            Cerrar Detalles
+                        </button>
+                    </div>
                 </div>
-                <div className="p-4 bg-gray-100 rounded shadow">
-                <p><strong>Funciones: </strong></p>
-                <ul className="list-disc pl-6">
-                    {/* Se usa una expresión regular para dividir tanto por comas como por puntos */}
-                    {/[,.]/.test(selectedOferta.funciones) ? (
-                    selectedOferta.funciones.split(/[,.]/).map((funcion, index) => (
-                        <li key={index}>{funcion.trim()}</li> // trim elimina espacios adicionales
-                    ))
-                    ) : (
-                    <li>{selectedOferta.funciones}</li>
-                    )}
-                </ul>
-                
-                <p><strong>Conocimientos adicionales: </strong></p>
-                <ul className="list-disc pl-6">
-                    {/* Misma lógica para los conocimientos adicionales */}
-                    {/[,.]/.test(selectedOferta.detalles_adicionales) ? (
-                    selectedOferta.detalles_adicionales.split(/[,.]/).map((detalle, index) => (
-                        <li key={index}>{detalle.trim()}</li>
-                    ))
-                    ) : (
-                    <li>{selectedOferta.detalles_adicionales}</li>
-                    )}
-                </ul>
-                </div>
-            </div>
-            <div className="p-4 bg-gray-100 rounded shadow mt-4">
-                <p className="whitespace-pre-wrap"><strong>Objetivo Cargo: </strong>{selectedOferta.objetivo_cargo}</p>
-            </div>
-            <div className="mt-4 p-4 bg-gray-100 rounded shadow">
-                {selectedOferta.criterios.length > 0 && (
-                    <>
-                        <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Criterios de evaluación:</h3>
-                        <ul className="list-disc pl-6">
-                            {selectedOferta.criterios.map((criterio) => (
-                                <li key={criterio.id_criterio}>
-                                    <strong>{criterio.criterio}:</strong> {renderCriterioValor(criterio)}
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-            </div>
-            <div className="mt-4 p-4 bg-gray-100 rounded shadow">
-                {selectedOferta.expe.length > 0 && (
-                    <>
-                        <h3 className="text-lg font-semibold mt-4 mb-2 text-orange-500">Formación requerida para esta oferta:</h3>
-                        <ul className="list-disc pl-6">
-                            {selectedOferta.expe.map((experiencia) => (
-                                <li key={experiencia.id}>
-                                    <strong>{experiencia.titulo}</strong> - {experiencia.nivel_educacion} en {experiencia.campo_amplio}
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-            </div>
-            <button
-                onClick={handleCloseModal}
-                className="bg-gray-300 text-gray-700 py-2 px-4 mt-4 rounded hover:bg-gray-400"
-            >
-                Cerrar Detalles
-            </button>
-        </div>
-    </div>
-)}
+            )}
 
 
 
@@ -574,9 +652,9 @@ checkRegistrationStatus();
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {currentOfertas.map((oferta)=> {
+                                    {currentOfertas.map((oferta) => {
                                         const { editable, eliminable } = isEditableOrDeletable(oferta.fecha_publi);
-                                     
+
                                         return (
                                             <tr key={oferta.id_oferta} className={`py-4 px-6 ${oferta.estado === 'Culminada' ? 'bg-green-100' : (oferta.estado === 'En espera' ? 'bg-gray-100' : '')}`}>
                                                 <td className="py-4 px-6">{oferta.cargo}</td>
@@ -586,7 +664,7 @@ checkRegistrationStatus();
                                                 <td className="py-4 px-6">{oferta.carga_horaria}</td>
                                                 <td className="py-4 px-6">{oferta.experiencia === 0 ? 'No requerida' : `${oferta.experiencia} año/s`}</td>
                                                 <td className="py-4 px-6">
-                                                    <button   onClick={() => handleVerDetalles(oferta)} className="flex items-center text-blue-600 hover:text-blue-900">
+                                                    <button onClick={() => handleVerDetalles(oferta)} className="flex items-center text-blue-600 hover:text-blue-900">
                                                         <FiEye className="w-4 h-4 mr-1" /> Ver
                                                     </button>
                                                     {editable && (

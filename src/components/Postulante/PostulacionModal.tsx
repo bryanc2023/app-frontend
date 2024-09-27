@@ -39,6 +39,9 @@ interface Oferta {
         titulo: string;
         nivel_educacion: string;
         campo_amplio: string;
+        pivot: {
+            titulo_per: string | null;
+        };
     }[];
     sueldo: number;
     n_mostrar_sueldo: number;
@@ -46,6 +49,12 @@ interface Oferta {
     correo_contacto: string;
     numero_contacto: string;
     preguntas: Pregunta[];
+    comisiones: number | null;
+    horasExtras: number | null;
+    viaticos: number | null;
+    comentariosComisiones: string | null;
+    comentariosHorasExtras: string | null;
+    comentariosViaticos: string | null;
 }
 
 interface Pregunta {
@@ -75,7 +84,7 @@ interface CheckCvResponse {
 const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
     const [sueldoDeseado, setSueldoDeseado] = useState<number | null>(null);
     const [checkCvResponse, setCheckCvResponse] = useState<CheckCvResponse | null>(null);
-    const [loading, setLoading] = useState(false); 
+    const [loading, setLoading] = useState(false);
     const fetchCvStatus = async () => {
         try {
             const response = await axios.get(`check-cv/${userId}`);
@@ -101,7 +110,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
     if (!oferta) return null;
 
     const handlePostular = async () => {
-      
+
         if (oferta.soli_sueldo === 1 && (sueldoDeseado === null || sueldoDeseado === undefined)) {
             Swal.fire({
                 title: '¡Error!',
@@ -111,36 +120,36 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
             });
             return;
         }
-       
-     // Recopilar las respuestas de las preguntas si existen
-     let respuestas = [];
-     if (oferta.preguntas.length > 0) {
-         let respuestasCompletas = true;
-         oferta.preguntas.forEach((pregunta, index) => {
-             const respuestaElement = document.getElementById(`respuesta-${index}`) as HTMLTextAreaElement;
-             const respuesta = respuestaElement.value.trim();
-             if (respuesta === '') {
-                 respuestasCompletas = false;
-             }
-             respuestas.push({
-                 id_pregunta: pregunta.id,
-                 pregunta: pregunta.pregunta,
-                 id_oferta: oferta.id_oferta,
-                 respuesta: respuesta
-             });
-         });
- 
-         if (!respuestasCompletas) {
-             Swal.fire({
-                 title: '¡Error!',
-                 text: 'Debes completar todas las respuestas antes de postular.',
-                 icon: 'error',
-                 confirmButtonText: 'Ok'
-             });
-             return;
-         }
-     }
-     setLoading(true); // Activar el estado de carga
+
+        // Recopilar las respuestas de las preguntas si existen
+        let respuestas = [];
+        if (oferta.preguntas.length > 0) {
+            let respuestasCompletas = true;
+            oferta.preguntas.forEach((pregunta, index) => {
+                const respuestaElement = document.getElementById(`respuesta-${index}`) as HTMLTextAreaElement;
+                const respuesta = respuestaElement.value.trim();
+                if (respuesta === '') {
+                    respuestasCompletas = false;
+                }
+                respuestas.push({
+                    id_pregunta: pregunta.id,
+                    pregunta: pregunta.pregunta,
+                    id_oferta: oferta.id_oferta,
+                    respuesta: respuesta
+                });
+            });
+
+            if (!respuestasCompletas) {
+                Swal.fire({
+                    title: '¡Error!',
+                    text: 'Debes completar todas las respuestas antes de postular.',
+                    icon: 'error',
+                    confirmButtonText: 'Ok'
+                });
+                return;
+            }
+        }
+        setLoading(true); // Activar el estado de carga
         try {
             await fetchCvStatus();
 
@@ -162,7 +171,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
             };
 
             await axios.post('postular', postData);
-  
+
             setLoading(false); // Desactivar la carga
             Swal.fire({
                 title: '¡Hecho!',
@@ -170,7 +179,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                 icon: 'success',
                 confirmButtonText: 'Ok'
             }).then(() => {
-                
+
                 navigate("/verOfertasAll");
             });
         } catch (error) {
@@ -273,16 +282,16 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
 
 
     return (
-        
+
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center z-50">
             {loading && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                <div className="flex flex-col items-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white"></div>
-                    <span className="text-white text-lg mt-4">Cargando...</span>
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="flex flex-col items-center">
+                        <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-white"></div>
+                        <span className="text-white text-lg mt-4">Cargando...</span>
+                    </div>
                 </div>
-            </div>
-        )}
+            )}
             <div className="bg-white p-4 rounded shadow-lg w-11/12 md:w-3/4 max-w-4xl text-center overflow-auto max-h-screen md:max-h-96" style={{ maxHeight: `calc(100vh - 30px)` }}>
                 <div className="text-left mb-4 px-6 py-4 bg-gray-100 rounded-lg">
                     <div className="flex flex-col md:flex-row items-center mb-4">
@@ -321,7 +330,10 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                                     <ul className="mb-4">
                                         {oferta.expe.map((expe, index) => (
                                             <li key={index}>
-                                                <p><strong className="text-orange-800 mb-1 ">⁃ {expe.titulo}:</strong> {expe.nivel_educacion} en {expe.campo_amplio}</p>
+                                                <p>
+                                                    <strong className="text-orange-800 mb-1">⁃ {expe.pivot.titulo_per ? expe.pivot.titulo_per : expe.titulo}:</strong>
+                                                    {expe.nivel_educacion} en {expe.campo_amplio}
+                                                </p>
                                             </li>
                                         ))}
                                     </ul>
@@ -332,7 +344,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                                 {IconoSueldo} <strong>Sueldo:</strong>   {(oferta.sueldo === 0 || oferta.n_mostrar_sueldo === 1) ? 'No especificado' : `${oferta.sueldo} $`}
                             </p>
                             <p className="text-gray-700 mb-1 ">
-                                <strong className='flex items-center'> {IconoExperiencia}Experiencia en cargos similares:</strong> {oferta.experiencia === 0 ? 'Ninguna' : `${oferta.experiencia} año/s`}
+                                <strong className='flex items-center'> {IconoExperiencia}Experiencia en cargos similares:</strong> {oferta.experiencia === 0 ? 'No especificada' : `${oferta.experiencia} año/s`}
                             </p>
                             <p className="text-gray-700 mb-1 ">
                                 <strong className='flex items-center'> {IconoCargaHoraria}Carga Horaria:</strong> {oferta.carga_horaria}
@@ -353,16 +365,56 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                     <hr className="my-4" />
 
                     <p className="text-slate-950 mb-1 "><strong><p className="text-gray-700 mb-1 flex items-center"> {IconoLectura} Detalles adicionales:</p></strong> {renderDetalles()}</p>
-
+                    {(oferta.comisiones || oferta.horasExtras|| oferta.viaticos|| oferta.comentariosComisiones|| oferta.comentariosHorasExtras||oferta.comentariosViaticos) && (
+                         <>
+                         <hr className="my-4" />
+                         <p className="text-slate-950 mb-1 "><strong><p className="text-gray-700 mb-1 flex items-center"> {IconoLectura} Detalles adicionales de pago:</p></strong></p>
+                         <p>Para esta oferta, la empresa detallo los siguientes beneficios:</p>
+                         {(oferta.comisiones || oferta.comentariosComisiones) && (
+                              <>
+                               <p className="text-gray-700 mb-1"><strong>Valor de las comisiones:</strong>  {(oferta.comisiones) ? `${oferta.comisiones} $`: 'No especificado' }</p>
+                               <p className="text-gray-700 mb-1"><strong>Detalle:</strong>  {(oferta.comentariosComisiones) ? `${oferta.comentariosComisiones}`: 'Ninguno' }</p>
+                               <hr className="my-4" />
+                              </>
+                             )}
+                              {(oferta.horasExtras || oferta.comentariosHorasExtras) && (
+                              <>
+                               <p className="text-gray-700 mb-1"><strong>Valor de las horas extras:</strong>  {(oferta.horasExtras) ? `${oferta.horasExtras} $`: 'No especificado' }</p>
+                               <p className="text-gray-700 mb-1"><strong>Detalle:</strong>  {(oferta.comentariosHorasExtras) ? `${oferta.comentariosHorasExtras}`: 'Ninguno' }</p>
+                               <hr className="my-4" />
+                              </>
+                             )}
+                              {(oferta.viaticos || oferta.comentariosViaticos) && (
+                              <>
+                               <p className="text-gray-700 mb-1"><strong>Valor de los viáticos:</strong>  {(oferta.viaticos) ? `${oferta.viaticos} $`: 'No especificado' }</p>
+                               <p className="text-gray-700 mb-1"><strong>Detalle:</strong>  {(oferta.comentariosViaticos) ? `${oferta.comentariosViaticos}`: 'Ninguno' }</p>
+                               <hr className="my-4" />
+                              </>
+                             )}
+                             
+                     </>
+                    )}
+                   
                     {oferta.criterios.length > 0 && (
                         <>
                             <hr className="my-4" />
                             <p className="text-slate-950 mb-1 "><strong className='flex items-center'> {IconoEvaluacion} Requisitos adicionales de evaluación:</strong></p>
                             <ul className="mb-4">
                                 {oferta.criterios.map((criterio, index) => (
-                                    <li key={index}>
-                                        <p><strong className="text-orange-800 mb-1 ">⁃ {criterio.criterio}:</strong> {renderCriterioValor(criterio)}</p>
-                                    </li>
+                                     <li key={index}>
+                                     <p>
+                                         <strong className="text-orange-800 mb-1">
+                                             ⁃ {criterio.criterio}:
+                                         </strong>
+                                         {criterio.criterio === "Experiencia" ? (
+                                             <>
+                                                 {oferta.experiencia && oferta.experiencia > 0 
+                                                     ? `${oferta.experiencia} años de experiencia en cargos similares` 
+                                                     : "Años de experiencia adquiridos en cargos similares"}
+                                             </>
+                                         ) : renderCriterioValor(criterio)}
+                                     </p>
+                                 </li>
                                 ))}
                             </ul>
                         </>
@@ -388,7 +440,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                                 <FontAwesomeIcon icon={faInfoCircle} className="text-gray-700 mr-2" />
                                 <h3 className=" text-gray-700 mb-1 "><strong>Datos Extras de Contacto</strong></h3>
                             </div>
-                            <p>Para esta oferta enviar hojas de vida al siguiente correo de contacto con asunto "Nombre del cargo"</p>
+                            <p>Para esta oferta enviar hojas de vida al siguiente correo de contacto con asunto "{oferta.cargo}"</p>
                             <p className="text-gray-700 mb-1"><strong>Correo electrónico:</strong> {oferta.correo_contacto}</p>
                         </div>
                     )}
