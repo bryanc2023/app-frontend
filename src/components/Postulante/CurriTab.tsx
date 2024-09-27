@@ -218,7 +218,7 @@ const CurriTab: React.FC = () => {
       img.crossOrigin = "anonymous";
       img.src = imageSrc;
       img.onload = async () => {
-          const imgWidth = 70;
+          const imgWidth = 50;
           const imgHeight = 50;
           const pdfWidth = doc.internal.pageSize.getWidth();
           const margin = 10;
