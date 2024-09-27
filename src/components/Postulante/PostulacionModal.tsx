@@ -41,6 +41,7 @@ interface Oferta {
         campo_amplio: string;
         pivot: {
             titulo_per: string | null;
+            titulo_per2: string | null;
         };
     }[];
     sueldo: number;
@@ -331,7 +332,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                                         {oferta.expe.map((expe, index) => (
                                             <li key={index}>
                                                 <p>
-                                                    <strong className="text-orange-800 mb-1">⁃ {expe.pivot.titulo_per ? expe.pivot.titulo_per : expe.titulo}:</strong>
+                                                    <strong className="text-orange-800 mb-1">⁃ {expe.pivot.titulo_per2 ? expe.pivot.titulo_per2 : expe.titulo}:</strong>
                                                     {expe.nivel_educacion} en {expe.campo_amplio}
                                                 </p>
                                             </li>
