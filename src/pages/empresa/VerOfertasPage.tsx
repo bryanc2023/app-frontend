@@ -63,7 +63,7 @@ interface Experiencia {
     campo_amplio: string;
     titulo: string;
     pivot: {
-        titulo_per: string | null;
+        titulo_per2: string | null;
     };
 }
 
@@ -471,45 +471,65 @@ function VerOfertasPPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="p-4 bg-gray-100 rounded shadow">
-                                <p><strong>Estado:</strong> {selectedOferta.estado}</p>
-                                <p><strong>Área: </strong>{selectedOferta.areas.nombre_area}</p>
-                                <p><strong>Carga Horaria: </strong>{selectedOferta.carga_horaria}</p>
-                                <p><strong>Experiencia Mínima: </strong>{selectedOferta.experiencia === 0 ? 'Ninguna' : `${selectedOferta.experiencia} año/s`}</p>
-                                <p><strong>Sueldo: </strong>{selectedOferta.sueldo === 0 ? 'No especificado' : `${selectedOferta.sueldo} $ ofrecidos`}</p>
+                                <div className="flex flex-col space-y-2"> {/* Cambiar a flex-col para distribución vertical */}
+                                    <p><strong>Estado:</strong> {selectedOferta.estado}</p>
+                                    <p><strong>Área: </strong>{selectedOferta.areas.nombre_area}</p>
+                                    <p><strong>Carga Horaria: </strong>{selectedOferta.carga_horaria}</p>
+                                    <p><strong>Experiencia Mínima: </strong>{selectedOferta.experiencia === 0 ? 'Ninguna' : `${selectedOferta.experiencia} año/s`}</p>
+                                    <p><strong>Sueldo: </strong>{selectedOferta.sueldo === 0 ? 'No especificado' : `${selectedOferta.sueldo} $ ofrecidos`}</p>
+                                </div>
+
                                 {(selectedOferta.correo_contacto || selectedOferta.numero_contacto) && (
                                     <>
                                         <hr className="my-4" />
                                         <p><strong className="text-lg font-semibold mt-4 mb-2 text-orange-500">Datos de contacto extra:</strong></p>
-                                        {selectedOferta.correo_contacto && (
-                                            <p><strong>Correo contacto: </strong>{selectedOferta.correo_contacto}</p>
-                                        )}
-                                        {selectedOferta.numero_contacto && (
-                                            <p><strong>Número contacto: </strong>{selectedOferta.numero_contacto}</p>
-                                        )}
+                                        <div className="flex flex-col space-y-2"> {/* También cambiar aquí para distribución vertical */}
+                                            {selectedOferta.correo_contacto && (
+                                                <p><strong>Correo contacto: </strong>{selectedOferta.correo_contacto}</p>
+                                            )}
+                                            {selectedOferta.numero_contacto && (
+                                                <p><strong>Número contacto: </strong>{selectedOferta.numero_contacto}</p>
+                                            )}
+                                        </div>
                                     </>
                                 )}
                             </div>
+
                             <div className="p-4 bg-gray-100 rounded shadow">
                                 <p><strong>Funciones: </strong></p>
                                 <ul className="list-disc pl-6">
-                                    {selectedOferta.funciones.includes(',') ? (
-                                        selectedOferta.funciones.split(',').map((funcion, index) => (
+                                    {selectedOferta.funciones.endsWith('.') && selectedOferta.funciones.length > 1 ? (
+                                        selectedOferta.funciones.slice(0, -1).split('.').map((funcion, index) => (
                                             <li key={index}>{funcion.trim()}</li>
                                         ))
                                     ) : (
-                                        <li>{selectedOferta.funciones}</li>
+                                        selectedOferta.funciones.includes('.') ? (
+                                            selectedOferta.funciones.split('.').map((funcion, index) => (
+                                                <li key={index}>{funcion.trim()}</li>
+                                            ))
+                                        ) : (
+                                            <li>{selectedOferta.funciones}</li>
+                                        )
                                     )}
                                 </ul>
-                                <p><strong>Detalles adicionales: </strong></p>
+
+                                <p><strong>Conocimientos adicionales: </strong></p>
                                 <ul className="list-disc pl-6">
-                                    {selectedOferta.detalles_adicionales.includes(',') ? (
-                                        selectedOferta.detalles_adicionales.split(',').map((detalle, index) => (
+                                    {selectedOferta.detalles_adicionales.endsWith('.') && selectedOferta.detalles_adicionales.length > 1 ? (
+                                        selectedOferta.detalles_adicionales.slice(0, -1).split('.').map((detalle, index) => (
                                             <li key={index}>{detalle.trim()}</li>
                                         ))
                                     ) : (
-                                        <li>{selectedOferta.detalles_adicionales}</li>
+                                        selectedOferta.detalles_adicionales.includes('.') ? (
+                                            selectedOferta.detalles_adicionales.split('.').map((detalle, index) => (
+                                                <li key={index}>{detalle.trim()}</li>
+                                            ))
+                                        ) : (
+                                            <li>{selectedOferta.detalles_adicionales}</li>
+                                        )
                                     )}
                                 </ul>
+
                             </div>
                         </div>
                         {(selectedOferta.comisiones || selectedOferta.comentariosComisiones) && (
@@ -586,7 +606,7 @@ function VerOfertasPPage() {
                                     <ul className="list-disc pl-6">
                                         {selectedOferta.expe.map((experiencia) => (
                                             <li key={experiencia.id}>
-                                                <strong>{experiencia.pivot.titulo_per ? experiencia.pivot.titulo_per : experiencia.titulo}</strong>
+                                                <strong>{experiencia.pivot.titulo_per2 ? experiencia.pivot.titulo_per2 : experiencia.titulo}</strong>
                                                 - {experiencia.nivel_educacion} en {experiencia.campo_amplio}
                                             </li>
                                         ))}

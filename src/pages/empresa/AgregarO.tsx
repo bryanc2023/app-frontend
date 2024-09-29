@@ -79,17 +79,31 @@ function AgregarO() {
   const [showAdd, setShowAdd] = useState(false);
   const [soliSueldo, setSolicitarSueldo] = useState(0);
 
-
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+  const handleTextArea = (e) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); // Evita el comportamiento por defecto del formulario
-      const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
-      if (boton) {
-        boton.click(); // Ejecuta el clic en el botón
-      }
+        e.preventDefault(); // Previene el salto al siguiente input
+        
+        const currentValue = e.target.value; // Obtiene el valor actual del textarea
+        // Añade un punto final y un salto de línea
+        e.target.value = currentValue.trim() + '.' + '\n'; 
     }
-  };
+};
+
+const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    // Verifica si el elemento activo es un textarea
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'TEXTAREA') {
+        return; // No hace nada si está en un textarea
+    }
+
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Evita el comportamiento por defecto del formulario
+        const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
+        if (boton) {
+            boton.click(); // Ejecuta el clic en el botón
+        }
+    }
+};
   // Toggle custom title input
   const handleToggleCustomInput = () => {
     setShowCustomInput(!showCustomInput);
@@ -394,50 +408,60 @@ function AgregarO() {
 
   const onSubmit = handleSubmit(async (values) => {
     if (user) {
-      try {
-        const usuario = user.id;
-        const dataToSend = {
-          ...values,
-          usuario: usuario,
-          experiencia: showExperiencia ? values.experiencia : 0,
-          correo_contacto: showCorreo ? values.correo_contacto : null,
-          numero_contacto: showNumeroContacto ? values.numero_contacto : null,
-          solicitar_sueldo: soliSueldo ===1 ? true : false,
-          titulos: selectedTitles,
-          criterios: selectedCriterios,
-          preguntas: preguntas,
-          comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
-          horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
-          viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
-          comentariosComisiones: values.comentariosComisiones || null,
-          comentariosHorasExtras: values.comentariosHorasExtras || null,
-          comentariosViaticos: values.comentariosViaticos || null,
-        };
+        try {
+            const usuario = user.id;
+            const dataToSend = {
+                ...values,
+                usuario: usuario,
+                experiencia: showExperiencia ? values.experiencia : 0,
+                correo_contacto: showCorreo ? values.correo_contacto : null,
+                numero_contacto: showNumeroContacto ? values.numero_contacto : null,
+                solicitar_sueldo: soliSueldo === 1 ? true : false,
+                titulos: selectedTitles,
+                criterios: selectedCriterios,
+                preguntas: preguntas,
+                comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
+                horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
+                viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
+                comentariosComisiones: values.comentariosComisiones || null,
+                comentariosHorasExtras: values.comentariosHorasExtras || null,
+                comentariosViaticos: values.comentariosViaticos || null,
+            };
 
+            // SweetAlert para confirmar la publicación
+            const result = await Swal.fire({
+                title: 'Confirmación',
+                text: "¿Está seguro de publicar la oferta con los datos actualmente ingresados?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, publicar',
+                cancelButtonText: 'Cancelar'
+            });
 
+            // Si el usuario confirma, se procede con el envío
+            if (result.isConfirmed) {
+                await axios.post('add-oferta', dataToSend, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
 
-        await axios.post('add-oferta', dataToSend, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        console.log(dataToSend);
-
-
-
-        Swal.fire({
-          title: '¡Publicada!',
-          text: 'La oferta se encuentra publicada',
-          icon: 'success',
-          confirmButtonText: 'Ok'
-        }).then(() => {
-          navigate("/verOfertasE");
-        });
-      } catch (error) {
-        console.log(error);
-      }
+                Swal.fire({
+                    title: '¡Publicada!',
+                    text: 'La oferta se encuentra publicada',
+                    icon: 'success',
+                    confirmButtonText: 'Ok'
+                }).then(() => {
+                    navigate("/verOfertasE");
+                });
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
-  });
+});
+
 
   const criterioDescripcion = criterios.find(c => c.id_criterio === selectedCriterioId)?.descripcion || '';
 
@@ -664,7 +688,9 @@ function AgregarO() {
               className="w-full p-2 border rounded"
               id="objetivo_cargo"
               placeholder="Describa en breves palabras el objetivo del puesto de trabajo"
-              {...register('objetivo_cargo', { required: 'Objetivo del Cargo es requerido' })}
+              {...register('objetivo_cargo', { required: 'Objetivo del Cargo es requerido' , validate: {
+                maxLength: value => value.length <= 500 || 'Se permiten hasta 500 caracteres.',
+              },})}
             />
             {errors.objetivo_cargo && <p className="text-red-500">{String(errors.objetivo_cargo.message)}</p>}
           </div>
@@ -797,18 +823,17 @@ function AgregarO() {
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="funciones">• Funciones del puesto:
               <span className="text-red-500 ml-1">*</span>
-              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Máximo 500 caractéres, Agregue comas para separar cada función)</span>
+              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Agregue puntos para separar cada función)</span>
             </label>
             <textarea
               className="w-full p-2 border rounded"
               id="funciones"
-              placeholder="Describa a manera breve las funciones o actividades a realizarse en el puesto. Cada función sepárela con una coma . Ejemplo: Funcion 1, Funcion2"
-              rows={6}
+              placeholder="Describa a manera breve las funciones o actividades a realizarse en el puesto. Cada función sepárela con un punto. Ejemplo: Funcion 1. Funcion2"
+              rows={15}
               {...register('funciones', {
-                required: 'Funciones son requeridas', validate: {
-                  maxLength: value => value.length <= 500 || 'Se permiten hasta 500 caracteres.',
-                },
+                required: 'Funciones son requeridas'
               })}
+              onKeyDown={handleTextArea}
             />
             {errors.funciones && <p className="text-red-500">{String(errors.funciones.message)}</p>}
           </div>
@@ -863,9 +888,10 @@ function AgregarO() {
             <textarea
               className="w-full p-2 border rounded"
               id="detalles_adicionales"
-              placeholder="Detalles Adicionales que desee agregar a la oferta. Cada Detalle sepárela con una coma . Ejemplo: Detalle 1, Detalle 2"
-              rows={6}
+              placeholder="Detalles Adicionales que desee agregar a la oferta. Cada Detalle sepárela con un punto. Ejemplo: Detalle 1. Detalle 2"
+              rows={15}
               {...register('detalles_adicionales')}
+              onKeyDown={handleTextArea}
             ></textarea>
             {errors.detalles_adicionales && <p className="text-red-500">{String(errors.detalles_adicionales.message)}</p>}
           </div>

@@ -26,7 +26,17 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
   const [areas, setAreas] = useState<Area[]>([]);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
  
-
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter') {
+      event.preventDefault(); // Evita el comportamiento predeterminado de saltar a una nueva línea
+      const textarea = event.target;
+      const currentValue = textarea.value;
+      // Añade un punto y un salto de línea al final del texto actual
+      textarea.value = currentValue + '.\n';
+      // Mueve el cursor al final del textarea
+      textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
+    }
+  };
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -223,7 +233,8 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
                   required: 'Este campo es obligatorio',
                 })}
                 className="w-full px-4 py-2 border rounded-md text-gray-700"
-                rows={5}
+                rows={8}
+                onKeyDown={handleKeyDown}
               />
               {errors.descripcion_responsabilidades && <p className="text-red-500">{errors.descripcion_responsabilidades.message}</p>}
             </div>

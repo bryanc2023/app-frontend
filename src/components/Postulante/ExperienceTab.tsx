@@ -26,7 +26,7 @@ const ExperienceTab: React.FC = () => {
         return;
       }
       const response = await axios.get(`/experiencia/${user.id}`);
-      
+
       if (response.data && Array.isArray(response.data.experiencias)) {
         setExperiencias(response.data.experiencias);
       } else {
@@ -141,17 +141,22 @@ const ExperienceTab: React.FC = () => {
             <p><strong className="text-orange-500">Empresa:</strong> {experiencia.empresa}</p>
             <p><strong className="text-orange-500">Cargo:</strong> {experiencia.puesto}</p>
             <p><strong className="text-orange-500">Fechas de labores:</strong> {formatearFecha(experiencia.fecha_ini)} - {formatearFecha(experiencia.fecha_fin)}</p>
-            <p><strong className="text-orange-500">Área:</strong> {experiencia.area.split(',')[1]}</p>
+            <p><strong className="text-orange-500">Área:</strong> {experiencia.area.split('.')[1]}</p>
             <p><strong className="text-orange-500">Funciones y responsabilidades en el cargo:</strong></p>
-            {experiencia.descripcion_responsabilidades && experiencia.descripcion_responsabilidades.includes(',') ? (
+            {experiencia.descripcion_responsabilidades && experiencia.descripcion_responsabilidades.includes('.') ? (
               <ul className="list-disc list-inside">
-                {experiencia.descripcion_responsabilidades.split(',').map((item, idx) => (
-                  <li key={idx}>{item.trim()}</li>
-                ))}
+                {experiencia.descripcion_responsabilidades
+                  .split('.')
+                  .map(item => item.trim()) // Eliminar espacios en blanco
+                  .filter(item => item) // Filtrar los elementos vacíos
+                  .map((item, idx) => (
+                    <li key={idx}>{item}</li>
+                  ))}
               </ul>
             ) : (
               <p>{experiencia.descripcion_responsabilidades}</p>
             )}
+
             <p><strong className="text-orange-500">Reporta a:</strong> {experiencia.persona_referencia}</p>
             <p><strong className="text-orange-500">Contacto:</strong> {experiencia.contacto}</p>
           </div>
