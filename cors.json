@@ -1,6 +1,6 @@
 [
     {
-      "origin": ["https://www.postula.net"],
+      "origin": ["https://www.postula.net","http://localhost:5173"],
       "method": ["GET", "POST"],
       "maxAgeSeconds": 3600
     }

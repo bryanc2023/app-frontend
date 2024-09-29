@@ -102,6 +102,28 @@ const ConfiguracionComponent = () => {
             <div className="overflow-x-auto">
                 <hr className="my-4" />
                 <h1 className="text-xl text-orange-400 mb-4">CONFIGURACIÓNES ESTABLECIDAS</h1>
+                 {/* Mensaje de aviso mejorado */}
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+              <div className="flex items-center">
+                <svg
+                  className="h-5 w-5 text-yellow-500 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                  />
+                </svg>
+                <h1 className="text-xs font-semibold">
+                  (Solo se puede mantener una configuracion activa)
+                </h1>
+              </div>
+            </div>
                 <table className="min-w-full divide-y divide-gray-200 shadow-md rounded-lg overflow-hidden">
                     <thead className="bg-gray-50">
                         <tr>

@@ -111,6 +111,28 @@ function InicioAdmin() {
             <p> En esta sección se maneja los datos de las tablas satélites de la aplicación esenciales para el funcionamiento correcto de la aplicación web</p>
             <hr className="my-4" />
             <h1 className="text-xl text-orange-400 mb-4">TABLAS SATÉLITES</h1>
+             {/* Mensaje de aviso mejorado */}
+             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+              <div className="flex items-center">
+                <svg
+                  className="h-5 w-5 text-yellow-500 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                  />
+                </svg>
+                <h1 className="text-xs font-semibold">
+                  (Una vez cargados los datos iniciales por el administrador, si se desea añadir más campos dar vista previa y añadir manualmente. Para subir excel(registros masivos) pedir plantilla a los administradores de cada tabla)
+                </h1>
+              </div>
+            </div>
             {fields.map(({ name, label }) => (
                 <form key={name} onSubmit={(e) => handleSubmit(e, name as keyof UploadFields)} className="mb-4 p-4 border border-gray-300 rounded shadow-md bg-white">
                     <h2 className="text-xl font-bold mb-2">{label}</h2>
