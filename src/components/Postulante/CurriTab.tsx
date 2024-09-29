@@ -165,10 +165,39 @@ const CurriTab: React.FC = () => {
     for (let i = 0; i < cleanText.length; i += 945) {
       chunks.push(cleanText.substring(i, i + 945));
     }
+
+    
   
     return chunks;
   };
 
+
+  const formatFunciones = (text) => {
+    // Separar las funciones por puntos, eliminando espacios innecesarios y normalizando el texto
+    const funciones = text
+      .split('.')
+      .map(f => f.replace(/\s+/g, ' ').trim()) // Reemplazar múltiples espacios por uno solo y eliminar espacios al inicio y fin
+      .filter(f => f.length > 0); // Eliminar funciones vacías
+    
+    return funciones;
+  };
+  
+  // Función para agregar funciones con ajuste de línea
+  const addFormattedFunctions = (doc, funciones, yOffset, maxWidth) => {
+    const lineHeight = 6; // Ajustar la altura de línea
+    const bullet = '\u2022'; // Código de viñeta (•)
+  
+    funciones.forEach((funcion, index) => {
+      const splitFunction = doc.splitTextToSize(`${bullet} ${funcion}`, maxWidth); // Ajustar el texto al tamaño de la página
+      splitFunction.forEach((line) => {
+        doc.text(line, 15, yOffset); // Texto con viñeta
+        yOffset += lineHeight; // Ajuste del espacio entre líneas
+      });
+    });
+  
+    return yOffset;
+  };
+  
     const addSection = (title, sectionHeight ) => {
         checkPageBreak(sectionHeight);
 
@@ -312,7 +341,7 @@ const CurriTab: React.FC = () => {
             const lineYStart = yOffset;
             doc.setDrawColor(230, 230, 230);
             doc.line(10, lineYStart, doc.internal.pageSize.width - 10, lineYStart);
-            yOffset += 8;
+            yOffset += 5;
 
             const startDate = format(new Date(formacion.fecha_ini), 'MMM-yyyy');
             const endDate = formacion.fecha_fin ? format(new Date(formacion.fecha_fin), 'MMM-yyyy') : 'Presente';
@@ -328,7 +357,7 @@ const CurriTab: React.FC = () => {
             const lineHeight = 6; // Ajustar el espacio entre ítems de la lista
             let requiredSpace = 40; // Espacio base para cada iteración sin funciones y responsabilidades
             const funcionesResponsabilidades = formacion.descripcion_responsabilidades
-            ? formacion.descripcion_responsabilidades.split(',')
+            ? formacion.descripcion_responsabilidades.split('.')
             : []; 
 
             if (funcionesResponsabilidades.length > 1) {
@@ -337,34 +366,74 @@ const CurriTab: React.FC = () => {
               requiredSpace += lineHeight; // Añadir espacio para la descripción normal
             }
 
+            const lineHeight2 = 6; // Altura de línea para ajustar el espacio entre líneas
+            const pageHeight = doc.internal.pageSize.height - 10; // Altura de la página, con márgenes
+            
+            const checkPageOverflow = () => {
+              if (yOffset > pageHeight) {
+                doc.addPage(); // Añadir nueva página
+                yOffset = 20; // Reiniciar el yOffset para la nueva página
+              }
+            };
+            
             if (funcionesResponsabilidades.length > 1) {
-              // Si hay más de un elemento (separados por coma), crear una lista
+              // Si hay más de un elemento (separados por puntos), crear una lista con viñetas
               doc.setFont('helvetica', 'bold');
               doc.setFontSize(12);
               doc.text('Funciones y responsabilidades en el cargo:', 10, yOffset);
-
               yOffset += 8;
-
-              // Iterar sobre cada elemento y agregar a la lista
+            
+              checkPageOverflow(); // Verificar si es necesario hacer un salto de página
+            
+              // Iterar sobre cada función y agregarla a la lista con viñetas
               doc.setFont('helvetica', 'normal');
               doc.setFontSize(12);
-              funcionesResponsabilidades.forEach((item, index) => {
-                yOffset += lineHeight; // Ajustar el espacio entre ítems de la lista
-                doc.text(`${index + 1}. ${item.trim()}`, 15, yOffset); // Numerar cada ítem de la lista
+            
+              funcionesResponsabilidades.forEach((item) => {
+                // Dividir el texto de las funciones en base a los puntos
+                const funcionesFormateadas = formatFunciones(item);
+            
+                funcionesFormateadas.forEach((funcion) => {
+                  // Dividir el texto en líneas si es muy largo para ajustarlo al PDF
+                  const splitText = doc.splitTextToSize(`• ${funcion}`, doc.internal.pageSize.width - 20);
+            
+                  splitText.forEach((line) => {
+                    doc.text(line, 15, yOffset); // Añadir el texto de cada línea
+                    yOffset += lineHeight2; // Ajustar el espacio entre líneas
+                    checkPageOverflow(); // Verificar si es necesario hacer un salto de página
+                  });
+                });
               });
+            
               yOffset += 8;
+              checkPageOverflow(); // Verificar si es necesario hacer un salto de página
             } else {
-              // Si no hay comas, agregar el texto normalmente
+              // Si solo es una descripción larga, ajustarla al espacio del PDF
               doc.setFont('helvetica', 'bold');
               doc.setFontSize(12);
               doc.text('Funciones y responsabilidades en el cargo:', 10, yOffset);
-
+            
               yOffset += 8;
+              checkPageOverflow(); // Verificar si es necesario hacer un salto de página
+            
               doc.setFont('helvetica', 'normal');
               doc.setFontSize(12);
-              doc.text(`${formacion.descripcion_responsabilidades}`, 10, yOffset);
+            
+              const descripcion = formacion.descripcion_responsabilidades || '';
+              const descripcionFormateada = doc.splitTextToSize(descripcion, doc.internal.pageSize.width - 20); // Ajustar al ancho del PDF
+            
+              descripcionFormateada.forEach((line) => {
+                doc.text(line, 10, yOffset); // Añadir cada línea ajustada al espacio
+                yOffset += lineHeight2; // Ajustar el espacio entre líneas
+                checkPageOverflow(); // Verificar si es necesario hacer un salto de página
+              });
+            
               yOffset += 8;
+              checkPageOverflow(); // Verificar si es necesario hacer un salto de página
             }
+            
+            
+            
             
             // Comprobar si hay espacio suficiente para una nueva iteración
             if (yOffset + requiredSpace > doc.internal.pageSize.height - 10) {
@@ -379,6 +448,8 @@ const CurriTab: React.FC = () => {
             yOffset += 10;
           });
         }
+       
+        
         if (profileData.postulante.certificado.length > 0) {
           addSection('CAPACITACIONES REALIZADAS',30);
           profileData.postulante.certificado.forEach((curso) => {
