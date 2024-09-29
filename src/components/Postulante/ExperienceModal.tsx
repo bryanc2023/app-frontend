@@ -25,6 +25,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
   const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<Experiencia>();
   const [areas, setAreas] = useState<Area[]>([]);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
+  const [currentJob, setCurrentJob] = useState(false);
  
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
@@ -60,6 +61,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
       setValue('descripcion_responsabilidades', experiencia.descripcion_responsabilidades);
       setValue('persona_referencia', experiencia.persona_referencia);
       setValue('contacto', experiencia.contacto);
+      setCurrentJob(experiencia.fecha_fin === null);
     } else {
       reset();
     }
@@ -98,6 +100,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
         const response = await axios.put(`/experiencia/${experiencia.id_formacion_pro}`, {
           ...dataToSend,
           id_experiencia: experiencia.id_formacion_pro,
+          fecha_fin: currentJob ? null : data.fecha_fin,
         });
  
         Swal.fire({
@@ -215,16 +218,27 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
               />
               {errors.fecha_ini && <p className="text-red-500">{errors.fecha_ini.message}</p>}
             </div>
-            <div>
-              <label className="block text-gray-700">Fecha de fin de labores:</label>
+            {!currentJob && ( // Condicional para mostrar el campo solo si el checkbox no está marcado
+              <div>
+                <label className="block text-gray-700">Fecha de fin de labores:</label>
+                <input
+                  type="date"
+                  {...register('fecha_fin')}
+                  className="w-full px-4 py-2 border rounded-md text-gray-700"
+                />
+                {errors.fecha_fin && <p className="text-red-500">{errors.fecha_fin.message}</p>}
+              </div>
+            )}
+
+            <div className="flex items-center">
               <input
-                type="date"
-                {...register('fecha_fin', {
-                  required: 'Este campo es obligatorio'
-                })}
-                className="w-full px-4 py-2 border rounded-md text-gray-700"
+                type="checkbox"
+                id="currentJob"
+                checked={currentJob}
+                onChange={(e) => setCurrentJob(e.target.checked)}
+                className="mr-2"
               />
-              {errors.fecha_fin && <p className="text-red-500">{errors.fecha_fin.message}</p>}
+              <label htmlFor="currentJob" className="text-gray-700">¿Hasta la actualidad?</label>
             </div>
             <div>
               <label className="block text-gray-700">Descripción de funciones y responsabilidades en la empresa:</label>

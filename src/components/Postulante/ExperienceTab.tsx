@@ -102,11 +102,26 @@ const ExperienceTab: React.FC = () => {
     }
   };
 
-  const formatearFecha = (fecha: string) => {
-    const fechaObj = new Date(fecha);
-    const fechaFormateada = format(fechaObj, 'MMMM yyyy', { locale: es });
-    return fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
+  const formatearFecha = (fecha: string | null) => {
+    if (!fecha) {
+      return 'Presente'; // Si la fecha es null, devuelve "Presente"
+    }
+  
+    // Crear una nueva instancia de la fecha correctamente
+    const fechaObj = new Date(fecha + 'T00:00:00'); // Añadir la hora para evitar problemas de zona horaria
+  
+    // Formatear la fecha con mes y año
+    const opciones: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long' };
+    let fechaFormateada = fechaObj.toLocaleDateString('es-ES', opciones);
+  
+    // Capitalizar la primera letra del mes
+    fechaFormateada = fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
+  
+    return fechaFormateada;
   };
+  
+  
+  
 
   return (
     <div className="mt-6 bg-gray-800 p-4 rounded-lg shadow-inner text-gray-200">
