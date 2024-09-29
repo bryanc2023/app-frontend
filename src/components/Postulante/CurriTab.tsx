@@ -156,6 +156,19 @@ const CurriTab: React.FC = () => {
       }
   };
 
+  const formatPresentacion = (text) => {
+    // Eliminar espacios en blanco adicionales
+    const cleanText = text.replace(/\s+/g, ' ').trim();
+    
+    // Dividir el texto en bloques de 500 caracteres
+    const chunks = [];
+    for (let i = 0; i < cleanText.length; i += 945) {
+      chunks.push(cleanText.substring(i, i + 945));
+    }
+  
+    return chunks;
+  };
+
     const addSection = (title, sectionHeight ) => {
         checkPageBreak(sectionHeight);
 
@@ -261,7 +274,12 @@ const CurriTab: React.FC = () => {
           yOffset += 7;
 
           addSection('PRESENTACIÓN',50);
-          addText(profileData.postulante.informacion_extra || '');
+          const presentacionChunks = formatPresentacion(profileData.postulante.informacion_extra || '');
+
+          // Agregar cada bloque de texto al PDF
+          presentacionChunks.forEach(chunk => {
+            addText(chunk);  // Usar addText para agregar el texto al documento
+          });
 
           if (profileData.postulante.formaciones.length > 0) {
               addSection('INSTRUCCIÓN FORMAL',60);
