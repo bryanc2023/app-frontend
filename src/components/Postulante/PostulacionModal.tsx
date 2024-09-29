@@ -40,7 +40,6 @@ interface Oferta {
         nivel_educacion: string;
         campo_amplio: string;
         pivot: {
-            titulo_per: string | null;
             titulo_per2: string | null;
         };
     }[];
@@ -199,29 +198,30 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
 
     const renderFunciones = () => {
         if (!oferta.funciones) return null;
-
-        if (oferta.funciones.includes(',')) {
-            const funcionesList = oferta.funciones.split(',').map((funcion, index) => (
-                <li key={index}>+ {funcion.trim()} </li>
+    
+        if (oferta.funciones.includes('.')) {
+            const funcionesList = oferta.funciones.split('.').map(funcion => funcion.trim()).filter(funcion => funcion).map((funcion, index) => (
+                <li key={index}>+ {funcion}</li>
             ));
-            return <ul> {funcionesList}</ul>;
+            return <ul>{funcionesList}</ul>;
         } else {
             return <p>{oferta.funciones}</p>;
         }
     };
-
+    
     const renderDetalles = () => {
         if (!oferta.detalles_adicionales) return null;
-
-        if (oferta.detalles_adicionales.includes(',')) {
-            const detallesList = oferta.detalles_adicionales.split(',').map((detalle, index) => (
-                <li key={index}>+ {detalle.trim()} </li>
+    
+        if (oferta.detalles_adicionales.includes('.')) {
+            const detallesList = oferta.detalles_adicionales.split('.').map(detalle => detalle.trim()).filter(detalle => detalle).map((detalle, index) => (
+                <li key={index}>+ {detalle}</li>
             ));
-            return <ul> {detallesList}</ul>;
+            return <ul>{detallesList}</ul>;
         } else {
             return <p>{oferta.detalles_adicionales}</p>;
         }
     };
+    
 
     const renderCriterioValor = (criterio: Criterio) => {
         if (criterio && criterio.pivot && criterio.pivot.valor) {
@@ -362,14 +362,14 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                 </div>
                 <div className="text-left mb-4 px-6 py-4 bg-orange-50 rounded-lg">
 
-                    <p className="text-gray-700 "><strong><p className="text-gray-700 mb-1 flex items-center"> {IconoLectura} Funciones:</p></strong> {renderFunciones()}</p>
+                    <p className="text-slate-950 "><strong><p className="text-blue-900 mb-1 flex items-center"> {IconoLectura} Funciones:</p></strong> {renderFunciones()}</p>
                     <hr className="my-4" />
 
-                    <p className="text-slate-950 mb-1 "><strong><p className="text-gray-700 mb-1 flex items-center"> {IconoLectura} Detalles adicionales:</p></strong> {renderDetalles()}</p>
+                    <p className="text-slate-950 mb-1 "><strong><p className="text-blue-900 mb-1 flex items-center"> {IconoLectura} Detalles/Conocimientos adicionales:</p></strong> {renderDetalles()}</p>
                     {(oferta.comisiones || oferta.horasExtras|| oferta.viaticos|| oferta.comentariosComisiones|| oferta.comentariosHorasExtras||oferta.comentariosViaticos) && (
                          <>
                          <hr className="my-4" />
-                         <p className="text-slate-950 mb-1 "><strong><p className="text-gray-700 mb-1 flex items-center"> {IconoLectura} Detalles adicionales de pago:</p></strong></p>
+                         <p className="text-slate-950 mb-1 "><strong><p className="text-yellow-900 mb-1 flex items-center"> {IconoLectura} Detalles adicionales de pago:</p></strong></p>
                          <p>Para esta oferta, la empresa detallo los siguientes beneficios:</p>
                          {(oferta.comisiones || oferta.comentariosComisiones) && (
                               <>
@@ -399,7 +399,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                     {oferta.criterios.length > 0 && (
                         <>
                             <hr className="my-4" />
-                            <p className="text-slate-950 mb-1 "><strong className='flex items-center'> {IconoEvaluacion} Requisitos adicionales de evaluación:</strong></p>
+                            <p className="text-orange-700 mb-1 "><strong className='flex items-center'> {IconoEvaluacion} Requisitos adicionales de evaluación:</strong></p>
                             <ul className="mb-4">
                                 {oferta.criterios.map((criterio, index) => (
                                      <li key={index}>
@@ -424,7 +424,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                     {oferta.soli_sueldo === 1 && (
                         <div className="mt-4">
                             <hr className="my-4" />
-                            <label htmlFor="sueldoDeseado" className="text-gray-700 block mb-2"><strong>Ingrese el sueldo prospecto a ganar en el trabajo:</strong></label>
+                            <label htmlFor="sueldoDeseado" className="text-blue-700 block mb-2"><strong>Ingrese el sueldo prospecto a ganar en el trabajo:</strong></label>
                             <input
                                 type="number"
                                 id="sueldoDeseado"
@@ -438,11 +438,11 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                         <div className="mt-4">
                             <hr className="my-4" />
                             <div className="flex items-center">
-                                <FontAwesomeIcon icon={faInfoCircle} className="text-gray-700 mr-2" />
-                                <h3 className=" text-gray-700 mb-1 "><strong>Datos Extras de Contacto</strong></h3>
+                                <FontAwesomeIcon icon={faInfoCircle} className="text-blue-900 mr-2" />
+                                <h3 className=" text-blue-900 mb-1 "><strong>Datos Extras de Contacto</strong></h3>
                             </div>
                             <p>Para esta oferta enviar hojas de vida al siguiente correo de contacto con asunto "{oferta.cargo}"</p>
-                            <p className="text-gray-700 mb-1"><strong>Correo electrónico:</strong> {oferta.correo_contacto}</p>
+                            <p className="text-blue-900 mb-1"><strong>Correo electrónico:</strong> {oferta.correo_contacto}</p>
                         </div>
                     )}
                     {oferta.numero_contacto && (

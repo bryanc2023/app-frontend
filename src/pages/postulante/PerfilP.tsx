@@ -228,11 +228,15 @@ const Profile: React.FC = () => {
           <p><strong>Género:</strong> {profileData.postulante.genero}</p>
         </div>
       </div>
-
       <div className="mt-6 bg-gray-800 p-4 rounded-lg shadow-inner text-gray-200">
         <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 pb-2">Presentación</h2>
-        <p className="text-gray-400">{profileData.postulante.informacion_extra}</p>
+        {profileData.postulante.informacion_extra
+          .split('\n\n') // Utiliza dos saltos de línea como separador
+          .map((paragraph, index) => (
+            <p key={index} className="text-gray-400 mb-2">{paragraph.trim()}</p> // Añade margen entre párrafos
+          ))}
       </div>
+
 
       <div className="mt-6 bg-gray-800 p-4 rounded-lg pb-6 shadow-inner text-gray-200">
         <div className="flex justify-between items-center">
@@ -267,8 +271,8 @@ const Profile: React.FC = () => {
         openEditCompetenciaModal={openEditCompetenciaModal}
         openEditCursoModal={openEditCursoModal}
         handleDeleteCurso={reloadProfile}
-        handleViewCV={(id: number) => { console.log(id) }} 
-        handleDownloadCV={(url: string) => { console.log(url) }} 
+        handleViewCV={(id: number) => { console.log(id) }}
+        handleDownloadCV={(url: string) => { console.log(url) }}
       />
 
       <Modal

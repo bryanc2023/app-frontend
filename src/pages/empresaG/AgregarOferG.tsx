@@ -7,7 +7,6 @@ import { RootState } from '../../store';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus } from 'react-icons/fi';
 
-
 interface Titulo {
   id: number;
   titulo: string;
@@ -43,6 +42,7 @@ interface canton {
 
 }
 
+
 function AgregarO() {
   const navigate = useNavigate();
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -54,7 +54,6 @@ function AgregarO() {
   const [selectedCampo, setSelectedCampo] = useState('');
   const [selectedTituloId, setSelectedTituloId] = useState<number>();
   const [requireEducation, setRequireEducation] = useState(false);
-  const [soliSueldo, setSolicitarSueldo] = useState(false);
   const [requireCriterio, setRequireCriterio] = useState(false);
   const [requirePregunta, setRequirePregunta] = useState(false);
   const [selectedTitles, setSelectedTitles] = useState<Titulo[]>([]);
@@ -78,17 +77,33 @@ function AgregarO() {
   const [showCustomInput, setShowCustomInput] = useState(false); // State to toggle custom input
   const [showCheckbox, setShowCheckbox] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [soliSueldo, setSolicitarSueldo] = useState(0);
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+  const handleTextArea = (e) => {
     if (e.key === 'Enter') {
-      e.preventDefault(); // Evita el comportamiento por defecto del formulario
-      const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
-      if (boton) {
-        boton.click(); // Ejecuta el clic en el botón
-      }
+        e.preventDefault(); // Previene el salto al siguiente input
+        
+        const currentValue = e.target.value; // Obtiene el valor actual del textarea
+        // Añade un punto final y un salto de línea
+        e.target.value = currentValue.trim() + '.' + '\n'; 
     }
-  };
+};
 
+const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+    // Verifica si el elemento activo es un textarea
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'TEXTAREA') {
+        return; // No hace nada si está en un textarea
+    }
+
+    if (e.key === 'Enter') {
+        e.preventDefault(); // Evita el comportamiento por defecto del formulario
+        const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
+        if (boton) {
+            boton.click(); // Ejecuta el clic en el botón
+        }
+    }
+};
   // Toggle custom title input
   const handleToggleCustomInput = () => {
     setShowCustomInput(!showCustomInput);
@@ -97,6 +112,7 @@ function AgregarO() {
   const handleCustomTituloChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCustomTitulo(event.target.value);
   };
+
 
   const handleAgregarPregunta = () => {
     if (preguntas.length < 5 && nuevaPregunta.trim() !== '') {
@@ -132,9 +148,13 @@ function AgregarO() {
   const handleCheckboxChange = (event: any) => {
     setShowExperiencia(event.target.checked);
   };
+
   const handleCheckboxSalarioChange = (event: any) => {
     setShowAdd(event.target.checked);
   };
+
+
+
 
 
   useEffect(() => {
@@ -162,8 +182,14 @@ function AgregarO() {
         console.error('Error fetching data:', error);
       }
     };
-
+    const savedDraft = localStorage.getItem('draftPregunta');
+    if (savedDraft) {
+      const draft = JSON.parse(savedDraft);
+      setRequirePregunta(draft.requirePregunta);
+      setPreguntas(draft.preguntas);
+    }
     fetchData();
+
   }, []);
 
   useEffect(() => {
@@ -239,11 +265,7 @@ function AgregarO() {
     const id = parseInt(event.target.value);
     setSelectedCriterioId(id);
     setValorCriterio('');
-    if (id === 3) {
-      setSolicitarSueldo(true);
-    } else {
-      setSolicitarSueldo(false);
-    }
+   
   };
 
   const handleAgregarCriterio = () => {
@@ -251,12 +273,20 @@ function AgregarO() {
       const criterioSeleccionado = criterios.find(criterio => criterio.id_criterio === selectedCriterioId);
       if (criterioSeleccionado) {
         const exists = selectedCriterios.some(c => c.id_criterio === selectedCriterioId);
+    
         if (!exists) {
+        
           const criterioConValor: SelectedCriterio = {
             ...criterioSeleccionado,
-            valor: selectedCriterioId === 3 ? '' : valorCriterio || '',
+            valor: selectedCriterioId === 3 ? 'Sueldo prospecto a ganar del postulante' : valorCriterio || '',
             prioridad: prioridadCriterio
           };
+            // Si el criterio agregado es el con id 3, seteamos soliSueldo1 a 1
+        if (selectedCriterioId === 3) {
+          setSolicitarSueldo(1);
+        }
+
+       
           setSelectedCriterios([...selectedCriterios, criterioConValor]);
           setSelectedCriterioId(null);
           setValorCriterio('');
@@ -283,10 +313,9 @@ function AgregarO() {
     const updatedCriterios = selectedCriterios.filter(c => c.id_criterio !== id);
     setSelectedCriterios(updatedCriterios);
     if (id === 3) {
-      setSolicitarSueldo(false);
-    } else {
-      setSolicitarSueldo(true);
+      setSolicitarSueldo(0);
     }
+    
   };
 
   const handleTituloChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -349,7 +378,7 @@ function AgregarO() {
           setCustomTitulo('');
         }
 
-       
+
       }
     }
   };
@@ -379,47 +408,60 @@ function AgregarO() {
 
   const onSubmit = handleSubmit(async (values) => {
     if (user) {
-      try {
-        const usuario = user.id;
-        const dataToSend = {
-          ...values,
-          usuario: usuario,
-          experiencia: showExperiencia ? values.experiencia : 0,
-          correo_contacto: showCorreo ? values.correo_contacto : null,
-          numero_contacto: showNumeroContacto ? values.numero_contacto : null,
-          solicitar_sueldo: soliSueldo ? soliSueldo : 0,
-          titulos: selectedTitles,
-          criterios: selectedCriterios,
-          preguntas: preguntas,
-          comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
-          horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
-          viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
-          comentariosComisiones: values.comentariosComisiones || null,
-          comentariosHorasExtras: values.comentariosHorasExtras || null,
-          comentariosViaticos: values.comentariosViaticos || null,
-        };
+        try {
+            const usuario = user.id;
+            const dataToSend = {
+                ...values,
+                usuario: usuario,
+                experiencia: showExperiencia ? values.experiencia : 0,
+                correo_contacto: showCorreo ? values.correo_contacto : null,
+                numero_contacto: showNumeroContacto ? values.numero_contacto : null,
+                solicitar_sueldo: soliSueldo === 1 ? true : false,
+                titulos: selectedTitles,
+                criterios: selectedCriterios,
+                preguntas: preguntas,
+                comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
+                horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
+                viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
+                comentariosComisiones: values.comentariosComisiones || null,
+                comentariosHorasExtras: values.comentariosHorasExtras || null,
+                comentariosViaticos: values.comentariosViaticos || null,
+            };
 
+            // SweetAlert para confirmar la publicación
+            const result = await Swal.fire({
+                title: 'Confirmación',
+                text: "¿Está seguro de publicar la oferta con los datos actualmente ingresados?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, publicar',
+                cancelButtonText: 'Cancelar'
+            });
 
+            // Si el usuario confirma, se procede con el envío
+            if (result.isConfirmed) {
+                await axios.post('add-oferta', dataToSend, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
 
-        await axios.post('add-oferta', dataToSend, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        Swal.fire({
-          title: '¡Publicada!',
-          text: 'La oferta se encuentra publicada',
-          icon: 'success',
-          confirmButtonText: 'Ok'
-        }).then(() => {
-          navigate("/inicioG");
-        });
-      } catch (error) {
-        console.log(error);
-      }
+                Swal.fire({
+                    title: '¡Publicada!',
+                    text: 'La oferta se encuentra publicada',
+                    icon: 'success',
+                    confirmButtonText: 'Ok'
+                }).then(() => {
+                    navigate("/inicioG");
+                });
+            }
+        } catch (error) {
+            console.log(error);
+        }
     }
-  });
+});
+
 
   const criterioDescripcion = criterios.find(c => c.id_criterio === selectedCriterioId)?.descripcion || '';
 
@@ -461,7 +503,7 @@ function AgregarO() {
                 onChange={() => setRequireEducation(!requireEducation)}
               />
               <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="requireEducation">
-                ¿Requiere titulo o educación específico?
+                ¿Requiere titulo específico?
               </label>
             </div>
           </div>
@@ -578,8 +620,6 @@ function AgregarO() {
                     </ul>
                   </div>
                 )}
-
-
               </div>
               <hr className="my-4" />
             </>
@@ -609,7 +649,7 @@ function AgregarO() {
                 id="experienciaCheckbox"
                 onChange={handleCheckboxChange}
               />{' '}
-              ¿Requiere años de experiencia en cargos similares?
+              ¿Requiere experiencia?
             </label>
             <hr className="my-4" />
             {showExperiencia && (
@@ -642,13 +682,15 @@ function AgregarO() {
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="objetivo_cargo">• Objetivo del puesto de trabajo
               <span className="text-red-500 ml-1">*</span>
-              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Máximo 500 palabras)</span>
+              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Máximo 500 caractéres)</span>
             </label>
             <textarea
               className="w-full p-2 border rounded"
               id="objetivo_cargo"
               placeholder="Describa en breves palabras el objetivo del puesto de trabajo"
-              {...register('objetivo_cargo', { required: 'Objetivo del Cargo es requerido' })}
+              {...register('objetivo_cargo', { required: 'Objetivo del Cargo es requerido' , validate: {
+                maxLength: value => value.length <= 500 || 'Se permiten hasta 500 caracteres.',
+              },})}
             />
             {errors.objetivo_cargo && <p className="text-red-500">{String(errors.objetivo_cargo.message)}</p>}
           </div>
@@ -664,7 +706,9 @@ function AgregarO() {
               {...register('sueldo', { validate: validateNoNegative })}
             />
             {errors.sueldo && <p className="text-red-500">{String(errors.sueldo.message)}</p>}
-            <div className="mb-4">
+          </div>
+
+          <div className="mb-4">
             <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="sueldoCheckbox">
               <input
                 type="checkbox"
@@ -776,18 +820,20 @@ function AgregarO() {
               </>
             )}
           </div>
-          </div>
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="funciones">• Funciones del puesto:
               <span className="text-red-500 ml-1">*</span>
-              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Máximo 800 palabras, Agregue comas para separar cada función)</span>
+              <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Agregue puntos para separar cada función)</span>
             </label>
             <textarea
               className="w-full p-2 border rounded"
               id="funciones"
-              placeholder="Describa a manera breve las funciones o actividades a realizarse en el puesto. Cada función sepárela con una coma . Ejemplo: Funcion 1, Funcion2"
-              rows={6} 
-              {...register('funciones', { required: 'Funciones son requeridas' })}
+              placeholder="Describa a manera breve las funciones o actividades a realizarse en el puesto. Cada función sepárela con un punto. Ejemplo: Funcion 1. Funcion2"
+              rows={15}
+              {...register('funciones', {
+                required: 'Funciones son requeridas'
+              })}
+              onKeyDown={handleTextArea}
             />
             {errors.funciones && <p className="text-red-500">{String(errors.funciones.message)}</p>}
           </div>
@@ -842,9 +888,10 @@ function AgregarO() {
             <textarea
               className="w-full p-2 border rounded"
               id="detalles_adicionales"
-              placeholder="Detalles Adicionales que desee agregar a la oferta. Cada Detalle sepárela con una coma . Ejemplo: Detalle 1, Detalle 2"
-              rows={6}
+              placeholder="Detalles Adicionales que desee agregar a la oferta. Cada Detalle sepárela con un punto. Ejemplo: Detalle 1. Detalle 2"
+              rows={15}
               {...register('detalles_adicionales')}
+              onKeyDown={handleTextArea}
             ></textarea>
             {errors.detalles_adicionales && <p className="text-red-500">{String(errors.detalles_adicionales.message)}</p>}
           </div>
@@ -1267,7 +1314,7 @@ function AgregarO() {
             </button>
             <button
               type="submit"
-               id="btnPublicarOferta"
+              id="btnPublicarOferta"
               className="bg-blue-500 text-white p-2 rounded-lg mt-4"
             >
               Publicar Oferta
