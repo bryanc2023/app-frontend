@@ -673,6 +673,12 @@ function VerOfertasPPage() {
                                         {/* Puedes agregar aquí el contenido que necesites */}
                                     </div>
                                 </div>
+                                <div className="flex flex-col items-center">
+                                    <span className="mb-2">Ofertas inactivas:</span>
+                                    <div className="bg-orange-500 text-white py-2 px-4 rounded-lg text-center">
+                                        {/* Puedes agregar aquí el contenido que necesites */}
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-lg mx-auto">
@@ -693,7 +699,7 @@ function VerOfertasPPage() {
                                         const { editable, eliminable } = isEditableOrDeletable(oferta.fecha_publi);
 
                                         return (
-                                            <tr key={oferta.id_oferta} className={`py-4 px-6 ${oferta.estado === 'Culminada' ? 'bg-green-100' : (oferta.estado === 'En espera' ? 'bg-gray-100' : '')}`}>
+                                            <tr key={oferta.id_oferta} className={`py-4 px-6 ${oferta.estado === 'Culminada' ? 'bg-green-100' : (oferta.estado === 'En espera' ? 'bg-gray-100' : 'bg-orange-200')}`}>
                                                 <td className="py-4 px-6">{oferta.cargo}</td>
                                                 <td className="py-4 px-6">{oferta.estado}</td>
                                                 <td className="py-4 px-6">{formatDate(oferta.fecha_publi)}</td>

@@ -242,7 +242,7 @@ const PostulantesList: React.FC = () => {
             const fechaFin = new Date(selectedFechaFin);
             return fechaOferta >= fechaInicio && fechaOferta <= fechaFin;
         })
-        : [];
+        : allOfertas;
 
     // Actualizar las opciones del select basado en las ofertas filtradas
     const ofertaOptions = ofertasFiltradas.map((oferta, index) => (
