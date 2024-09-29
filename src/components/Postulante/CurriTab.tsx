@@ -335,6 +335,25 @@ const CurriTab: React.FC = () => {
                   yOffset += 10;
               });
           }
+
+          const formatearFecha = (fecha: string | null) => {
+            if (!fecha) {
+              return 'Presente'; // Si la fecha es null, devuelve "Presente"
+            }
+          
+            // Crear una nueva instancia de la fecha correctamente
+            const fechaObj = new Date(fecha + 'T00:00:00'); // Añadir la hora para evitar problemas de zona horaria
+          
+            // Formatear la fecha con mes y año
+            const opciones: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long' };
+            let fechaFormateada = fechaObj.toLocaleDateString('es-ES', opciones);
+          
+            // Capitalizar la primera letra del mes
+            fechaFormateada = fechaFormateada.charAt(0).toUpperCase() + fechaFormateada.slice(1);
+          
+            return fechaFormateada;
+          };
+          
         if (profileData.postulante.formapro.length > 0) {
           addSection('EXPERIENCIA LABORAL',50);
           profileData.postulante.formapro.forEach((formacion) => {
@@ -343,8 +362,8 @@ const CurriTab: React.FC = () => {
             doc.line(10, lineYStart, doc.internal.pageSize.width - 10, lineYStart);
             yOffset += 5;
 
-            const startDate = format(new Date(formacion.fecha_ini), 'MMM-yyyy');
-            const endDate = formacion.fecha_fin ? format(new Date(formacion.fecha_fin), 'MMM-yyyy') : 'Presente';
+            const startDate = formatearFecha(formacion.fecha_ini);
+            const endDate = formacion.fecha_fin ? formatearFecha(formacion.fecha_fin): 'Presente';
 
             doc.setFont('helvetica', 'normal');
             addText(`Empresa/Institución: ${formacion.empresa}`);
