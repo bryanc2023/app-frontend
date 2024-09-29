@@ -226,7 +226,7 @@ function VerOfertasPPage() {
                     icon: 'success',
                     confirmButtonText: 'Ok'
                 }).then(() => {
-                    window.location.reload();
+                    fetchOfertas();
                 });
             } catch (error) {
                 Swal.fire('Error', 'Hubo un error al eliminar la oferta.', 'error');
