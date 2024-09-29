@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { storage } from '../../config/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { FieldError } from 'react-hook-form';
+import Swal from 'sweetalert2';
 
 interface IFormInput {
   image: FileList;
@@ -182,7 +183,18 @@ const CompletarP: React.FC = () => {
         };
   
         await axios.post('postulanteC', formData);
-        navigate("/completar-2");
+        Swal.fire({
+          icon: 'success',
+          title: '¡Registro incial completado!',
+          text: 'Bienvenido a Postula.net',
+        }).then(() => {
+          navigate("/perfilP");
+          Swal.fire({
+            icon: 'info',
+            title: '¡Ya casi terminas!',
+            text: 'Aun no termina el registro de tu hoja de vida. A continuación en cada una de las pestañas agrega toda la información necesaria, una vez culminado todo dirigete a "CV" y genera tu hoja de vida para empezar a postular.',
+          })
+        });
       } catch (error) {
         if (error.isAxiosError) {
           console.error('Error uploading image or submitting form:', error.response?.data);
@@ -226,7 +238,7 @@ const CompletarP: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-5 bg-gray-100">
       <h1 className="text-3xl font-bold text-center mb-8">Completar registro</h1>
-      <p className="text-center mb-8">Para comenzar la experiencia de Postula complete el registro con los campos solicitados:</p>
+      <p className="text-center mb-8">Para comenzar la experiencia de Postula complete un registro inicial con los campos solicitados:</p>
       <form onSubmit={handleSubmit(onSubmit)} className="bg-white p-10 rounded-lg shadow-lg w-full max-w-4xl">
         <div className="form-group mb-8">
           <label htmlFor="image" className="block text-gray-700 font-semibold mb-2">FOTO:</label>
@@ -343,7 +355,7 @@ const CompletarP: React.FC = () => {
 
         <div className="form-group mb-8">
           <label htmlFor="description" className="block text-gray-700 font-semibold mb-2">Presentación:</label>
-          <textarea id="description" {...register('description', { required: 'Descripción es requerida' })} placeholder="Describete, Tus Habilidades y competencias propias..." rows={5} className={getInputClassName(errors.description)}></textarea>
+          <textarea id="description" {...register('description', { required: 'Descripción es requerida' })} placeholder="Describete, Tus Habilidades y competencias propias..." rows={12} className={getInputClassName(errors.description)}></textarea>
           
           {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description.message}</p>}
           

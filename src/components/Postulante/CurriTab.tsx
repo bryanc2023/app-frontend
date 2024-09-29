@@ -159,17 +159,35 @@ const CurriTab: React.FC = () => {
   const formatPresentacion = (text) => {
     // Eliminar espacios en blanco adicionales
     const cleanText = text.replace(/\s+/g, ' ').trim();
-    
-    // Dividir el texto en bloques de 500 caracteres
+  
+    // Dividir el texto en bloques sin cortar palabras
     const chunks = [];
-    for (let i = 0; i < cleanText.length; i += 945) {
-      chunks.push(cleanText.substring(i, i + 945));
+    let startIndex = 0;
+  
+    while (startIndex < cleanText.length) {
+      // Tomar un bloque de hasta 945 caracteres
+      let endIndex = startIndex + 960;
+  
+      // Si el bloque excede la longitud del texto, ajustarlo
+      if (endIndex >= cleanText.length) {
+        endIndex = cleanText.length;
+      } else {
+        // Asegurarse de que no cortamos una palabra
+        // Retrocedemos hasta el último espacio antes de endIndex
+        const lastSpaceIndex = cleanText.lastIndexOf(' ', endIndex);
+        endIndex = lastSpaceIndex !== -1 ? lastSpaceIndex : endIndex;
+      }
+  
+      // Agregar el bloque al array de chunks
+      chunks.push(cleanText.substring(startIndex, endIndex).trim());
+  
+      // Actualizar el índice de inicio para el próximo bloque
+      startIndex = endIndex + 1; // Avanzar más allá del espacio
     }
-
-    
   
     return chunks;
   };
+  
 
 
   const formatFunciones = (text) => {
