@@ -31,7 +31,7 @@ const Login = () => {
             if (role === 'postulante') {
                 navigate('/verOfertasAll');
             } else if (role === 'empresa_oferente') {
-                navigate('/inicio-e');
+                navigate('/verOfertasE');
             } else if (role === 'admin') {
                 navigate('/inicioAdmin');
             } else if (role === 'empresa_gestora') {

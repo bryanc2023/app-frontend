@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../../services/axios';
 import Swal from 'sweetalert2';
+import { useNavigate } from 'react-router-dom';
+import { useAppDispatch, RootState } from '../../store';
+import { useSelector } from 'react-redux';
+
+
 interface Postulante {
     id_postulante: number;
     nombres: string;
@@ -35,6 +40,8 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
     const [showRespuestasModal, setShowRespuestasModal] = useState(false);
     const [comentario, setComentario] = useState('');
     const [hayAprobado, setHayAprobado] = useState(false);
+    const navigate = useNavigate();
+    const { role} = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
         const verificarPostulacionAprobada = async (idOferta: number) => {
@@ -84,8 +91,12 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
                     text: 'Se le ha notificado al postulante y a los demás enlistados la decisión.',
                     confirmButtonText: 'OK',
                 }).then(() => {
-                    // Recargar la página
-                    window.location.reload();
+                     if (role === 'empresa_oferente') {
+                        navigate('/verOfertasE');
+                    } else if (role === 'empresa_gestora') {
+                        navigate('/inicioG');
+                    }
+                  
                 });
             } else {
                 console.error('Error al enviar comentario:', response.status);

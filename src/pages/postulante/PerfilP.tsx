@@ -229,14 +229,14 @@ const Profile: React.FC = () => {
         </div>
       </div>
       <div className="mt-6 bg-gray-800 p-4 rounded-lg shadow-inner text-gray-200">
-  <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 pb-2">Presentación</h2>
-  {profileData.postulante.informacion_extra 
-    ? profileData.postulante.informacion_extra.split('\n\n').map((paragraph, index) => (
-        <p key={index} className="text-gray-400 mb-2">{paragraph.trim()}</p> // Añade margen entre párrafos
-      )) 
-    : <p className="text-gray-400 mb-2">Ninguna</p> // Si es null, muestra "Ninguna"
-  }
-</div>
+        <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 pb-2">Presentación</h2>
+        {profileData.postulante.informacion_extra
+          ? profileData.postulante.informacion_extra.split('\n\n').map((paragraph, index) => (
+            <p key={index} className="text-gray-400 mb-2">{paragraph.trim()}</p> // Añade margen entre párrafos
+          ))
+          : <p className="text-gray-400 mb-2">Ninguna</p> // Si es null, muestra "Ninguna"
+        }
+      </div>
 
 
 
