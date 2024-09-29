@@ -658,6 +658,23 @@ function VerOfertasPPage() {
                             <FaBriefcase className="text-blue-500 text-2xl mr-2" />
                             <h1 className="text-2xl font-semibold text-blue-500">OFERTAS PUBLICADAS:</h1>
                         </div>
+                        <div className="max-w-screen-lg mx-auto mb-4">
+                            <h2 className="text-lg font-semibold text-center mb-4">Tus ofertas se muestran clasificadas por un color, que representa su estado:</h2>
+                            <div className="flex justify-center space-x-8">
+                                <div className="flex flex-col items-center">
+                                    <span className="mb-2">Ofertas culminadas:</span>
+                                    <div className="bg-green-500 text-white py-2 px-4 rounded-lg text-center">
+                                        {/* Puedes agregar aquí el contenido que necesites */}
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-center">
+                                    <span className="mb-2">Ofertas en espera de postulantes:</span>
+                                    <div className="bg-gray-500 text-white py-2 px-4 rounded-lg text-center">
+                                        {/* Puedes agregar aquí el contenido que necesites */}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div className="relative overflow-x-auto shadow-md sm:rounded-lg max-w-screen-lg mx-auto">
                             <table className="w-full text-sm text-left text-gray-500 dark:text-gray-400">
                                 <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">

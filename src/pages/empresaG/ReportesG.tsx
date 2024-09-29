@@ -207,7 +207,7 @@ const Reportes: React.FC = () => {
     doc.setFontSize(18);
     doc.setTextColor(255, 87, 34); // Color naranja
     doc.setFont('helvetica', 'bold');
-    doc.text('POSTÚLATE', doc.internal.pageSize.getWidth() / 2, 16, { align: 'center' });
+    doc.text('POSTULA.NET', doc.internal.pageSize.getWidth() / 2, 16, { align: 'center' });
 
     // Subtítulo con el tipo de reporte y la fecha
     doc.setFontSize(12);
@@ -322,10 +322,10 @@ const Reportes: React.FC = () => {
 
     // Pie de página con la fecha y un pequeño mensaje
     doc.setFontSize(10);
-    doc.text('Generado por Postúlate APP', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    doc.text('Generado por Postúla APP', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
     doc.text('Este reporte contiene información confidencial.', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 5, { align: 'center' });
 
-    doc.save(`ReportePostulate_${reportType}_${formattedDate}.pdf`);
+    doc.save(`ReportePostula_${reportType}_${formattedDate}.pdf`);
 };
 
   const previewPDF = async () => {
@@ -336,7 +336,7 @@ const Reportes: React.FC = () => {
     doc.setFontSize(18);
     doc.setTextColor(255, 87, 34); // Color naranja
     doc.setFont('helvetica', 'bold');
-    doc.text('POSTÚLATE', doc.internal.pageSize.getWidth() / 2, 16, { align: 'center' });
+    doc.text('POSTULA.NET', doc.internal.pageSize.getWidth() / 2, 16, { align: 'center' });
 
     // Subtítulo con el tipo de reporte y la fecha
     doc.setFontSize(12);
@@ -451,7 +451,7 @@ const Reportes: React.FC = () => {
 
     // Pie de página con la fecha y un pequeño mensaje
     doc.setFontSize(10);
-    doc.text('Generado por Postúlate APP', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    doc.text('Generado por Postúla APP', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 10, { align: 'center' });
     doc.text('Este reporte contiene información confidencial.', doc.internal.pageSize.getWidth() / 2, doc.internal.pageSize.getHeight() - 5, { align: 'center' });
 
     const pdfBlob = doc.output('blob');
