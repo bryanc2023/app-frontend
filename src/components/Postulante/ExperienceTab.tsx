@@ -141,7 +141,7 @@ const ExperienceTab: React.FC = () => {
             <p><strong className="text-orange-500">Empresa:</strong> {experiencia.empresa}</p>
             <p><strong className="text-orange-500">Cargo:</strong> {experiencia.puesto}</p>
             <p><strong className="text-orange-500">Fechas de labores:</strong> {formatearFecha(experiencia.fecha_ini)} - {formatearFecha(experiencia.fecha_fin)}</p>
-            <p><strong className="text-orange-500">Área:</strong> {experiencia.area.split('.')[1]}</p>
+            <p><strong className="text-orange-500">Área:</strong> {experiencia.area.split(',')[1]}</p>
             <p><strong className="text-orange-500">Funciones y responsabilidades en el cargo:</strong></p>
             {experiencia.descripcion_responsabilidades && experiencia.descripcion_responsabilidades.includes('.') ? (
               <ul className="list-disc list-inside">
