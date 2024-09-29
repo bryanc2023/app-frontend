@@ -309,7 +309,9 @@ const CurriTab: React.FC = () => {
 
             const lineHeight = 6; // Ajustar el espacio entre ítems de la lista
             let requiredSpace = 40; // Espacio base para cada iteración sin funciones y responsabilidades
-            const funcionesResponsabilidades = formacion.descripcion_responsabilidades.split(',');
+            const funcionesResponsabilidades = formacion.descripcion_responsabilidades
+            ? formacion.descripcion_responsabilidades.split(',')
+            : []; 
 
             if (funcionesResponsabilidades.length > 1) {
               requiredSpace += funcionesResponsabilidades.length * lineHeight; // Añadir espacio para cada ítem de la lista
