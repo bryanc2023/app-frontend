@@ -26,7 +26,9 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
   const [areas, setAreas] = useState<Area[]>([]);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [currentJob, setCurrentJob] = useState(false);
- 
+  
+  const [cargoReferencia, setCargoReferencia] = useState(''); // Estado para almacenar el cargo
+
   const handleKeyDown = (event) => {
     if (event.key === 'Enter') {
       event.preventDefault(); // Evita el comportamiento predeterminado de saltar a una nueva línea
@@ -38,6 +40,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
       textarea.selectionStart = textarea.selectionEnd = textarea.value.length;
     }
   };
+
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -76,7 +79,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
         }
       } catch (error) {
         console.error('Error fetching profile data:', error);
-      } 
+      }
     };
 
     fetchProfileData();
@@ -88,11 +91,14 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
       return;
     }
 
+    // Concatenar el cargo y el nombre de la persona de referencia
+    const personaReferenciaConCargo = `${cargoReferencia}. ${data.persona_referencia}`;
+
     const dataToSend = {
       ...data,
       id_postulante: profileData.postulante.id_postulante,
+      persona_referencia: personaReferenciaConCargo, // Guardar el campo concatenado
     };
-
 
     if (experiencia && experiencia.id_formacion_pro) {
       // Editar experiencia
@@ -102,7 +108,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
           id_experiencia: experiencia.id_formacion_pro,
           fecha_fin: currentJob ? null : data.fecha_fin,
         });
- 
+
         Swal.fire({
           toast: true,
           position: 'top-end',
@@ -253,6 +259,16 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
               {errors.descripcion_responsabilidades && <p className="text-red-500">{errors.descripcion_responsabilidades.message}</p>}
             </div>
             <div>
+              <label className="block text-gray-700">Cargo de la persona de referencia:</label>
+              <input
+                type="text"
+                value={cargoReferencia}
+                onChange={(e) => setCargoReferencia(e.target.value)} // Guardar el valor en el estado
+                className="w-full px-4 py-2 border rounded-md text-gray-700"
+                placeholder="Cargo de la persona"
+              />
+            </div>
+            <div>
               <label className="block text-gray-700">Nombre Persona Referencia:</label>
               <input
                 {...register('persona_referencia', {
@@ -260,7 +276,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
                   maxLength: { value: 250, message: 'Máximo 250 caracteres' }
                 })}
                 className="w-full px-4 py-2 border rounded-md text-gray-700"
-                placeholder="Nombre (Cargo de la persona en la empresa)"
+                placeholder="Nombre de la persona de referencia"
               />
               {errors.persona_referencia && <p className="text-red-500">{errors.persona_referencia.message}</p>}
             </div>

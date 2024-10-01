@@ -10,8 +10,10 @@ import EditCurso from '../../components/Postulante/EditCurso';
 import AddRedModal from '../../components/Postulante/AddRedModal';
 import AddIdiomaModal from '../../components/Postulante/AddIdiomaModal';
 import EditProfilePictureModal from '../../components/Postulante/EditProfilePictureModal';
-import { FaLinkedin, FaFacebook, FaInstagram, FaXTwitter, FaGlobe } from 'react-icons/fa6';
+import { FaLinkedin, FaFacebook, FaInstagram, FaXTwitter, FaGlobe, FaTrash } from 'react-icons/fa6';
 import { ProfileData, Formacion, Idioma, Curso, Red, Habilidad, Competencia } from '../../types/PostulanteType';
+import { FaInfoCircle } from 'react-icons/fa';
+import Swal from 'sweetalert2';
 
 Modal.setAppElement('#root');
 
@@ -29,6 +31,8 @@ const Profile: React.FC = () => {
   const [isAddRedModalOpen, setIsAddRedModalOpen] = useState<boolean>(false);
   const [isAddIdiomaModalOpen, setIsAddIdiomaModalOpen] = useState<boolean>(false);
   const [redes, setRedes] = useState<Red[]>([]);
+  const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
+const [redToDelete, setRedToDelete] = useState<Red | null>(null);
   const [languages, setLanguages] = useState<{ id: number; nombre: string }[]>([]);
   const [, setSelectedHabilidad] = useState<Habilidad | null>(null);
   const [, setSelectedCompetencia] = useState<Competencia | null>(null);
@@ -74,6 +78,16 @@ const Profile: React.FC = () => {
     await fetchProfileData();
   }, [fetchProfileData]);
 
+  const openConfirmDeleteModal = (red: Red) => {
+    setRedToDelete(red);
+    setIsConfirmDeleteModalOpen(true);
+  };
+  
+  const closeConfirmDeleteModal = () => {
+    setIsConfirmDeleteModalOpen(false);
+    setRedToDelete(null);
+  };
+  
   const isCedulaValid = (cedula: string): boolean => {
     if (cedula.length !== 10) return false;
     const digits = cedula.split('').map(Number);
@@ -158,6 +172,35 @@ const Profile: React.FC = () => {
     setIsAddIdiomaModalOpen(false);
   }, []);
 
+  const handleDeleteRed = async (id: number) => {
+    try {
+      await axios.delete(`/red/${id}`);
+      // Actualiza el estado eliminando la red del arreglo
+      setRedes(redes.filter((red) => red.id_postulante_red !== id));
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Red social eliminada exitosamente',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    } catch (error) {
+      console.error('Error eliminando la red:', error);
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'error',
+        title: 'Hubo un error al eliminar la red social',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    }
+  };
+  
+
   const renderIcon = useCallback((nombreRed: string) => {
     switch (nombreRed.toLowerCase()) {
       case 'linkedin':
@@ -240,28 +283,55 @@ const Profile: React.FC = () => {
 
 
 
-      <div className="mt-6 bg-gray-800 p-4 rounded-lg pb-6 shadow-inner text-gray-200">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 pb-2">Redes</h2>
-          <button onClick={openAddRedModal} className="text-orange-400 hover:underline">
-            + Agregar red
-          </button>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
-          {redes && redes.length > 0 ? (
-            redes.map((red: Red) => (
-              <div key={red.id_postulante_red} className="flex items-center space-x-2">
-                <span>{red.nombre_red}</span>
-                <a href={red.enlace} target="_blank" rel="noopener noreferrer" className="text-2xl hover:underline">
-                  {renderIcon(red.nombre_red)}
-                </a>
-              </div>
-            ))
-          ) : (
-            <p>No hay redes sociales agregadas.</p>
-          )}
-        </div>
+        <div className="mt-6 bg-gray-800 p-4 rounded-lg pb-6 shadow-inner text-gray-200">
+    <div className="flex justify-between items-center">
+      <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 pb-2">Redes</h2>
+
+      {/* Ícono de información con tooltip */}
+      <div className="relative group">
+        <FaInfoCircle className="text-white text-lg cursor-pointer" />
+
+        {/* Tooltip */}
+        <span className="absolute left-1/2 -translate-x-1/2 bottom-8 w-max bg-white text-gray-800 text-sm rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+          Si necesita cambiar una red social, elimine la existente y agrégue la nuevamente.
+        </span>
       </div>
+
+      <button onClick={openAddRedModal} className="text-orange-400 hover:underline">
+        + Agregar red
+      </button>
+    </div>
+
+    {/* Renderizado condicional de redes */}
+    {redes && redes.length > 0 ? (
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
+        {redes.map((red: Red) => (
+          <div key={red.id_postulante_red} className="flex items-center space-x-2">
+            <span>{red.nombre_red}</span>
+            <a href={red.enlace} target="_blank" rel="noopener noreferrer" className="text-2xl hover:underline">
+              {renderIcon(red.nombre_red)}
+            </a>
+            {/* Botón para eliminar red con confirmación */}
+            <button
+            onClick={() => openConfirmDeleteModal(red)}
+            className="text-red-500 hover:text-red-700"
+          >
+            <FaTrash className="text-sm" />
+          </button>
+
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div className="flex items-center justify-center mt-4 p-4 bg-gray-700 rounded-lg border border-gray-600 text-gray-300">
+        <span>No hay redes sociales agregadas.</span>
+      </div>
+    )}
+  </div>
+
+
+
+
 
       <Tabs
         profileData={profileData}
@@ -326,6 +396,37 @@ const Profile: React.FC = () => {
         languages={languages}
         userId={profileData.postulante.id_postulante}
       />
+     
+     <Modal
+  isOpen={isConfirmDeleteModalOpen}
+  onRequestClose={closeConfirmDeleteModal}
+  contentLabel="Confirmar eliminación"
+  className="bg-gray-800 p-6 rounded-lg shadow-lg text-white w-full max-w-lg mx-auto my-20 relative"
+  overlayClassName="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+>
+  <h2 className="text-lg font-semibold mb-4">Confirmar Eliminación</h2>
+  <p className="mb-4">¿Estás seguro de que deseas eliminar la red social <strong>{redToDelete?.nombre_red}</strong>?</p>
+  <div className="flex justify-end space-x-2 mt-4">
+    <button
+      onClick={closeConfirmDeleteModal}
+      className="px-4 py-2 bg-gray-500 rounded-md hover:bg-gray-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-300"
+    >
+      Cancelar
+    </button>
+    <button
+      onClick={() => {
+        if (redToDelete) {
+          handleDeleteRed(redToDelete.id_postulante_red);
+        }
+        closeConfirmDeleteModal();
+      }}
+      className="px-4 py-2 bg-red-500 rounded-md hover:bg-red-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-red-300"
+    >
+      Eliminar
+    </button>
+  </div>
+</Modal>
+
 
       <EditProfilePictureModal
         isOpen={isEditProfilePicModalOpen}

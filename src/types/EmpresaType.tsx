@@ -1,4 +1,4 @@
-interface Empresa {
+export interface Empresa {
     id_empresa: number;
     id_ubicacion: number;
     id_usuario: number;
