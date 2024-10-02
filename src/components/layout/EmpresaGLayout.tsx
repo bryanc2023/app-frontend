@@ -15,6 +15,7 @@ import PerfilPModal from '../../components/PerfilPModal';
 import PerfilEModal from '../../components/PerfilEModal';
 import { dataNotificable, DataNotifyApi } from '../../types/NotifyType';
 import { FaCheckToSlot, FaStopwatch20, FaWatchmanMonitoring } from 'react-icons/fa6';
+import { Empresa } from '../../types/EmpresaType';
 
 
 
