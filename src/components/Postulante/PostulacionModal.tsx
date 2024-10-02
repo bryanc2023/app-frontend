@@ -313,7 +313,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                             </p>
                             <p className="text-gray-700 mb-1 flex items-center">
                                 <FontAwesomeIcon icon={faBuilding} className="mr-2" />
-                                <strong>Empresa: </strong> {oferta.n_mostrar_empresa === 1 ? 'Anónima' : oferta.empresa.nombre_comercial}
+                                <strong>Empresa: </strong> {oferta.n_mostrar_empresa === 1 ? 'Confidencial' : oferta.empresa.nombre_comercial}
                             </p>
                             <p className="text-gray-700 mb-1 flex items-center">
                                 <FiMapPin className="text-gray-700 mr-2" />
