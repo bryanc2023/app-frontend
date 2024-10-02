@@ -45,7 +45,7 @@ interface canton {
 
 function AgregarO() {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit,watch,formState: { errors } } = useForm();
   const [niveles, setNiveles] = useState([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [campos, setCampos] = useState([]);
@@ -78,6 +78,9 @@ function AgregarO() {
   const [showCheckbox, setShowCheckbox] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [soliSueldo, setSolicitarSueldo] = useState(0);
+
+  // Observamos el valor del campo 'experienciaTipo'
+  const experienciaTipo = watch('experienciaTipo', 'años');
 
   const handleTextArea = (e) => {
     if (e.key === 'Enter') {
@@ -410,10 +413,12 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     if (user) {
         try {
             const usuario = user.id;
+            const experienciaEnMeses = values.experienciaTipo === 'meses';
             const dataToSend = {
                 ...values,
                 usuario: usuario,
                 experiencia: showExperiencia ? values.experiencia : 0,
+                experienciaEnMeses: showExperiencia ? experienciaEnMeses : 0, 
                 correo_contacto: showCorreo ? values.correo_contacto : null,
                 numero_contacto: showNumeroContacto ? values.numero_contacto : null,
                 solicitar_sueldo: soliSueldo === 1 ? true : false,
@@ -655,19 +660,50 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
             {showExperiencia && (
               <>
                 <div id="experienciaContainer" className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
-                  <label className="block text-sm font-bold mb-2" htmlFor="experiencia">
-                    Años de Experiencia requerida
+                  <label className="block text-sm font-bold mb-2">
+                    Selecciona si la experiencia requerida es en meses o años:
                   </label>
+
+                  <div className="flex mb-4">
+                    <label className="mr-4">
+                      <input
+                        type="radio"
+                        value="años"
+                        {...register('experienciaTipo')}
+                        defaultChecked
+                      />
+                      <span className="ml-2">Años</span>
+                    </label>
+
+                    <label>
+                      <input
+                        type="radio"
+                        value="meses"
+                        {...register('experienciaTipo')}
+                      />
+                      <span className="ml-2">Meses</span>
+                    </label>
+                  </div>
+
+                  <label className="block text-sm font-bold mb-2" htmlFor="experiencia">
+                    {watch('experienciaTipo') === 'meses'
+                      ? 'Meses de Experiencia requerida'
+                      : 'Años de Experiencia requerida'}
+                  </label>
+
                   <input
                     className="w-full p-2 border rounded"
                     type="number"
                     id="experiencia"
-                    placeholder="Número de  años de experiencia en puestos similares"
+                    placeholder={watch('experienciaTipo') === 'meses'
+                      ? 'Número de meses de experiencia en puestos similares'
+                      : 'Número de años de experiencia en puestos similares'}
                     {...register('experiencia', {
                       required: 'Experiencia es requerida',
                       validate: validateNoNegative,
                     })}
                   />
+
                   {errors.experiencia && (
                     <p className="text-red-500">{String(errors.experiencia.message)}</p>
                   )}

@@ -56,6 +56,7 @@ interface Oferta {
     comentariosComisiones: string | null;
     comentariosHorasExtras: string | null;
     comentariosViaticos: string | null;
+    exp_m: boolean;
 }
 
 interface Pregunta {

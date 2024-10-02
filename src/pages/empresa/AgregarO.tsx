@@ -45,7 +45,7 @@ interface canton {
 
 function AgregarO() {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit,watch,formState: { errors } } = useForm();
   const [niveles, setNiveles] = useState([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [campos, setCampos] = useState([]);
@@ -79,31 +79,36 @@ function AgregarO() {
   const [showAdd, setShowAdd] = useState(false);
   const [soliSueldo, setSolicitarSueldo] = useState(0);
 
+  // Observamos el valor del campo 'experienciaTipo'
+  const experienciaTipo = watch('experienciaTipo', 'años'); // 'años' es el valor por defecto
+
+
+
   const handleTextArea = (e) => {
     if (e.key === 'Enter') {
-        e.preventDefault(); // Previene el salto al siguiente input
-        
-        const currentValue = e.target.value; // Obtiene el valor actual del textarea
-        // Añade un punto final y un salto de línea
-        e.target.value = currentValue.trim() + '.' + '\n'; 
-    }
-};
+      e.preventDefault(); // Previene el salto al siguiente input
 
-const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+      const currentValue = e.target.value; // Obtiene el valor actual del textarea
+      // Añade un punto final y un salto de línea
+      e.target.value = currentValue.trim() + '.' + '\n';
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     // Verifica si el elemento activo es un textarea
     const target = e.target as HTMLElement;
     if (target.tagName === 'TEXTAREA') {
-        return; // No hace nada si está en un textarea
+      return; // No hace nada si está en un textarea
     }
 
     if (e.key === 'Enter') {
-        e.preventDefault(); // Evita el comportamiento por defecto del formulario
-        const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
-        if (boton) {
-            boton.click(); // Ejecuta el clic en el botón
-        }
+      e.preventDefault(); // Evita el comportamiento por defecto del formulario
+      const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
+      if (boton) {
+        boton.click(); // Ejecuta el clic en el botón
+      }
     }
-};
+  };
   // Toggle custom title input
   const handleToggleCustomInput = () => {
     setShowCustomInput(!showCustomInput);
@@ -265,7 +270,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     const id = parseInt(event.target.value);
     setSelectedCriterioId(id);
     setValorCriterio('');
-   
+
   };
 
   const handleAgregarCriterio = () => {
@@ -273,20 +278,20 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
       const criterioSeleccionado = criterios.find(criterio => criterio.id_criterio === selectedCriterioId);
       if (criterioSeleccionado) {
         const exists = selectedCriterios.some(c => c.id_criterio === selectedCriterioId);
-    
+
         if (!exists) {
-        
+
           const criterioConValor: SelectedCriterio = {
             ...criterioSeleccionado,
             valor: selectedCriterioId === 3 ? 'Sueldo prospecto a ganar del postulante' : valorCriterio || '',
             prioridad: prioridadCriterio
           };
-            // Si el criterio agregado es el con id 3, seteamos soliSueldo1 a 1
-        if (selectedCriterioId === 3) {
-          setSolicitarSueldo(1);
-        }
+          // Si el criterio agregado es el con id 3, seteamos soliSueldo1 a 1
+          if (selectedCriterioId === 3) {
+            setSolicitarSueldo(1);
+          }
 
-       
+
           setSelectedCriterios([...selectedCriterios, criterioConValor]);
           setSelectedCriterioId(null);
           setValorCriterio('');
@@ -315,7 +320,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     if (id === 3) {
       setSolicitarSueldo(0);
     }
-    
+
   };
 
   const handleTituloChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -408,59 +413,61 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
 
   const onSubmit = handleSubmit(async (values) => {
     if (user) {
-        try {
-            const usuario = user.id;
-            const dataToSend = {
-                ...values,
-                usuario: usuario,
-                experiencia: showExperiencia ? values.experiencia : 0,
-                correo_contacto: showCorreo ? values.correo_contacto : null,
-                numero_contacto: showNumeroContacto ? values.numero_contacto : null,
-                solicitar_sueldo: soliSueldo === 1 ? true : false,
-                titulos: selectedTitles,
-                criterios: selectedCriterios,
-                preguntas: preguntas,
-                comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
-                horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
-                viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
-                comentariosComisiones: values.comentariosComisiones || null,
-                comentariosHorasExtras: values.comentariosHorasExtras || null,
-                comentariosViaticos: values.comentariosViaticos || null,
-            };
+      try {
+        const usuario = user.id;
+        const experienciaEnMeses = values.experienciaTipo === 'meses';
+        const dataToSend = {
+          ...values,
+          usuario: usuario,
+          experiencia: showExperiencia ? values.experiencia : 0,
+          experienciaEnMeses: showExperiencia ? experienciaEnMeses : 0, 
+          correo_contacto: showCorreo ? values.correo_contacto : null,
+          numero_contacto: showNumeroContacto ? values.numero_contacto : null,
+          solicitar_sueldo: soliSueldo === 1 ? true : false,
+          titulos: selectedTitles,
+          criterios: selectedCriterios,
+          preguntas: preguntas,
+          comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
+          horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
+          viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
+          comentariosComisiones: values.comentariosComisiones || null,
+          comentariosHorasExtras: values.comentariosHorasExtras || null,
+          comentariosViaticos: values.comentariosViaticos || null,
+        };
 
-            // SweetAlert para confirmar la publicación
-            const result = await Swal.fire({
-                title: 'Confirmación',
-                text: "¿Está seguro de publicar la oferta con los datos actualmente ingresados?",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, publicar',
-                cancelButtonText: 'Cancelar'
-            });
+        // SweetAlert para confirmar la publicación
+        const result = await Swal.fire({
+          title: 'Confirmación',
+          text: "¿Está seguro de publicar la oferta con los datos actualmente ingresados?",
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, publicar',
+          cancelButtonText: 'Cancelar'
+        });
 
-            // Si el usuario confirma, se procede con el envío
-            if (result.isConfirmed) {
-                await axios.post('add-oferta', dataToSend, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-                
+        // Si el usuario confirma, se procede con el envío
+        if (result.isConfirmed) {
+          await axios.post('add-oferta', dataToSend, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
 
-                Swal.fire({
-                    title: '¡Publicada!',
-                    text: 'La oferta se encuentra publicada',
-                    icon: 'success',
-                    confirmButtonText: 'Ok'
-                }).then(() => {
-                    navigate("/verOfertasE");
-                });
-            }
-        } catch (error) {
-            console.log(error);
+
+          Swal.fire({
+            title: '¡Publicada!',
+            text: 'La oferta se encuentra publicada',
+            icon: 'success',
+            confirmButtonText: 'Ok'
+          }).then(() => {
+            navigate("/verOfertasE");
+          });
         }
+      } catch (error) {
+        console.log(error);
+      }
     }
-});
+  });
 
 
   const criterioDescripcion = criterios.find(c => c.id_criterio === selectedCriterioId)?.descripcion || '';
@@ -655,19 +662,50 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
             {showExperiencia && (
               <>
                 <div id="experienciaContainer" className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
-                  <label className="block text-sm font-bold mb-2" htmlFor="experiencia">
-                    Años de Experiencia requerida
+                  <label className="block text-sm font-bold mb-2">
+                    Selecciona si la experiencia requerida es en meses o años:
                   </label>
+
+                  <div className="flex mb-4">
+                    <label className="mr-4">
+                      <input
+                        type="radio"
+                        value="años"
+                        {...register('experienciaTipo')}
+                        defaultChecked
+                      />
+                      <span className="ml-2">Años</span>
+                    </label>
+
+                    <label>
+                      <input
+                        type="radio"
+                        value="meses"
+                        {...register('experienciaTipo')}
+                      />
+                      <span className="ml-2">Meses</span>
+                    </label>
+                  </div>
+
+                  <label className="block text-sm font-bold mb-2" htmlFor="experiencia">
+                    {watch('experienciaTipo') === 'meses'
+                      ? 'Meses de Experiencia requerida'
+                      : 'Años de Experiencia requerida'}
+                  </label>
+
                   <input
                     className="w-full p-2 border rounded"
                     type="number"
                     id="experiencia"
-                    placeholder="Número de  años de experiencia en puestos similares"
+                    placeholder={watch('experienciaTipo') === 'meses'
+                      ? 'Número de meses de experiencia en puestos similares'
+                      : 'Número de años de experiencia en puestos similares'}
                     {...register('experiencia', {
                       required: 'Experiencia es requerida',
                       validate: validateNoNegative,
                     })}
                   />
+
                   {errors.experiencia && (
                     <p className="text-red-500">{String(errors.experiencia.message)}</p>
                   )}
@@ -688,9 +726,11 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
               className="w-full p-2 border rounded"
               id="objetivo_cargo"
               placeholder="Describa en breves palabras el objetivo del puesto de trabajo"
-              {...register('objetivo_cargo', { required: 'Objetivo del Cargo es requerido' , validate: {
-                maxLength: value => value.length <= 500 || 'Se permiten hasta 500 caracteres.',
-              },})}
+              {...register('objetivo_cargo', {
+                required: 'Objetivo del Cargo es requerido', validate: {
+                  maxLength: value => value.length <= 500 || 'Se permiten hasta 500 caracteres.',
+                },
+              })}
             />
             {errors.objetivo_cargo && <p className="text-red-500">{String(errors.objetivo_cargo.message)}</p>}
           </div>
