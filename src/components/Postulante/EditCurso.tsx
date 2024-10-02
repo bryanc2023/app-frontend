@@ -7,6 +7,9 @@ import { RootState } from '../../store';
 import Swal from 'sweetalert2';
 import { isAxiosError } from 'axios';
 import { ProfileData } from '../../types/PostulanteType';
+import { storage } from '../../config/firebaseConfig';
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { FieldError } from 'react-hook-form';
 
 interface EditCursoProps {
   isOpen: boolean;
@@ -28,6 +31,9 @@ const EditCurso: React.FC<EditCursoProps> = ({ isOpen, closeModal, reloadCursos,
   const { user } = useSelector((state: RootState) => state.auth);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  // Estado para el checkbox
+  const [isPhysicalCertificate, setIsPhysicalCertificate] = useState(false);
+  const [pdfFile, setPdfFile] = useState<File | null>(null); // Estado para manejar el archivo PDF
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -60,11 +66,34 @@ const EditCurso: React.FC<EditCursoProps> = ({ isOpen, closeModal, reloadCursos,
       return;
     }
 
+    let certificadoUrl = certificado; // Mantiene la URL del certificado existente
+
+    // Solo subir el PDF si es un certificado físico
+    if (isPhysicalCertificate && pdfFile) {
+      if (pdfFile.size > 5 * 1024 * 1024) { // Verifica que el archivo no exceda 5 MB
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'El archivo debe ser menor de 5 MB.',
+        });
+        return;
+      }
+    
+    
+
+      const storageRef = ref(storage, `certificados/${pdfFile.name}`);
+      await uploadBytes(storageRef, pdfFile);
+      certificadoUrl = await getDownloadURL(storageRef); // Obtiene la URL del archivo subido
+    } else if (isPhysicalCertificate) {
+      certificadoUrl = ''; // Si es físico pero no hay archivo, vacía el campo
+    }
+
     const updatedCurso = {
       id_postulante: profileData.postulante.id_postulante,
       titulo: nombre,
-      certificado: certificado,
+      certificado: certificadoUrl, // Actualiza con la URL del certificado
     };
+
 
     try {
       if (curso && curso.id_certificado) {
@@ -128,18 +157,48 @@ const EditCurso: React.FC<EditCursoProps> = ({ isOpen, closeModal, reloadCursos,
               required
             />
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700">Certificado (URL)</label>
+          {/* Checkbox para certificado físico */}
+          <div className="mb-4 flex items-center">
             <input
-              type="url"
-              className="w-full px-4 py-2 border rounded-md text-gray-900"
-              placeholder="URL del Certificado"
-              value={certificado}
-              onChange={(e) => setCertificado(e.target.value)}
-              required
+              type="checkbox"
+              checked={isPhysicalCertificate}
+              onChange={(e) => setIsPhysicalCertificate(e.target.checked)}
+              className="mr-2"
             />
+            <label className="text-gray-700">¿Es certificado físico?</label>
           </div>
-          {certificado && (
+
+{/* Campo de carga del PDF, visible solo si es físico */}
+{isPhysicalCertificate && (
+            <div className="mb-4">
+              <label className="block text-gray-700">Puede subir su certificado escaneado y que sea menos de 2MB y formato PDF (Opcional):</label>
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files.length > 0) {
+                    setPdfFile(e.target.files[0]);
+                  }
+                }}
+                className="w-full px-4 py-2 border rounded-md text-gray-900"
+              />
+            </div>
+          )}
+          {/* Campo de URL del certificado, visible solo si no es físico */}
+          {!isPhysicalCertificate && (
+            <div className="mb-4">
+              <label className="block text-gray-700">Certificado online (URL) (Opcional)</label>
+              <input
+                type="url"
+                className="w-full px-4 py-2 border rounded-md text-gray-900"
+                placeholder="URL del Certificado"
+                value={certificado}
+                onChange={(e) => setCertificado(e.target.value)}
+              />
+            </div>
+          )}
+
+          {certificado && !isPhysicalCertificate && (
             <div className="mb-4">
               <a href={certificado} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
                 Ver Certificado
