@@ -172,7 +172,21 @@ const ExperienceTab: React.FC = () => {
               <p>{experiencia.descripcion_responsabilidades}</p>
             )}
 
-            <p><strong className="text-orange-500">Reporta a:</strong> {experiencia.persona_referencia}</p>
+<p>
+  
+  {experiencia.persona_referencia.includes('/') ? (
+    <>
+      <div><strong className="text-orange-500">Reporta a:</strong>{experiencia.persona_referencia.split('/')[1].trim()}</div>
+      <div><strong className="text-orange-500">Cargo de la persona referencia:</strong> {experiencia.persona_referencia.split('/')[0].trim()}</div>
+    </>
+  ) : (
+    <>
+      <div><strong className="text-orange-500">Reporta a:</strong>{experiencia.persona_referencia}</div>
+      <div><strong className="text-orange-500">Cargo de la persona referencia:</strong>No definido</div>
+    </>
+  )}
+</p>
+
             <p><strong className="text-orange-500">Contacto:</strong> {experiencia.contacto}</p>
           </div>
         ))

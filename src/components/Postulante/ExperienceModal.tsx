@@ -26,7 +26,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
   const [areas, setAreas] = useState<Area[]>([]);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
   const [currentJob, setCurrentJob] = useState(false);
-  
+
   const [cargoReferencia, setCargoReferencia] = useState(''); // Estado para almacenar el cargo
 
   const handleKeyDown = (event) => {
@@ -62,7 +62,15 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
       setValue('fecha_ini', experiencia.fecha_ini);
       setValue('fecha_fin', experiencia.fecha_fin);
       setValue('descripcion_responsabilidades', experiencia.descripcion_responsabilidades);
-      setValue('persona_referencia', experiencia.persona_referencia);
+      // Extraer cargo y nombre de la persona de referencia
+      const personaReferencia = experiencia.persona_referencia || ''; // Asignar vacío si es null
+      const [cargoReferencia, nombreReferencia] = personaReferencia.split('/').map(item => item.trim());
+
+      // Si cargoReferencia es vacío, asignar "Persona Referencia"
+      const valorCargoReferencia = cargoReferencia || "No definido";
+
+      setCargoReferencia(valorCargoReferencia? valorCargoReferencia :'No definido'); // Establecer el cargo en el estado
+      setValue('persona_referencia', nombreReferencia || ''); // Solo el nombre
       setValue('contacto', experiencia.contacto);
       setCurrentJob(experiencia.fecha_fin === null);
     } else {
@@ -92,7 +100,7 @@ const ExperienceModal: React.FC<ExperienceModalProps> = ({ isOpen, onRequestClos
     }
 
     // Concatenar el cargo y el nombre de la persona de referencia
-    const personaReferenciaConCargo = `${cargoReferencia}. ${data.persona_referencia}`;
+    const personaReferenciaConCargo = `${cargoReferencia}/${data.persona_referencia}`;
 
     const dataToSend = {
       ...data,
