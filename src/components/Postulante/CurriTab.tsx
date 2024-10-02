@@ -590,7 +590,7 @@ const CurriTab: React.FC = () => {
           });
         }
         if (profileData.postulante.formapro.length > 0) {
-          addSection('REFERENCIAS PERSONALES',30);
+          addSection('REFERENCIAS PERSONALES', 30);
           profileData.postulante.formapro.forEach((exp) => {
             // Comprobar si hay espacio suficiente para una nueva iteración
             const requiredSpace = 30; // Ajusta este valor según el espacio necesario para cada iteración
@@ -598,27 +598,45 @@ const CurriTab: React.FC = () => {
               doc.addPage();
               yOffset = 10;
             }
-              doc.setFont('helvetica', 'normal');
-              doc.setFontSize(12);
-              doc.setTextColor(0);
-
+            
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(12);
+            doc.setTextColor(0);
+        
             const lineYStart = yOffset;
             doc.setDrawColor(230, 230, 230); // Color gris claro
             doc.line(10, lineYStart, doc.internal.pageSize.width - 10, lineYStart);
             yOffset += 5;
-
-            doc.setFont('helvetica', 'bold');
-            addText(`${exp.persona_referencia}`);
+        
+            // Obtener el valor de persona_referencia
+            const personaReferencia = exp.persona_referencia || '';
+            
+            if (personaReferencia.includes('/')) {
+              // Separar cargo y nombre si existe "/"
+              const [cargo, nombre] = personaReferencia.split('/').map(item => item.trim());
+              addText(nombre); // Información después de la barra
+              if (cargo) {
+                addText(`Cargo: ${cargo}`); // Información antes de la barra
+              } else {
+                addText(`Cargo: Persona Referencia`); // Si no hay cargo, mostrar este mensaje
+              }
+            } else {
+              // Si no hay "/", mostrar persona_referencia como está
+              addText(personaReferencia); // Mostrar directamente la información
+              addText(`Cargo: No definido`); // Indicar que no se tiene información de cargo
+            }
+        
             doc.setFont('helvetica', 'normal');
             addText(`Perteneciente a: ${exp.empresa}`);
             addText(`Contacto: ${exp.contacto}`);
             yOffset += 5;
-
+        
             const lineYEnd = yOffset;
             doc.line(10, lineYEnd, doc.internal.pageSize.width - 10, lineYEnd);
             yOffset += 10; // Ajustar el yOffset para la siguiente iteración
           });
         }
+        
         const pdfBlob = doc.output('blob');
         const pdfFileName = `${profileData.postulante.nombres}_${profileData.postulante.apellidos}_CV.pdf`;
 
