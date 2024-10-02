@@ -183,12 +183,7 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
                         {hayAprobado ? 'Aprobar nuevo postulante' : 'Aceptar Postulante'}
                     </button>
                 )}
-                <button
-                    onClick={onClose}
-                    className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-                >
-                    Cerrar
-                </button>
+             
             </div>
 
             {/* Modal de Comentario */}

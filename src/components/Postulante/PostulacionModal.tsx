@@ -55,6 +55,7 @@ interface Oferta {
     comentariosComisiones: string | null;
     comentariosHorasExtras: string | null;
     comentariosViaticos: string | null;
+    exp_m: boolean;
 }
 
 interface Pregunta {
@@ -229,11 +230,11 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
 
             switch (criterio.criterio) {
                 case 'Experiencia':
-                    return criterio.pivot.valor ? "Los años mínimos indicados" : "Los años mínimos indicados";
+                    return criterio.pivot.valor ? "Los años/meses mínimos indicados en la oferta" : "Los años/meses mínimos indicados en la ofert";
                 case 'Titulo':
-                    return criterio.pivot.valor ? "Alguno de los títulos mencionados" : "Alguno de los títulos mencionados";
+                    return criterio.pivot.valor ? "Alguno de los títulos mencionados en la oferta" : "Alguno de los títulos mencionados en la oferta";
                 case 'Sueldo':
-                    return criterio.pivot.valor ? "Indicar el sueldo prospecto a ganar" : "Indicar el sueldo prospecto a ganar";
+                    return criterio.pivot.valor ? "Aspiracion salarial del postulante" : "Aspiracion salarial del postulante";
                 case 'Género':
                     return criterio.pivot.valor ? criterio.pivot.valor : "No especificado";
                 case 'Estado Civil':
@@ -258,11 +259,11 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
 
             switch (criterio.criterio) {
                 case 'Experiencia':
-                    return criterio.pivot.valor ? "Los años mínimos indicados" : "Los años mínimos indicados";
+                    return criterio.pivot.valor ? "Los años/meses mínimos indicados en la oferta" : "Los años/meses mínimos indicados en la ofert";
                 case 'Titulo':
-                    return criterio.pivot.valor ? "Alguno de los títulos mencionados" : "Alguno de los títulos mencionados";
+                    return criterio.pivot.valor ? "Alguno de los títulos mencionados en la oferta" : "Alguno de los títulos mencionados en la oferta";
                 case 'Sueldo':
-                    return criterio.pivot.valor ? "Indicar el sueldo prospecto a ganar" : "Indicar el sueldo prospecto a ganar";
+                    return criterio.pivot.valor ? "Aspiracion salarial del postulante" : "Aspiracion salarial del postulante";
                 case 'Género':
                 default:
                     return "No especificado";
@@ -345,7 +346,14 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                                 {IconoSueldo} <strong>Sueldo:</strong>   {(oferta.sueldo === 0 || oferta.n_mostrar_sueldo === 1) ? 'No especificado' : `${oferta.sueldo} $`}
                             </p>
                             <p className="text-gray-700 mb-1 ">
-                                <strong className='flex items-center'> {IconoExperiencia}Experiencia en cargos similares:</strong> {oferta.experiencia === 0 ? 'No especificada' : `${oferta.experiencia} año/s`}
+                                <strong className='flex items-center'>
+                                    {IconoExperiencia}Experiencia en cargos similares:
+                                </strong>
+                                {oferta.experiencia === 0
+                                    ? 'No especificada'
+                                    : oferta.exp_m
+                                        ? `${oferta.experiencia} ${oferta.experiencia > 1 ? 'meses' : 'mes'}`
+                                        : `${oferta.experiencia} ${oferta.experiencia > 1 ? 'años' : 'año'}`}
                             </p>
                             <p className="text-gray-700 mb-1 ">
                                 <strong className='flex items-center'> {IconoCargaHoraria}Carga Horaria:</strong> {oferta.carga_horaria}
@@ -408,11 +416,12 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                                              ⁃ {criterio.criterio}:
                                          </strong>
                                          {criterio.criterio === "Experiencia" ? (
-                                             <>
-                                                 {oferta.experiencia && oferta.experiencia > 0 
-                                                     ? `${oferta.experiencia} años de experiencia en cargos similares` 
-                                                     : "Años de experiencia adquiridos en cargos similares"}
-                                             </>
+                                           <>
+                                           {oferta.experiencia && oferta.experiencia > 0 
+                                             ? `${oferta.experiencia} ${oferta.exp_m ? (oferta.experiencia > 1 ? 'meses' : 'mes') : (oferta.experiencia > 1 ? 'años' : 'año')} de experiencia en cargos similares mínimo`
+                                             : "Años de experiencia adquiridos en cargos similares mínimo"}
+                                         </>
+                                         
                                          ) : renderCriterioValor(criterio)}
                                      </p>
                                  </li>

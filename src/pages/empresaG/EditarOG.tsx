@@ -13,7 +13,7 @@ interface Experiencia {
   titulo: string;
   pivot: {
     titulo_per2: string | null;
-};
+  };
 }
 
 
@@ -35,9 +35,9 @@ interface Criterio {
 interface CriterioS {
   id_criterio: number;
   criterio: string;
-  pivot:{
-    valor:string;
-    prioridad:number;
+  pivot: {
+    valor: string;
+    prioridad: number;
   };
 }
 
@@ -73,7 +73,7 @@ interface Pregunta {
 function EditarOG() {
   const { id } = useParams<{ id: string }>(); // Obtener el ID de la oferta de los parámetros de la URL
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm();
+  const { register, handleSubmit, watch, formState: { errors }, setValue } = useForm();
   const [niveles, setNiveles] = useState([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [campos, setCampos] = useState([]);
@@ -108,31 +108,32 @@ function EditarOG() {
   const [showCheckbox, setShowCheckbox] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [hasAdditionalComponents, setHasAdditionalComponents] = useState(false);
+
   const handleTextArea = (e) => {
     if (e.key === 'Enter') {
-        e.preventDefault(); // Previene el salto al siguiente input
-        
-        const currentValue = e.target.value; // Obtiene el valor actual del textarea
-        // Añade un punto final y un salto de línea
-        e.target.value = currentValue.trim() + '.' + '\n'; 
-    }
-};
+      e.preventDefault(); // Previene el salto al siguiente input
 
-const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+      const currentValue = e.target.value; // Obtiene el valor actual del textarea
+      // Añade un punto final y un salto de línea
+      e.target.value = currentValue.trim() + '.' + '\n';
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     // Verifica si el elemento activo es un textarea
     const target = e.target as HTMLElement;
     if (target.tagName === 'TEXTAREA') {
-        return; // No hace nada si está en un textarea
+      return; // No hace nada si está en un textarea
     }
 
     if (e.key === 'Enter') {
-        e.preventDefault(); // Evita el comportamiento por defecto del formulario
-        const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
-        if (boton) {
-            boton.click(); // Ejecuta el clic en el botón
-        }
+      e.preventDefault(); // Evita el comportamiento por defecto del formulario
+      const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
+      if (boton) {
+        boton.click(); // Ejecuta el clic en el botón
+      }
     }
-};
+  };
 
   // Toggle custom title input
   const handleToggleCustomInput = () => {
@@ -149,7 +150,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     setShowAdd(event.target.checked);
   };
 
-  
+
   useEffect(() => {
     const fetchOferta = async () => {
       try {
@@ -158,11 +159,17 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
 
         // Rellenar los valores del formulario con los datos de la oferta
         setValue('cargo', oferta.cargo);
-        setValue('id_area',oferta.id_area);
+        setValue('id_area', oferta.id_area);
         setDefaultAreaId(oferta.areas.id);
         setDefaultArea(oferta.areas.nombre_area);
         if (oferta.experiencia > 0) {
           setShowExperiencia(true);
+          // Aquí se carga el valor de exp_m para los radios
+          if (oferta.exp_m) { // Si exp_m es true, se seleccionan meses
+            setValue('experienciaTipo', 'meses');
+          } else { // Si exp_m es false, se seleccionan años
+            setValue('experienciaTipo', 'años');
+          }
           setValue('experiencia', oferta.experiencia);
         } else {
           setShowExperiencia(false);
@@ -183,67 +190,67 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
         if (oferta.numero_contacto) {
           setValue('numero_contacto', oferta.numero_contacto);
         }
-  // Manejar la educación requerida y los títulos
-  // Cargar preguntas
- // Cargar preguntas
- if (oferta.preguntas.length > 0) {
-  setRequirePregunta(true);
-  setPreguntas(oferta.preguntas);
-}
+        // Manejar la educación requerida y los títulos
+        // Cargar preguntas
+        // Cargar preguntas
+        if (oferta.preguntas.length > 0) {
+          setRequirePregunta(true);
+          setPreguntas(oferta.preguntas);
+        }
 
 
-      // Manejar la educación requerida y los títulos
-      if (oferta.expe.length > 0) {
-        setRequireEducation(true);
-        const titles: Titulo[] = oferta.expe.map((expe: Experiencia) => ({
-          id: expe.id,
-          titulo: expe.titulo,
-          customTitulo: expe.pivot.titulo_per2
-        }));
-        setSelectedTitles(titles);
-      } else {
-        setRequireEducation(false);
-        setSelectedTitles([]);
-      }
+        // Manejar la educación requerida y los títulos
+        if (oferta.expe.length > 0) {
+          setRequireEducation(true);
+          const titles: Titulo[] = oferta.expe.map((expe: Experiencia) => ({
+            id: expe.id,
+            titulo: expe.titulo,
+            customTitulo: expe.pivot.titulo_per2
+          }));
+          setSelectedTitles(titles);
+        } else {
+          setRequireEducation(false);
+          setSelectedTitles([]);
+        }
 
-       // Manejar la educación requerida y los títulos
- 
-      if (oferta.criterios.length > 0){
-        setRequireCriterio(true);
-        setSelectedCriterios(oferta.criterios.map((criterio:CriterioS) => ({
-          id_criterio: criterio.id_criterio,
-          criterio: criterio.criterio,
-          valor: criterio.pivot.valor,
-          prioridad: criterio.pivot.prioridad,
-        })));
-      }else{
-        setRequireCriterio(false);
-        setSelectedCriterios([]);
-      }
+        // Manejar la educación requerida y los títulos
 
-   
-      setValue('mostrar_sueldo', oferta.n_mostrar_sueldo ? true : false);
-      setValue('mostrar_empresa', oferta.n_mostrar_empresa ? true : false);
-      setValue('solicitar_sueldo', oferta.solicitar_sueldo ? true : false);
-      if (oferta.comisiones || oferta.horasExtra || oferta.viaticos|| oferta.comentariosComisiones|| oferta.comentariosHorasExtras||oferta.comentariosViaticos) {
-        setShowAdd(true);
-        setValue('comisiones', oferta.comisiones && oferta.comisiones !== 0 ? oferta.comisiones : '');
-        setValue('horasExtras', oferta.horasExtras && oferta.horasExtras !== 0 ? oferta.horasExtras : '');
-        setValue('viaticos', oferta.viaticos && oferta.viaticos !== 0 ? oferta.viaticos : '');
-        setValue('comentariosComisiones', oferta.comentariosComisiones|| '');
-        setValue('comentariosHorasExtras', oferta.comentariosHorasExtras|| '');
-        setValue('comentariosViaticos', oferta.comentariosViaticos|| '');
-        setHasAdditionalComponents(true);
-      } else {
-        setShowAdd(false);
-        setValue('comisiones', '');
-        setValue('horasExtras',  '');
-        setValue('viaticos',  '');
-        setValue('comentariosComisiones',  '');
-        setValue('comentariosHorasExtras',  '');
-        setValue('comentariosViaticos', '');
-        setHasAdditionalComponents(false);
-      }
+        if (oferta.criterios.length > 0) {
+          setRequireCriterio(true);
+          setSelectedCriterios(oferta.criterios.map((criterio: CriterioS) => ({
+            id_criterio: criterio.id_criterio,
+            criterio: criterio.criterio,
+            valor: criterio.pivot.valor,
+            prioridad: criterio.pivot.prioridad,
+          })));
+        } else {
+          setRequireCriterio(false);
+          setSelectedCriterios([]);
+        }
+
+
+        setValue('mostrar_sueldo', oferta.n_mostrar_sueldo ? true : false);
+        setValue('mostrar_empresa', oferta.n_mostrar_empresa ? true : false);
+        setValue('solicitar_sueldo', oferta.solicitar_sueldo ? true : false);
+        if (oferta.comisiones || oferta.horasExtra || oferta.viaticos || oferta.comentariosComisiones || oferta.comentariosHorasExtras || oferta.comentariosViaticos) {
+          setShowAdd(true);
+          setValue('comisiones', oferta.comisiones && oferta.comisiones !== 0 ? oferta.comisiones : '');
+          setValue('horasExtras', oferta.horasExtras && oferta.horasExtras !== 0 ? oferta.horasExtras : '');
+          setValue('viaticos', oferta.viaticos && oferta.viaticos !== 0 ? oferta.viaticos : '');
+          setValue('comentariosComisiones', oferta.comentariosComisiones || '');
+          setValue('comentariosHorasExtras', oferta.comentariosHorasExtras || '');
+          setValue('comentariosViaticos', oferta.comentariosViaticos || '');
+          setHasAdditionalComponents(true);
+        } else {
+          setShowAdd(false);
+          setValue('comisiones', '');
+          setValue('horasExtras', '');
+          setValue('viaticos', '');
+          setValue('comentariosComisiones', '');
+          setValue('comentariosHorasExtras', '');
+          setValue('comentariosViaticos', '');
+          setHasAdditionalComponents(false);
+        }
       } catch (error) {
         console.error('Error fetching oferta:', error);
       }
@@ -309,7 +316,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
         setCriterios(response3.data.criterios);
       } catch (error) {
         console.error('Error fetching data:', error);
-      }finally {
+      } finally {
         setLoading(false);
       }
     };
@@ -390,7 +397,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     const id = parseInt(event.target.value);
     setSelectedCriterioId(id);
     setValorCriterio('');
-   
+
   };
 
   const handleAgregarCriterio = () => {
@@ -428,7 +435,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
   const handleEliminarCriterio = (id: number) => {
     const updatedCriterios = selectedCriterios.filter(c => c.id_criterio !== id);
     setSelectedCriterios(updatedCriterios);
- 
+
   };
 
   const handleTituloChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -491,7 +498,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
           setCustomTitulo('');
         }
 
-        
+
       }
     }
   };
@@ -519,18 +526,20 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
 
   const onSubmit = handleSubmit(async (values) => {
     try {
-       // Aquí transformamos el array de preguntas a un array de strings
-    const preguntasSoloTexto = preguntas.map(preguntaObj => preguntaObj.pregunta);
+      // Aquí transformamos el array de preguntas a un array de strings
+      const preguntasSoloTexto = preguntas.map(preguntaObj => preguntaObj.pregunta);
       const criteriosValidos = selectedCriterios.filter(criterio => criterio.id_criterio > 0 && criterio.prioridad !== null);
+      const experienciaEnMeses = values.experienciaTipo === 'meses';
       const dataToSend = {
         ...values,
         experiencia: showExperiencia ? values.experiencia : 0,
+        experienciaEnMeses: showExperiencia ? experienciaEnMeses : 0, 
         correo_contacto: showCorreo ? values.correo_contacto : null,
         numero_contacto: showNumeroContacto ? values.numero_contacto : null,
         mostrar_sueldo: values.mostrar_sueldo ? 1 : 0,
         titulos: selectedTitles,
         criterios: criteriosValidos,
-        preguntas: preguntasSoloTexto, 
+        preguntas: preguntasSoloTexto,
         comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
         horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
         viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
@@ -538,7 +547,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
         comentariosHorasExtras: values.comentariosHorasExtras || null,
         comentariosViaticos: values.comentariosViaticos || null,
       };
-  
+
       // SweetAlert para confirmar la publicación
       const result = await Swal.fire({
         title: 'Confirmación',
@@ -547,31 +556,31 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
         showCancelButton: true,
         confirmButtonText: 'Sí, publicar',
         cancelButtonText: 'Cancelar'
-    });
+      });
 
-    // Si el usuario confirma, se procede con el envío
-    if (result.isConfirmed) {
-  
-      await axios.put(`update-oferta/${id}`, dataToSend, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-  
-      Swal.fire({
-        title: '¡Actualizada!',
-        text: 'La oferta ha sido actualizada exitosamente',
-        icon: 'success',
-        confirmButtonText: 'Ok'
-      }).then(() => {
-        navigate("/inicioG");
-      });
-    }
+      // Si el usuario confirma, se procede con el envío
+      if (result.isConfirmed) {
+
+        await axios.put(`update-oferta/${id}`, dataToSend, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        Swal.fire({
+          title: '¡Actualizada!',
+          text: 'La oferta ha sido actualizada exitosamente',
+          icon: 'success',
+          confirmButtonText: 'Ok'
+        }).then(() => {
+          navigate("/inicioG");
+        });
+      }
     } catch (error) {
       console.log(error);
     }
   });
-  
+
 
 
   const criterioDescripcion = criterios.find(c => c.id_criterio === selectedCriterioId)?.descripcion || '';
@@ -585,7 +594,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
       </div>
     );
   }
-  
+
 
   return (
     <>
@@ -729,7 +738,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
                     <ul className="list-disc pl-4">
                       {selectedTitles.map((titulo, index) => (
                         <li key={index} className="flex items-center">
-                         <span>{titulo.customTitulo ? titulo.customTitulo : titulo.titulo}</span>
+                          <span>{titulo.customTitulo ? titulo.customTitulo : titulo.titulo}</span>
                           <button
                             type="button"
                             className="ml-2 text-red-600"
@@ -753,13 +762,13 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
               <span className="text-gray-600 text-sm ml-2">(Campo obligatorio)</span>
             </label>
             <select className="w-full p-2 border rounded" id="id_area" {...register('id_area', { required: 'Área es requerida' })} defaultValue={defaultAreaId}>
-  <option value={defaultAreaId}>{defaultArea}</option>
-  {areas.map(area => (
-    <option key={area.id} value={area.id}>
-      {area.nombre_area}
-    </option>
-  ))}
-</select>
+              <option value={defaultAreaId}>{defaultArea}</option>
+              {areas.map(area => (
+                <option key={area.id} value={area.id}>
+                  {area.nombre_area}
+                </option>
+              ))}
+            </select>
             {errors.id_area && <p className="text-red-500">{String(errors.id_area.message)}</p>}
           </div>
 
@@ -778,27 +787,61 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
             {showExperiencia && (
               <>
                 <div id="experienciaContainer" className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
-                  <label className="block text-sm font-bold mb-2" htmlFor="experiencia">
-                    Años de Experiencia requerida
+                  <label className="block text-sm font-bold mb-2">
+                    Selecciona si la experiencia requerida es en meses o años:
                   </label>
+
+                  <div className="flex mb-4">
+                    <label className="mr-4">
+                      <input
+                        type="radio"
+                        value="años"
+                        {...register('experienciaTipo')}
+                        checked={watch('experienciaTipo') === 'años'} // Verifica el valor actual
+                        onChange={() => setValue('experienciaTipo', 'años')} // Actualiza el estado
+                      />
+                      <span className="ml-2">Años</span>
+                    </label>
+
+                    <label>
+                      <input
+                        type="radio"
+                        value="meses"
+                        {...register('experienciaTipo')}
+                        checked={watch('experienciaTipo') === 'meses'} // Verifica el valor actual
+                        onChange={() => setValue('experienciaTipo', 'meses')} // Actualiza el estado
+                      />
+                      <span className="ml-2">Meses</span>
+                    </label>
+                  </div>
+
+                  <label className="block text-sm font-bold mb-2" htmlFor="experiencia">
+                    {watch('experienciaTipo') === 'meses'
+                      ? 'Meses de Experiencia requerida'
+                      : 'Años de Experiencia requerida'}
+                  </label>
+
                   <input
                     className="w-full p-2 border rounded"
                     type="number"
                     id="experiencia"
-                    placeholder="Número de  años de experiencia en puestos similares"
+                    placeholder={watch('experienciaTipo') === 'meses'
+                      ? 'Número de meses de experiencia en puestos similares'
+                      : 'Número de años de experiencia en puestos similares'}
                     {...register('experiencia', {
                       required: 'Experiencia es requerida',
                       validate: validateNoNegative,
                     })}
                   />
+
                   {errors.experiencia && (
                     <p className="text-red-500">{String(errors.experiencia.message)}</p>
                   )}
                 </div>
                 <hr className="my-4" />
               </>
-
             )}
+
           </div>
 
 
@@ -811,9 +854,11 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
               className="w-full p-2 border rounded"
               id="objetivo_cargo"
               placeholder="Describa en breves palabras el objetivo del puesto de trabajo"
-              {...register('objetivo_cargo', { required: 'Objetivo del Cargo es requerido' , validate: {
-                maxLength: value => value.length <= 500 || 'Se permiten hasta 500 caracteres.',
-              },})}
+              {...register('objetivo_cargo', {
+                required: 'Objetivo del Cargo es requerido', validate: {
+                  maxLength: value => value.length <= 500 || 'Se permiten hasta 500 caracteres.',
+                },
+              })}
             />
             {errors.objetivo_cargo && <p className="text-red-500">{String(errors.objetivo_cargo.message)}</p>}
           </div>
@@ -943,12 +988,12 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
               </>
             )}
           </div>
-         
+
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="funciones">• Funciones del puesto:
               <span className="text-red-500 ml-1">*</span>
               <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Agregue puntos para separar cada función)</span>
-              </label>
+            </label>
             <textarea
               className="w-full p-2 border rounded"
               id="funciones"
@@ -1022,8 +1067,8 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
           <hr className="my-4" />
           <div className="bg-white p-6 rounded-lg shadow-lg py-8" >
             <h3 className="text-1xl text-red-500 font-bold mb-4">Datos de contacto extra:</h3>
-              {/* Mensaje de aviso mejorado */}
-              <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+            {/* Mensaje de aviso mejorado */}
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
               <div className="flex items-center">
                 <svg
                   className="h-5 w-5 text-yellow-500 mr-2"
@@ -1158,7 +1203,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
                   <label className="block text-sm font-bold mb-2" htmlFor="id_criterio">Criterio</label>
                   <div className="flex flex-col md:flex-row">
                     <select
-                     className="w-full md:w-2/3 p-2 border rounded"
+                      className="w-full md:w-2/3 p-2 border rounded"
                       id="criterio"
                       onChange={handleCriterioChange}
                       value={selectedCriterioId || ''}>
@@ -1173,111 +1218,111 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
                       <>
                         {selectedCriterioId === 4 ? (
                           <>
-                             
-                          <select
-                           className="w-full md:w-full p-2 border rounded"
-                            id="valor g"
-                            value={valorCriterio}
-                            onChange={(e) => setValorCriterio(e.target.value)}
-                          >
-                            <option value="">Seleccione un género...</option>
-                            <option value="Masculino">Masculino</option>
-                            <option value="Femenino">Femenino</option>
-                            <option value="Otro">Otro</option>
-                          </select>
-                          <select
+
+                            <select
                               className="w-full md:w-full p-2 border rounded"
-                               id="prioridad"
-                               value={prioridadCriterio || ''}
-                               onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                               <option value="">Seleccione una prioridad...</option>
-                               <option value="1">Alta</option>
-                               <option value="2">Media</option>
-                               <option value="3">Baja</option>
-                             </select>
-                      
+                              id="valor g"
+                              value={valorCriterio}
+                              onChange={(e) => setValorCriterio(e.target.value)}
+                            >
+                              <option value="">Seleccione un género...</option>
+                              <option value="Masculino">Masculino</option>
+                              <option value="Femenino">Femenino</option>
+                              <option value="Otro">Otro</option>
+                            </select>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
+
                           </>
                         ) : selectedCriterioId === 5 ? (
                           <>
-                          <select
-                           className="w-full md:w-2/3 p-2 border rounded"
-                            id="valor e"
-                            value={valorCriterio}
-                            onChange={(e) => setValorCriterio(e.target.value)}
-                          >
-                            <option value="">Seleccione un estado civil...</option>
-                            <option value="Casado">Casado/a</option>
-                            <option value="Soltero">Soltero/a</option>
-                            <option value="Viudo">Viudo/a</option>
-                          </select>
-                          <select
-                               className="w-full md:w-2/3 p-2 border rounded"
-                               id="prioridad"
-                               value={prioridadCriterio || ''}
-                               onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                               <option value="">Seleccione una prioridad...</option>
-                               <option value="1">Alta</option>
-                               <option value="2">Media</option>
-                               <option value="3">Baja</option>
-                             </select>
+                            <select
+                              className="w-full md:w-2/3 p-2 border rounded"
+                              id="valor e"
+                              value={valorCriterio}
+                              onChange={(e) => setValorCriterio(e.target.value)}
+                            >
+                              <option value="">Seleccione un estado civil...</option>
+                              <option value="Casado">Casado/a</option>
+                              <option value="Soltero">Soltero/a</option>
+                              <option value="Viudo">Viudo/a</option>
+                            </select>
+                            <select
+                              className="w-full md:w-2/3 p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
                           </>
                         ) : selectedCriterioId === 6 ? (
                           <>
-                          <select
-                          className="w-full md:w-full p-2 border rounded"
-                            id="valor e"
-                            value={valorCriterio}
-                            onChange={(e) => setValorCriterio(e.target.value)}
-                          >
-                            <option value="">Seleccione un idioma...</option>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="valor e"
+                              value={valorCriterio}
+                              onChange={(e) => setValorCriterio(e.target.value)}
+                            >
+                              <option value="">Seleccione un idioma...</option>
 
-                            {languages.map((language: idioma) => (
-                              <option key={language.id} value={language.id + ',' + language.nombre}>
-                                {language.nombre}
-                              </option>
-                            ))}
-                          </select>
-                               <select
-                               className="w-full md:w-full p-2 border rounded"
-                               id="prioridad"
-                               value={prioridadCriterio || ''}
-                               onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                               <option value="">Seleccione una prioridad...</option>
-                               <option value="1">Alta</option>
-                               <option value="2">Media</option>
-                               <option value="3">Baja</option>
-                             </select>
-                             </>
+                              {languages.map((language: idioma) => (
+                                <option key={language.id} value={language.id + ',' + language.nombre}>
+                                  {language.nombre}
+                                </option>
+                              ))}
+                            </select>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
+                          </>
                         ) : selectedCriterioId === 7 ? (
                           <>
-                          <select
-                           className="w-full md:w-full p-2 border rounded"
-                            id="valor e"
-                            value={valorCriterio}
-                            onChange={(e) => setValorCriterio(e.target.value)}
-                          >
-                            <option value="">Rango de edad...</option>
-                            <option value="Joven,(18-25 años)">18 - 25 años</option>
-                            <option value="Adulto,(26-35 años)">26 - 35 años</option>
-                            <option value="Mayor,(Más de 36 años)">36 años en adelante</option>
-                          </select>
-                                <select
-                                className="w-full md:w-full p-2 border rounded"
-                                id="prioridad"
-                                value={prioridadCriterio || ''}
-                                onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                                <option value="">Seleccione una prioridad...</option>
-                                <option value="1">Alta</option>
-                                <option value="2">Media</option>
-                                <option value="3">Baja</option>
-                              </select>
-                              </>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="valor e"
+                              value={valorCriterio}
+                              onChange={(e) => setValorCriterio(e.target.value)}
+                            >
+                              <option value="">Rango de edad...</option>
+                              <option value="Joven,(18-25 años)">18 - 25 años</option>
+                              <option value="Adulto,(26-35 años)">26 - 35 años</option>
+                              <option value="Mayor,(Más de 36 años)">36 años en adelante</option>
+                            </select>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
+                          </>
 
                         ) : selectedCriterioId === 8 ? (
 
                           <>
 
-                            <select id="province"className="w-full md:w-full p-2 border rounded" onChange={handleProvinceChange}
+                            <select id="province" className="w-full md:w-full p-2 border rounded" onChange={handleProvinceChange}
                               value={selectedProvince}>
                               <option value="">Provincia..</option>
                               {provinces.map((province, index) => (
@@ -1287,7 +1332,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
                               ))}
                             </select>
                             <select
-                             className="w-full md:w-full p-2 border rounded"
+                              className="w-full md:w-full p-2 border rounded"
                               id="valor e"
                               value={selectedCanton}
                               onChange={handleCantonChange}
@@ -1302,31 +1347,31 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
 
                             </select>
                             <select
-                      className="w-full md:w-full p-2 border rounded"
-                      id="prioridad"
-                      value={prioridadCriterio || ''}
-                      onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                      <option value="">Seleccione una prioridad...</option>
-                      <option value="1">Alta</option>
-                      <option value="2">Media</option>
-                      <option value="3">Baja</option>
-                    </select>
+                              className="w-full md:w-full p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
                           </>
                         ) : (
                           <select
-                          className="w-full md:w-full p-2 border rounded"
-                          id="prioridad"
-                          value={prioridadCriterio || ''}
-                          onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                          <option value="">Seleccione una prioridad...</option>
-                          <option value="1">Alta</option>
-                          <option value="2">Media</option>
-                          <option value="3">Baja</option>
-                        </select>
+                            className="w-full md:w-full p-2 border rounded"
+                            id="prioridad"
+                            value={prioridadCriterio || ''}
+                            onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                            <option value="">Seleccione una prioridad...</option>
+                            <option value="1">Alta</option>
+                            <option value="2">Media</option>
+                            <option value="3">Baja</option>
+                          </select>
                         )}
                       </>
                     )}
-              
+
                   </div>
                   {criterioDescripcion && (
                     <p className="mt-2 text-gray-600"><strong>¿Qué se evalua?</strong> {criterioDescripcion}</p>
@@ -1360,72 +1405,72 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
                 </div>
                 <hr className="my-4" />
               </>)}
-       {/* Sección de preguntas */}
-       <hr className="my-4" />
-          <div className="bg-white p-6 rounded-lg shadow-lg py-8" style={{ marginTop: '20px' }}>
-            <h3 className="text-1xl text-red-500 font-bold mb-4">Preguntas de evaluación:</h3>
-            <span>Puede realizar 5 preguntas como máximo para los postulantes de esta oferta. Este apartado no es obligatorio</span>
-            <div className="mb-4">
-              <div className="flex items-center">
-                <input
-                  className="mr-2 leading-tight"
-                  type="checkbox"
-                  id="requirePregunta"
-                  checked={requirePregunta}
-                  onChange={() => setRequirePregunta(!requirePregunta)}
-                />
-                <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="requirePregunta">
-                  ¿Realizar preguntas específicas a los postulantes?
-                </label>
-              </div>
-            </div>
-
-            {requirePregunta && (
-              <>
-                <hr className="my-4" />
-                <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
-                  <label className="block text-sm font-bold mb-2" htmlFor="nuevaPregunta">Nueva Pregunta</label>
-                  <div className="flex flex-col md:flex-row">
-                    <input
-                      className="w-full md:w-2/3 p-2 border rounded mb-4"
-                      id="nuevaPregunta"
-                      type="text"
-                      value={nuevaPregunta}
-                      onChange={(e) => setNuevaPregunta(e.target.value)}
-                    />
-                    <button
-                      type="button"
-                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                      onClick={handleAgregarPregunta}
-                    >
-                      Agregar Pregunta
-                    </button>
-                  </div>
-
-                  {preguntas.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="font-semibold">Preguntas Añadidas:</h4>
-                      <ul>
-                        {preguntas.map((pregunta, index) => (
-                          <li key={pregunta.id} className="flex items-center justify-between mb-2">
-                            <span>{pregunta.pregunta}</span>
-                            <button
-                              type="button"
-                              className="text-red-500"
-                              onClick={() => handleEliminarPregunta(index)}
-                            >
-                              x
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+            {/* Sección de preguntas */}
+            <hr className="my-4" />
+            <div className="bg-white p-6 rounded-lg shadow-lg py-8" style={{ marginTop: '20px' }}>
+              <h3 className="text-1xl text-red-500 font-bold mb-4">Preguntas de evaluación:</h3>
+              <span>Puede realizar 5 preguntas como máximo para los postulantes de esta oferta. Este apartado no es obligatorio</span>
+              <div className="mb-4">
+                <div className="flex items-center">
+                  <input
+                    className="mr-2 leading-tight"
+                    type="checkbox"
+                    id="requirePregunta"
+                    checked={requirePregunta}
+                    onChange={() => setRequirePregunta(!requirePregunta)}
+                  />
+                  <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="requirePregunta">
+                    ¿Realizar preguntas específicas a los postulantes?
+                  </label>
                 </div>
-                <hr className="my-4" />
-              </>
-            )}
-          </div>
+              </div>
+
+              {requirePregunta && (
+                <>
+                  <hr className="my-4" />
+                  <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                    <label className="block text-sm font-bold mb-2" htmlFor="nuevaPregunta">Nueva Pregunta</label>
+                    <div className="flex flex-col md:flex-row">
+                      <input
+                        className="w-full md:w-2/3 p-2 border rounded mb-4"
+                        id="nuevaPregunta"
+                        type="text"
+                        value={nuevaPregunta}
+                        onChange={(e) => setNuevaPregunta(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        onClick={handleAgregarPregunta}
+                      >
+                        Agregar Pregunta
+                      </button>
+                    </div>
+
+                    {preguntas.length > 0 && (
+                      <div className="mt-4">
+                        <h4 className="font-semibold">Preguntas Añadidas:</h4>
+                        <ul>
+                          {preguntas.map((pregunta, index) => (
+                            <li key={pregunta.id} className="flex items-center justify-between mb-2">
+                              <span>{pregunta.pregunta}</span>
+                              <button
+                                type="button"
+                                className="text-red-500"
+                                onClick={() => handleEliminarPregunta(index)}
+                              >
+                                x
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                  <hr className="my-4" />
+                </>
+              )}
+            </div>
 
           </div>
           <div className="flex justify-center">
@@ -1438,7 +1483,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
             <button
               type="submit"
               className="bg-blue-500 text-white p-2 rounded-lg mt-4"
-               id="btnPublicarOferta"
+              id="btnPublicarOferta"
             >
               Actualizar Oferta
             </button>

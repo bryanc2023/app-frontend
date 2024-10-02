@@ -40,6 +40,7 @@ interface Oferta {
     comentariosComisiones: string | null;
     comentariosHorasExtras: string | null;
     comentariosViaticos: string | null;
+    exp_m: boolean;
 }
 
 interface Pregunta {
@@ -462,7 +463,14 @@ function VerOfertasPPage() {
                                     <p><strong>Estado:</strong> {selectedOferta.estado}</p>
                                     <p><strong>Área: </strong>{selectedOferta.areas.nombre_area}</p>
                                     <p><strong>Carga Horaria: </strong>{selectedOferta.carga_horaria}</p>
-                                    <p><strong>Experiencia Mínima: </strong>{selectedOferta.experiencia === 0 ? 'Ninguna' : `${selectedOferta.experiencia} año/s`}</p>
+                                    <p><strong>Experiencia Mínima: </strong>
+                                        {selectedOferta.experiencia === 0
+                                            ? 'Ninguna'
+                                            : `${selectedOferta.experiencia} ${selectedOferta.exp_m
+                                                ? (selectedOferta.experiencia > 1 ? 'meses' : 'mes')
+                                                : (selectedOferta.experiencia > 1 ? 'años' : 'año')}`
+                                        }
+                                    </p>
                                     <p><strong>Sueldo: </strong>{selectedOferta.sueldo === 0 ? 'No especificado' : `${selectedOferta.sueldo} $ ofrecidos`}</p>
                                 </div>
 
@@ -690,7 +698,13 @@ function VerOfertasPPage() {
                                                 <td className="py-4 px-6">{formatDate(oferta.fecha_publi)}</td>
                                                 <td className="py-4 px-6">{oferta.areas.nombre_area}</td>
                                                 <td className="py-4 px-6">{oferta.carga_horaria}</td>
-                                                <td className="py-4 px-6">{oferta.experiencia === 0 ? 'No requerida' : `${oferta.experiencia} año/s`}</td>
+                                                <td className="py-4 px-6">
+                                                    {oferta.experiencia === 0
+                                                        ? 'No requerida'
+                                                        : `${oferta.experiencia} ${oferta.exp_m
+                                                            ? (oferta.experiencia > 1 ? 'meses' : 'mes')
+                                                            : (oferta.experiencia > 1 ? 'años' : 'año')}`}
+                                                </td>
                                                 <td className="py-4 px-6">
                                                     <button onClick={() => handleVerDetalles(oferta)} className="flex items-center text-blue-600 hover:text-blue-900">
                                                         <FiEye className="w-4 h-4 mr-1" /> Ver
