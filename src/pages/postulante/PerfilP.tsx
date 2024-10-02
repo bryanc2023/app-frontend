@@ -293,7 +293,7 @@ const [redToDelete, setRedToDelete] = useState<Red | null>(null);
 
         {/* Tooltip */}
         <span className="absolute left-1/2 -translate-x-1/2 bottom-8 w-max bg-white text-gray-800 text-sm rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          Si necesita cambiar una red social, elimine la existente y agrégue la nuevamente.
+          Si necesita cambiar una red social, elimine la existente y agregue la nueva red social.
         </span>
       </div>
 
