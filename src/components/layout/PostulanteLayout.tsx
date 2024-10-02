@@ -13,6 +13,7 @@ import PerfilPModal from '../../components/PerfilPModal';
 import PerfilEModal from '../../components/PerfilEModal';
 import { dataNotificable, DataNotifyApi } from '../../types/NotifyType';
 import { ProfileData } from '../../types/PostulanteType';
+import { Empresa } from '../../types/EmpresaType';
 
 interface Postulante {
     id_postulante: number;
