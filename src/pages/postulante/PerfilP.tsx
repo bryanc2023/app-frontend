@@ -283,7 +283,7 @@ const [redToDelete, setRedToDelete] = useState<Red | null>(null);
 
 
 
-        <div className="mt-6 bg-gray-800 p-4 rounded-lg pb-6 shadow-inner text-gray-200">
+    <div className="mt-6 bg-gray-800 p-4 rounded-lg pb-6 shadow-inner text-gray-200">
     <div className="flex justify-between items-center">
       <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 pb-2">Redes</h2>
 

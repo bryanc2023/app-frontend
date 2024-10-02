@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../../services/axios';
 import { useSelector } from 'react-redux';
+import Modal from 'react-modal';
 import { RootState } from '../../store';
-import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaGlobe, FaXing, FaXTwitter, FaUserTie, FaBriefcase } from 'react-icons/fa6'; 
+import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaGlobe, FaXing, FaXTwitter, FaUserTie, FaBriefcase, FaTrash } from 'react-icons/fa6'; 
 import AddRedModal from '../../components/Empresa/AddRedEModal'; 
 import EditLogoModal from '../../components/Empresa/EditProfilePicEModal'; 
 import PlanModal from '../../components/Empresa/PlanModal';
+import Swal from 'sweetalert2';
+import { FaInfoCircle } from 'react-icons/fa';
 
 interface Empresa {
     id?: number;
@@ -24,6 +27,12 @@ interface Empresa {
     cantidad_empleados: number;
     red: { id_empresa_red: number; enlace: string; nombre_red: string }[];
     plan: string; // Nuevo campo para el plan contratado
+}
+
+interface Red {
+    id_empresa_red: number;
+    enlace: string;
+    nombre_red: string;
 }
 
 const EmpresaDetails: React.FC = () => {
@@ -47,29 +56,47 @@ const EmpresaDetails: React.FC = () => {
     const [isDivisionEnabled, setIsDivisionEnabled] = useState<boolean>(false);
     const [isEditLogoModalOpen, setIsEditLogoModalOpen] = useState(false); // Estado para el modal de editar logo
     const [isAddRedModalOpen, setIsAddRedModalOpen] = useState<boolean>(false); // Estado para el modal de agregar red
+    const [redes, setRedes] = useState<Red[]>([]);
+    const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
+    const [redToDelete, setRedToDelete] = useState<Red | null>(null);
 
-    const fetchRedes = async (empresaId: number) => {
-        try {
-            const response = await axios.get(`/empresa-red/${empresaId}`);
-            if (response.data && Array.isArray(response.data)) {
-                setEmpresa((prevState) => ({
-                    ...prevState!,
-                    red: response.data
-                }));
-            } else {
-                setEmpresa((prevState) => ({
-                    ...prevState!,
-                    red: []
-                }));
-            }
-        } catch (error) {
-            console.error('Error fetching redes:', error);
+  const fetchRedes = async (empresaId: number) => {
+    try {
+        const response = await axios.get(`/empresa-red/${empresaId}`);
+        if (response.data && Array.isArray(response.data)) {
             setEmpresa((prevState) => ({
                 ...prevState!,
-                red: []
+                red: response.data,
+                // Preservar el plan original si ya existe en el estado de la empresa
+                plan: 'Estándar', // Preserva el plan actual
+            }));
+        } else {
+            setEmpresa((prevState) => ({
+                ...prevState!,
+                red: [],
+                plan: 'Estándar', // Preserva el plan actual
             }));
         }
-    };
+    } catch (error) {
+        console.error('Error fetching redes:', error);
+        setEmpresa((prevState) => ({
+            ...prevState!,
+            red: [],
+            plan: 'Estándar', // Preserva el plan actual
+        }));
+    }
+};
+
+
+    const openConfirmDeleteModal = (red: Red) => {
+        setRedToDelete(red);
+        setIsConfirmDeleteModalOpen(true);
+      };
+      
+      const closeConfirmDeleteModal = () => {
+        setIsConfirmDeleteModalOpen(false);
+        setRedToDelete(null);
+      };
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -140,6 +167,50 @@ const EmpresaDetails: React.FC = () => {
         fetchData();
     }, []);
 
+    const handleDeleteRed = async (id: number) => {
+        try {
+            await axios.delete(`/empresa-red/${id}`);
+            
+            // Actualiza el estado eliminando la red del arreglo local
+            setEmpresa((prevState) => ({
+                ...prevState!,
+                red: prevState!.red.filter((red) => red.id_empresa_red !== id),
+            }));
+    
+            // Mostrar mensaje de éxito
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: 'Red social eliminada exitosamente',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+            });
+    
+            // Refrescar la lista de redes desde el servidor
+            if (empresa?.id) {
+                await fetchRedes(empresa.id);
+            }
+    
+        } catch (error) {
+            console.error('Error eliminando la red:', error);
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: 'Hubo un error al eliminar la red social',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+            });
+        } finally {
+            // Cerrar modal de confirmación
+            closeConfirmDeleteModal();
+        }
+    };
+    
+      
     useEffect(() => {
         const fetchCantons = async () => {
             if (selectedProvince) {
@@ -337,29 +408,64 @@ const EmpresaDetails: React.FC = () => {
                         <p className="text-black">{empresa?.descripcion || 'N/A'}</p>
                     </div>
                     <div className="bg-gray-100 p-4 rounded-lg">
-                        <div className="flex justify-between items-center">
-                            <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-black">Redes Sociales</h2>
-                            <button onClick={openAddRedModal} className="text-orange-400 hover:underline">
-                                + Agregar red
+            <div className="flex justify-between items-center">
+                <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-black">
+                    Redes Sociales
+                </h2>
+
+                {/* Ícono de información con tooltip */}
+                <div className="relative group">
+                    <FaInfoCircle className="text-black text-lg cursor-pointer" />
+
+                    {/* Tooltip */}
+                    <span className="absolute left-1/2 -translate-x-1/2 bottom-8 w-max bg-white text-gray-800 text-sm rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        Si necesita cambiar una red social, elimine la existente y agregue la nueva red social.
+                    </span>
+                </div>
+
+                <button onClick={openAddRedModal} className="text-orange-400 hover:underline">
+                    + Agregar red
+                </button>
+            </div>
+
+            {/* Renderizado condicional de redes */}
+            {empresa?.red && empresa.red.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
+                    {empresa.red.map((red) => (
+                        <div key={red.id_empresa_red} className="flex items-center space-x-2">
+                            <span>{red.nombre_red}</span>
+                            <a
+                                href={red.enlace}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-2xl hover:underline"
+                            >
+                                {renderIcon(red.nombre_red)}
+                            </a>
+
+                            {/* Botón para eliminar red con confirmación */}
+                            <button
+                                onClick={() => openConfirmDeleteModal(red)}
+                                className="text-red-500 hover:text-red-700"
+                            >
+                                <FaTrash className="text-sm" />
                             </button>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
-                            {empresa?.red?.map((red) => (
-                                <div key={red.id_empresa_red} className="flex items-center space-x-2">
-                                    <span>{red.nombre_red}</span>
-                                    <a href={red.enlace} target="_blank" rel="noopener noreferrer" className="text-2xl hover:underline">
-                                    {renderIcon(red.nombre_red)}
-                                </a>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="flex items-center justify-center mt-4 p-4 bg-gray-300 rounded-lg border border-gray-400 text-gray-600">
+                    <span>No hay redes sociales agregadas.</span>
+                </div>
+            )}
+        </div>
+
                     <div className="bg-gray-100 p-4 rounded-lg mt-6">
                         <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-black">Plan Contratado</h2>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
-                                {getPlanIcon(empresa?.plan || 'N/A')}
-                                <span className="text-lg font-semibold">{empresa?.plan || 'N/A'}</span>
+                                {getPlanIcon('Estandar')}
+                                <span className="text-lg font-semibold">{'Estandar'}</span>
                             </div>
                             <button onClick={openPlanModal} className="bg-blue-500 text-white px-4 py-2 rounded">Ver Otros Planes</button>
                         </div>
@@ -542,10 +648,40 @@ const EmpresaDetails: React.FC = () => {
                 initialImage={empresa?.logo }
                 empresaId={empresa?.id || 0}
             />
+
+            <Modal
+            isOpen={isConfirmDeleteModalOpen}
+            onRequestClose={closeConfirmDeleteModal}
+            contentLabel="Confirmar eliminación"
+            className="bg-gray-800 p-6 rounded-lg shadow-lg text-white w-full max-w-lg mx-auto my-20 relative"
+            overlayClassName="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+            >
+            <h2 className="text-lg font-semibold mb-4">Confirmar Eliminación</h2>
+            <p className="mb-4">¿Estás seguro de que deseas eliminar la red social <strong>{redToDelete?.nombre_red}</strong>?</p>
+            <div className="flex justify-end space-x-2 mt-4">
+                <button
+                onClick={closeConfirmDeleteModal}
+                className="px-4 py-2 bg-gray-500 rounded-md hover:bg-gray-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                >
+                Cancelar
+                </button>
+                <button
+                onClick={() => {
+                    if (redToDelete) {
+                    handleDeleteRed(redToDelete.id_empresa_red);
+                    }
+                    closeConfirmDeleteModal();
+                }}
+                className="px-4 py-2 bg-red-500 rounded-md hover:bg-red-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-red-300"
+                >
+                Eliminar
+                </button>
+            </div>
+            </Modal>
             <PlanModal 
                 isOpen={isPlanModalOpen} 
                 onRequestClose={closePlanModal} 
-                currentPlan={empresa?.plan || 'N/A'} 
+                currentPlan={'Estándar'} 
             />
         </div>
         
