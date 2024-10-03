@@ -53,12 +53,12 @@ const Login = () => {
 
         dispatch(loginUser(values)).then((response) => {
             Swal.close();
-
+        
             if (response.payload === "403") {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error de verificación',
-                    text: 'Este usuario no ha sido verificado todavía, por favor verifica el enlace en tu correo para continuar con el login',
+                    title: 'Acceso denegado',
+                    text: 'Tu cuenta ha sido desactivada. Contacta al administrador para más información.',
                 });
             } else if (response.payload === "401") {
                 Swal.fire({
@@ -68,7 +68,7 @@ const Login = () => {
                 });
             } else if (response.type === 'auth/loginUser/fulfilled') {
                 const { user, role } = response.payload;
-
+        
                 if (role === 'admin') {
                     navigate("/configuracion");
                 } else if (role === 'postulante') {
@@ -87,12 +87,13 @@ const Login = () => {
                     navigate("/inicioG");
                 }
             }
-
+        
             setSubmitting(false);
         }).catch(() => {
             Swal.close();
             setSubmitting(false);
         });
+        
     };
 
     const validationSchema = Yup.object({

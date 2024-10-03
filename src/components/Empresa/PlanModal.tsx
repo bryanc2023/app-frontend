@@ -1,6 +1,6 @@
 import React from 'react';
 import Modal from 'react-modal';
-import {FaUserTie, FaBriefcase } from 'react-icons/fa6'; // Importar los íconos que deseas usar
+import { FaUserTie, FaBriefcase, FaGem, FaCrown } from 'react-icons/fa6'; // Importar los íconos que deseas usar
 
 Modal.setAppElement('#root');
 
@@ -22,6 +22,16 @@ const PlanModal: React.FC<PlanModalProps> = ({ isOpen, onRequestClose, currentPl
             description: 'Publica hasta 10 ofertas de trabajo al mes y obtén mayor visibilidad.',
             icon: <FaBriefcase className="text-blue-500 text-2xl" />, // Ícono para el plan estándar
         },
+        {
+            name: 'Premium',
+            description: 'Publica hasta 50 ofertas de trabajo al mes y recibe destacados en tus ofertas.',
+            icon: <FaGem className="text-purple-500 text-2xl" />, // Ícono para el plan premium
+        },
+        {
+            name: 'Ultimate',
+            description: 'Ofertas ilimitadas y máxima visibilidad en la plataforma.',
+            icon: <FaCrown className="text-yellow-500 text-2xl" />, // Ícono para el plan ultimate
+        },
     ];
 
     return (
@@ -33,7 +43,9 @@ const PlanModal: React.FC<PlanModalProps> = ({ isOpen, onRequestClose, currentPl
         >
             <h2 className="text-2xl font-semibold mb-4">Selecciona un Plan</h2>
             <p className="mb-4 text-gray-700">Plan actual: <span className="font-bold">{currentPlan}</span></p>
-            <div className="space-y-4">
+
+            {/* Se agrega un contenedor con scroll */}
+            <div className="space-y-4 max-h-96 overflow-y-auto">
                 {plans.map((plan) => (
                     <div key={plan.name} className="p-4 border rounded-lg shadow-sm flex items-center space-x-4">
                         <div>{plan.icon}</div>
@@ -50,6 +62,7 @@ const PlanModal: React.FC<PlanModalProps> = ({ isOpen, onRequestClose, currentPl
                     </div>
                 ))}
             </div>
+
             <button onClick={onRequestClose} className="mt-6 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-700">
                 Cerrar
             </button>
