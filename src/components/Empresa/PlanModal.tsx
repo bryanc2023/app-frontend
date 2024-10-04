@@ -1,6 +1,7 @@
 import React from 'react';
 import Modal from 'react-modal';
 import { FaUserTie, FaBriefcase, FaGem, FaCrown } from 'react-icons/fa6'; // Importar los íconos que deseas usar
+import Swal from 'sweetalert2';
 
 Modal.setAppElement('#root');
 
@@ -34,6 +35,16 @@ const PlanModal: React.FC<PlanModalProps> = ({ isOpen, onRequestClose, currentPl
         },
     ];
 
+     // Función que muestra la alerta
+     const showPlanInfo = () => {
+        Swal.fire({
+            title: 'Información',
+            text: 'Actualmente Postula.net ofrece el plan estándar a todos los registrados actualmente, para los planes futuros espera las próximas actualizaciones.',
+            icon: 'info',
+            confirmButtonText: 'OK'
+        });
+    };
+
     return (
         <Modal
             isOpen={isOpen}
@@ -56,8 +67,9 @@ const PlanModal: React.FC<PlanModalProps> = ({ isOpen, onRequestClose, currentPl
                         <button 
                             className={`ml-auto px-4 py-2 rounded ${plan.name === currentPlan ? 'bg-gray-400 text-white cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-700'}`}
                             disabled={plan.name === currentPlan}
+                            onClick={showPlanInfo} 
                         >
-                            {plan.name === currentPlan ? 'Seleccionado' : 'Seleccionar'}
+                            {plan.name === currentPlan ? 'Seleccionado' : 'Seleccionado'}
                         </button>
                     </div>
                 ))}

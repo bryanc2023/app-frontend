@@ -303,7 +303,12 @@ const EmpresaDetails: React.FC = () => {
     const handleSave = async () => {
         if (editedEmpresa && user) {
             try {
-                await axios.put(`/updateEmpresaById/${user.id}`, editedEmpresa);
+                const empresaToSave = {
+                    ...editedEmpresa,
+                    division: selectedDivision,
+                }
+                console.log(empresaToSave);
+                await axios.put(`/updateEmpresaById/${user.id}`, empresaToSave);
                 setSuccessMessage("Datos guardados con éxito!");
                 setTimeout(() => {
                     setSuccessMessage(null);
@@ -607,7 +612,7 @@ const EmpresaDetails: React.FC = () => {
                                             >
                                                 <option value="">Seleccione</option>
                                                 {divisiones.map((division) => (
-                                                    <option key={division.id} value={division.division}>
+                                                    <option key={division.id} value={division.id}>
                                                         {division.division}
                                                     </option>
                                                 ))}
