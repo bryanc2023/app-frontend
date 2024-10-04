@@ -367,7 +367,7 @@ const EmpresaDetails: React.FC = () => {
                     division: isCustomSector ? null : selectedDivision, // Enviar null si es un sector personalizado
                     customDivision: isCustomSector ? customDivision : '', 
                 }
-                console.log(empresaToSave);
+                
                 await axios.put(`/updateEmpresaById/${user.id}`, empresaToSave);
                 setSuccessMessage("Datos guardados con éxito!");
                 setTimeout(() => {
