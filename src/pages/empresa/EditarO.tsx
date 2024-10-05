@@ -4,7 +4,8 @@ import Swal from 'sweetalert2';
 import axios from '../../services/axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiEdit } from 'react-icons/fi';
-
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 interface Experiencia {
   id: number;
@@ -67,6 +68,25 @@ interface Pregunta {
   id_oferta: number;
   pregunta: string;
 }
+interface Configuracion {
+  id?: number;
+  dias_max_edicion: number;
+  dias_max_eliminacion: number;
+  valor_prioridad_alta: number;
+  valor_prioridad_media: number;
+  valor_prioridad_baja: number;
+  vigencia: boolean;
+  created_at: string;
+  terminos_condiciones?: string; 
+  gratis_ofer: number;
+  gratis_d: number;
+  estandar_ofer: number;
+  estandar_d: number;
+  premium_ofer: number;
+  premiun_d: number;
+  u_ofer: number;
+  u_d: number;
+}
 
 
 
@@ -99,6 +119,7 @@ function EditarO() {
   const [selectedCanton, setSelectedCanton] = useState('');
   const [defaultAreaId, setDefaultAreaId] = useState('');
   const [defaultArea, setDefaultArea] = useState('');
+  const { user } = useSelector((state: RootState) => state.auth);
   const [loading, setLoading] = useState(true);
   const [requirePregunta, setRequirePregunta] = useState(false);
   const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
@@ -108,7 +129,95 @@ function EditarO() {
   const [showCheckbox, setShowCheckbox] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [hasAdditionalComponents, setHasAdditionalComponents] = useState(false);
+  const [showCiudad, setShowCiudad] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
+  const [configuracion, setConfiguracion] = useState<Configuracion | null>(null); 
+  const [cantidadDest, setCantidadDest] = useState(0);
+  const [maximo, setMaximo] = useState(2);
+  const [plan, setPlan] = useState(2);
 
+  useEffect(() => {
+    // Función para obtener cantidad_dest y plan
+    const fetchCantidadDest = async () => {
+      try {
+        if (user) {
+          const usuario = user.id;
+          const response = await axios.get(`/empresa/cantidaddest/${usuario}`);
+          setCantidadDest(response.data.cantidad_dest);
+          setPlan(response.data.plan);
+        }
+      } catch (error) {
+        console.error('Error al obtener cantidad_dest:', error);
+      }
+    };
+
+    // Función para obtener configuraciones
+    const fetchConfiguraciones = async () => {
+      try {
+        const response = await axios.get('/configuracion/activa');
+        setConfiguracion(response.data);
+      } catch (error) {
+        console.error('Error fetching configuraciones:', error);
+      }
+    };
+
+    // Llama a las funciones de obtención de datos
+    fetchCantidadDest();
+    fetchConfiguraciones();
+  }, []); // Dependencia de user para que se ejecute cuando cambie
+
+  useEffect(() => {
+    if (configuracion) {
+      switch (plan) {
+        case 1:
+          setMaximo(configuracion.gratis_d);
+          break;
+        case 2:
+          setMaximo(configuracion.estandar_d);
+          break;
+        case 3:
+          setMaximo(configuracion.premiun_d);
+          break;
+        case 4:
+          setMaximo(configuracion.u_d);
+          break;
+        default:
+          setMaximo(0); // O un valor predeterminado
+          break;
+      }
+    }
+  }, [plan, configuracion]); // Dependencias de plan y configuracion
+
+
+
+  const handleCheckboxChangeD = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.checked;
+  
+    // Si está marcando el checkbox (checked) y ha alcanzado el límite
+    if (newValue && cantidadDest >= maximo) {
+      Swal.fire({
+        title: 'Límite alcanzado',
+        text: "Ha alcanzado el número máximo de destacadas de su plan.",
+        icon: 'warning',
+        confirmButtonText: 'Aceptar',
+      });
+      return; // No cambiar el estado si ya ha alcanzado el límite
+    }
+  
+    // Cambia el estado del checkbox
+    setIsChecked(newValue);
+  
+    // Mostrar SweetAlert si el checkbox es marcado
+    if (newValue) {
+      Swal.fire({
+        title: 'Información',
+        text: "Al publicar como destacada, se tendrá mayor visibilidad. Esto solo podrá realizarse cierta cantidad de veces dependiendo de su plan contratado.",
+        icon: 'info',
+        confirmButtonText: 'Aceptar',
+      });
+    }
+  };
+  
   const handleTextArea = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault(); // Previene el salto al siguiente input
@@ -186,7 +295,15 @@ function EditarO() {
         if (oferta.correo_contacto) {
           setValue('correo_contacto', oferta.correo_contacto);
         }
+
+        if (oferta.dest) {
+          setIsChecked(true);
+        }
         setShowNumeroContacto(!!oferta.numero_contacto);
+        if (oferta.ciudad) {
+          setValue('ciudad', oferta.ciudad);
+        }
+        setShowCiudad(!!oferta.ciudad);
         if (oferta.numero_contacto) {
           setValue('numero_contacto', oferta.numero_contacto);
         }
@@ -525,15 +642,17 @@ function EditarO() {
   };
 
   const onSubmit = handleSubmit(async (values) => {
-    try {
-      // Aquí transformamos el array de preguntas a un array de strings
+    if (user) {
+      try {
+      const usuarioid = user.id;
       const preguntasSoloTexto = preguntas.map(preguntaObj => preguntaObj.pregunta);
       const criteriosValidos = selectedCriterios.filter(criterio => criterio.id_criterio > 0 && criterio.prioridad !== null);
       const experienciaEnMeses = values.experienciaTipo === 'meses';
       const dataToSend = {
         ...values,
+        usuario: usuarioid,
         experiencia: showExperiencia ? values.experiencia : 0,
-        experienciaEnMeses: showExperiencia ? experienciaEnMeses : 0, 
+        experienciaEnMeses: showExperiencia ? experienciaEnMeses : 0,
         correo_contacto: showCorreo ? values.correo_contacto : null,
         numero_contacto: showNumeroContacto ? values.numero_contacto : null,
         mostrar_sueldo: values.mostrar_sueldo ? 1 : 0,
@@ -546,6 +665,8 @@ function EditarO() {
         comentariosComisiones: values.comentariosComisiones || null,
         comentariosHorasExtras: values.comentariosHorasExtras || null,
         comentariosViaticos: values.comentariosViaticos || null,
+        destacada: isChecked, 
+        ciudad: showCiudad ? values.ciudad : null,
       };
 
       // SweetAlert para confirmar la publicación
@@ -576,9 +697,11 @@ function EditarO() {
           navigate("/verOfertasE");
         });
       }
+    
     } catch (error) {
       console.log(error);
     }
+  }
   });
 
 
@@ -1471,7 +1594,76 @@ function EditarO() {
                 </>
               )}
             </div>
+            <hr className="my-4" />
 
+            <div className="bg-white p-6 rounded-lg shadow-lg py-8" >
+              <h3 className="text-1xl text-red-500 font-bold mb-4">Ubicación de la oferta:</h3>
+              {/* Mensaje de aviso mejorado */}
+              <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+                <div className="flex items-center">
+                  <svg
+                    className="h-5 w-5 text-yellow-500 mr-2"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                    />
+                  </svg>
+                  <h1 className="text-xs font-semibold">
+                    (Si la oferta sigue la misma ubicación de la empresa no seleccionar la opción)
+                  </h1>
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  className="mr-2 leading-tight"
+                  type="checkbox"
+                  id="showCiudad"
+                  checked={showCiudad}
+                  onChange={() => setShowCiudad(!showCiudad)}
+                />
+                <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="showCiudad">
+                  ¿La oferta de trabajo sera para una ciudad en específico?
+                </label>
+              </div>
+              {showCiudad && (
+                <>
+                  <hr className="my-4" />
+                  <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                    <label className="block text-sm font-bold mb-2" htmlFor="ciudad">Ciudad destinada de la oferta</label>
+                    <input
+                      className="w-full p-2 border rounded"
+                      type="text"
+                      id="ciudad"
+                      placeholder="Escriba la ciudad en la que se solicita el cargo "
+                      {...register('ciudad')}
+                    />
+                  </div>
+                  <hr className="my-4" />
+                </>
+              )}
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <input
+              type="checkbox"
+              id="checkboxId"
+              checked={isChecked}
+              onChange={handleCheckboxChangeD}
+            // Deshabilitar el checkbox si ha alcanzado el límite
+              className="mr-2"
+            />
+              
+            <label htmlFor="checkboxId" className="text-sm text-gray-700">
+              ¿Publicar como destacada?
+            </label>
           </div>
           <div className="flex justify-center">
             <button

@@ -4,7 +4,8 @@ import Swal from 'sweetalert2';
 import axios from '../../services/axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiEdit } from 'react-icons/fi';
-
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 interface Experiencia {
   id: number;
@@ -67,6 +68,25 @@ interface Pregunta {
   id_oferta: number;
   pregunta: string;
 }
+interface Configuracion {
+  id?: number;
+  dias_max_edicion: number;
+  dias_max_eliminacion: number;
+  valor_prioridad_alta: number;
+  valor_prioridad_media: number;
+  valor_prioridad_baja: number;
+  vigencia: boolean;
+  created_at: string;
+  terminos_condiciones?: string;
+  gratis_ofer: number;
+  gratis_d: number;
+  estandar_ofer: number;
+  estandar_d: number;
+  premium_ofer: number;
+  premiun_d: number;
+  u_ofer: number;
+  u_d: number;
+}
 
 
 
@@ -99,6 +119,7 @@ function EditarOG() {
   const [selectedCanton, setSelectedCanton] = useState('');
   const [defaultAreaId, setDefaultAreaId] = useState('');
   const [defaultArea, setDefaultArea] = useState('');
+  const { user } = useSelector((state: RootState) => state.auth);
   const [loading, setLoading] = useState(true);
   const [requirePregunta, setRequirePregunta] = useState(false);
   const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
@@ -108,6 +129,86 @@ function EditarOG() {
   const [showCheckbox, setShowCheckbox] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [hasAdditionalComponents, setHasAdditionalComponents] = useState(false);
+  const [showCiudad, setShowCiudad] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
+  const [configuracion, setConfiguracion] = useState<Configuracion | null>(null);
+  const [cantidadDest, setCantidadDest] = useState(0);
+  const [maximo, setMaximo] = useState(2);
+  const [plan, setPlan] = useState(2);
+  const [showEmpresa, setEmpresa] = useState(false);
+
+  useEffect(() => {
+    // Función para obtener cantidad_dest y plan
+    const fetchCantidadDest = async () => {
+      try {
+        if (user) {
+          const usuario = user.id;
+          const response = await axios.get(`/empresa/cantidaddest/${usuario}`);
+          setCantidadDest(response.data.cantidad_dest);
+          setPlan(response.data.plan);
+        }
+      } catch (error) {
+        console.error('Error al obtener cantidad_dest:', error);
+      }
+    };
+
+    // Función para obtener configuraciones
+    const fetchConfiguraciones = async () => {
+      try {
+        const response = await axios.get('/configuracion/activa');
+        setConfiguracion(response.data);
+      } catch (error) {
+        console.error('Error fetching configuraciones:', error);
+      }
+    };
+
+    // Llama a las funciones de obtención de datos
+    fetchCantidadDest();
+    fetchConfiguraciones();
+  }, []); // Dependencia de user para que se ejecute cuando cambie
+
+  useEffect(() => {
+    if (configuracion) {
+      switch (plan) {
+        case 1:
+          setMaximo(configuracion.gratis_d);
+          break;
+        case 2:
+          setMaximo(configuracion.estandar_d);
+          break;
+        case 3:
+          setMaximo(configuracion.premiun_d);
+          break;
+        case 4:
+          setMaximo(configuracion.u_d);
+          break;
+        default:
+          setMaximo(0); // O un valor predeterminado
+          break;
+      }
+    }
+  }, [plan, configuracion]); // Dependencias de plan y configuracion
+
+
+
+  const handleCheckboxChangeD = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.checked;
+
+
+
+    // Cambia el estado del checkbox
+    setIsChecked(newValue);
+
+    // Mostrar SweetAlert si el checkbox es marcado
+    if (newValue) {
+      Swal.fire({
+        title: 'Información',
+        text: "Al publicar como destacada, se tendrá mayor visibilidad. Como empresa gestora no tiene limitaciones.",
+        icon: 'info',
+        confirmButtonText: 'Aceptar',
+      });
+    }
+  };
 
   const handleTextArea = (e) => {
     if (e.key === 'Enter') {
@@ -186,10 +287,46 @@ function EditarOG() {
         if (oferta.correo_contacto) {
           setValue('correo_contacto', oferta.correo_contacto);
         }
+
+        if (oferta.dest) {
+          setIsChecked(true);
+        }
         setShowNumeroContacto(!!oferta.numero_contacto);
+        if (oferta.ciudad) {
+          setValue('ciudad', oferta.ciudad);
+        }
+        setShowCiudad(!!oferta.ciudad);
         if (oferta.numero_contacto) {
           setValue('numero_contacto', oferta.numero_contacto);
         }
+
+        // Validar y cargar empre_p
+        if (oferta.empre_p) {
+          setEmpresa(true);
+          if (oferta.empre_p.includes('/')) {
+            const emprePValues = oferta.empre_p.split('/');
+            setValue('empresa', emprePValues[0] || '');
+            setValue('info', emprePValues[1] || '');
+          } else {
+            setValue('empresa', oferta.empre_p);
+            setValue('info', ''); // Si no hay barra, el campo 'info' se deja vacío
+          }
+        }
+        
+
+      // Validar y cargar sector_p
+      if (oferta.sector_p) {
+        setEmpresa(true);
+        if (oferta.sector_p.includes('/')) {
+          const sectorValues = oferta.sector_p.split('/');
+          setValue('sec', sectorValues[0] || '');
+          setValue('div', sectorValues[1] || '');
+        } else {
+          setValue('sec', oferta.sector_p);
+          setValue('div', ''); // Si no hay barra, el campo 'div' se deja vacío
+        }
+      }
+      
         // Manejar la educación requerida y los títulos
         // Cargar preguntas
         // Cargar preguntas
@@ -525,59 +662,81 @@ function EditarOG() {
   };
 
   const onSubmit = handleSubmit(async (values) => {
-    try {
-      // Aquí transformamos el array de preguntas a un array de strings
-      const preguntasSoloTexto = preguntas.map(preguntaObj => preguntaObj.pregunta);
-      const criteriosValidos = selectedCriterios.filter(criterio => criterio.id_criterio > 0 && criterio.prioridad !== null);
-      const experienciaEnMeses = values.experienciaTipo === 'meses';
-      const dataToSend = {
-        ...values,
-        experiencia: showExperiencia ? values.experiencia : 0,
-        experienciaEnMeses: showExperiencia ? experienciaEnMeses : 0, 
-        correo_contacto: showCorreo ? values.correo_contacto : null,
-        numero_contacto: showNumeroContacto ? values.numero_contacto : null,
-        mostrar_sueldo: values.mostrar_sueldo ? 1 : 0,
-        titulos: selectedTitles,
-        criterios: criteriosValidos,
-        preguntas: preguntasSoloTexto,
-        comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
-        horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
-        viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
-        comentariosComisiones: values.comentariosComisiones || null,
-        comentariosHorasExtras: values.comentariosHorasExtras || null,
-        comentariosViaticos: values.comentariosViaticos || null,
-      };
+    if (user) {
+      try {
+        const usuarioid = user.id;
+        const preguntasSoloTexto = preguntas.map(preguntaObj => preguntaObj.pregunta);
+        const criteriosValidos = selectedCriterios.filter(criterio => criterio.id_criterio > 0 && criterio.prioridad !== null);
+        const experienciaEnMeses = values.experienciaTipo === 'meses';
+        const empresaData = showEmpresa
+        ? [
+            values.empresa || '',
+            values.info || ''
+          ].filter(Boolean).join('/') || null // Usa filter para eliminar elementos vacíos
+        : null;
+      
+      const empresaData2 = showEmpresa
+        ? [
+            values.sec || '',
+            values.div || ''
+          ].filter(Boolean).join('/') || null // Usa filter para eliminar elementos vacíos
+        : null;
+      
+        const dataToSend = {
+          ...values,
+          usuario: usuarioid,
+          experiencia: showExperiencia ? values.experiencia : 0,
+          experienciaEnMeses: showExperiencia ? experienciaEnMeses : 0,
+          correo_contacto: showCorreo ? values.correo_contacto : null,
+          numero_contacto: showNumeroContacto ? values.numero_contacto : null,
+          mostrar_sueldo: values.mostrar_sueldo ? 1 : 0,
+          titulos: selectedTitles,
+          criterios: criteriosValidos,
+          preguntas: preguntasSoloTexto,
+          comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
+          horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
+          viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
+          comentariosComisiones: values.comentariosComisiones || null,
+          comentariosHorasExtras: values.comentariosHorasExtras || null,
+          comentariosViaticos: values.comentariosViaticos || null,
+          destacada: isChecked,
+          ciudad: showCiudad ? values.ciudad : null,
+          empresa_p: showEmpresa? empresaData: null,
+          sector_p:showEmpresa? empresaData2: null,
+        };
 
-      // SweetAlert para confirmar la publicación
-      const result = await Swal.fire({
-        title: 'Confirmación',
-        text: "¿Está seguro de publicar la oferta con los datos actualmente ingresados?",
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonText: 'Sí, publicar',
-        cancelButtonText: 'Cancelar'
-      });
-
-      // Si el usuario confirma, se procede con el envío
-      if (result.isConfirmed) {
-
-        await axios.put(`update-oferta/${id}`, dataToSend, {
-          headers: {
-            'Content-Type': 'application/json',
-          },
+        // SweetAlert para confirmar la publicación
+        const result = await Swal.fire({
+          title: 'Confirmación',
+          text: "¿Está seguro de publicar la oferta con los datos actualmente ingresados?",
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, publicar',
+          cancelButtonText: 'Cancelar'
         });
 
-        Swal.fire({
-          title: '¡Actualizada!',
-          text: 'La oferta ha sido actualizada exitosamente',
-          icon: 'success',
-          confirmButtonText: 'Ok'
-        }).then(() => {
-          navigate("/inicioG");
-        });
+        // Si el usuario confirma, se procede con el envío
+        if (result.isConfirmed) {
+
+          await axios.put(`update-oferta/${id}`, dataToSend, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          Swal.fire({
+            title: '¡Actualizada!',
+            text: 'La oferta ha sido actualizada exitosamente',
+            icon: 'success',
+            confirmButtonText: 'Ok'
+          }).then(() => {
+            navigate("/inicioG");
+          });
+        }
+
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
     }
   });
 
@@ -606,6 +765,97 @@ function EditarOG() {
           </h3>
         </div>
         <p>Edita los datos de la oferta seleccionada:</p>
+        <hr className="my-4" />
+
+        <div className="bg-white p-6 rounded-lg shadow-lg py-8" >
+          <h3 className="text-1xl text-red-500 font-bold mb-4">Empresa publicadora de la oferta:</h3>
+          {/* Mensaje de aviso mejorado */}
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+            <div className="flex items-center">
+              <svg
+                className="h-5 w-5 text-yellow-500 mr-2"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                />
+              </svg>
+              <h1 className="text-xs font-semibold">
+                (Si la oferta es publicada por la misma "Proasetel" no seleccionar la opción. Si se llenan estos campos los datos que apareceran para esta oferta serna los de esta empresa)
+              </h1>
+            </div>
+          </div>
+
+          <div className="flex items-center">
+            <input
+              className="mr-2 leading-tight"
+              type="checkbox"
+              id="showEmpresa"
+              checked={showEmpresa}
+              onChange={() => setEmpresa(!showEmpresa)}
+            />
+            <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="showEmpresa">
+              ¿La oferta pertenece a otra empresa?
+            </label>
+          </div>
+          {showEmpresa && (
+            <>
+              <hr className="my-4" />
+              <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                <label className="block text-sm font-bold mb-2" htmlFor="empresa">Nombre de la empresa ofertante</label>
+                <input
+                  className="w-full p-2 border rounded"
+                  type="text"
+                  id="empresa"
+                  placeholder="Escriba el nombre de la empresa se solicita el cargo "
+                  {...register('empresa', {
+                    required: showEmpresa ? 'Nombre es requerido' : false // Solo requerido si showEmpresa es true
+                  })}
+                />
+                {errors.empresa && <p className="text-red-500">{String(errors.empresa.message)}</p>}
+                <hr className="my-4" />
+                <label className="block text-sm font-bold mb-2" htmlFor="sec">Sector de la empresa ofertante</label>
+                <input
+                  className="w-full p-2 border rounded"
+                  type="text"
+                  id="sec"
+                  placeholder="Escriba el sector de la empresa se solicita el cargo "
+                  {...register('sec', {
+                    required: showEmpresa ? 'Sector es requerido' : false // Solo requerido si showEmpresa es true
+                  })}
+                />
+                {errors.sec && <p className="text-red-500">{String(errors.sec.message)}</p>}
+                <hr className="my-4" />
+                <label className="block text-sm font-bold mb-2" htmlFor="div">Division de la empresa ofertante</label>
+                <input
+                  className="w-full p-2 border rounded"
+                  type="text"
+                  id="div"
+                  placeholder="Escriba la division de la empresa se solicita el cargo "
+                  {...register('div')}
+                />
+                <hr className="my-4" />
+                <label className="block text-sm font-bold mb-2" htmlFor="info">Info adicional de la empresa ofertante</label>
+                <textarea
+                  className="w-full p-2 border rounded"
+                  rows={10}
+                  id="info"
+                  placeholder="Alguna informacion esencial que se deba saber de la empresa, si no se requiere dejar en blanco "
+                  {...register('info')}
+                />
+              </div>
+
+
+              <hr className="my-4" />
+            </>
+          )}
+        </div>
         <hr className="my-4" />
         <h3 className="text-1xl text-red-500 font-bold mb-4">Datos de la oferta:</h3>
         <form onSubmit={onSubmit} onKeyDown={handleKeyDown}>
@@ -1471,7 +1721,76 @@ function EditarOG() {
                 </>
               )}
             </div>
+            <hr className="my-4" />
 
+            <div className="bg-white p-6 rounded-lg shadow-lg py-8" >
+              <h3 className="text-1xl text-red-500 font-bold mb-4">Ubicación de la oferta:</h3>
+              {/* Mensaje de aviso mejorado */}
+              <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+                <div className="flex items-center">
+                  <svg
+                    className="h-5 w-5 text-yellow-500 mr-2"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                    />
+                  </svg>
+                  <h1 className="text-xs font-semibold">
+                    (Si la oferta sigue la misma ubicación de la empresa no seleccionar la opción)
+                  </h1>
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  className="mr-2 leading-tight"
+                  type="checkbox"
+                  id="showCiudad"
+                  checked={showCiudad}
+                  onChange={() => setShowCiudad(!showCiudad)}
+                />
+                <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="showCiudad">
+                  ¿La oferta de trabajo sera para una ciudad en específico?
+                </label>
+              </div>
+              {showCiudad && (
+                <>
+                  <hr className="my-4" />
+                  <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                    <label className="block text-sm font-bold mb-2" htmlFor="ciudad">Ciudad destinada de la oferta</label>
+                    <input
+                      className="w-full p-2 border rounded"
+                      type="text"
+                      id="ciudad"
+                      placeholder="Escriba la ciudad en la que se solicita el cargo "
+                      {...register('ciudad')}
+                    />
+                  </div>
+                  <hr className="my-4" />
+                </>
+              )}
+            </div>
+          </div>
+          <div className="flex justify-center">
+            <input
+              type="checkbox"
+              id="checkboxId"
+              checked={isChecked}
+              onChange={handleCheckboxChangeD}
+              // Deshabilitar el checkbox si ha alcanzado el límite
+              className="mr-2"
+            />
+
+            <label htmlFor="checkboxId" className="text-sm text-gray-700">
+              ¿Publicar como destacada?
+            </label>
           </div>
           <div className="flex justify-center">
             <button

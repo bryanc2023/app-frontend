@@ -1,9 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from 'react-modal';
 import { FaUserTie, FaBriefcase, FaGem, FaCrown } from 'react-icons/fa6'; // Importar los íconos que deseas usar
 import Swal from 'sweetalert2';
+import axios from "../../services/axios";
 
 Modal.setAppElement('#root');
+
+interface Configuracion {
+    id?: number;
+    dias_max_edicion: number;
+    dias_max_eliminacion: number;
+    valor_prioridad_alta: number;
+    valor_prioridad_media: number;
+    valor_prioridad_baja: number;
+    vigencia: boolean;
+    created_at: string;
+    terminos_condiciones?: string; 
+    gratis_ofer: number;
+    gratis_d: number;
+    estandar_ofer: number;
+    estandar_d: number;
+    premium_ofer: number;
+    premiun_d: number;
+    u_ofer: number;
+    u_d: number;
+}
 
 interface PlanModalProps {
     isOpen: boolean;
@@ -12,25 +33,41 @@ interface PlanModalProps {
 }
 
 const PlanModal: React.FC<PlanModalProps> = ({ isOpen, onRequestClose, currentPlan }) => {
+    const [configuracion, setConfiguracion] = useState<Configuracion | null>(null); // Cambiado a null
+
+
+    useEffect(() => {
+        fetchConfiguraciones();
+    }, []);
+
+    const fetchConfiguraciones = async () => {
+        try {
+            const response = await axios.get('/configuracion/activa');
+            setConfiguracion(response.data); 
+        } catch (error) {
+            console.error('Error fetching configuraciones:', error);
+        }
+    };
+
     const plans = [
         {
-            name: 'Gratuito',
-            description: 'Publica hasta 3 ofertas de trabajo al mes.',
-            icon: <FaUserTie className="text-green-500 text-2xl" />, // Ícono para el plan gratuito
+           name: '1.Gratuito',
+           description: configuracion ? `Publica hasta ${configuracion.gratis_ofer == 0? 'ilimitadas':configuracion.gratis_ofer} ofertas de trabajo al mes,  ${configuracion.gratis_d == 0? 'ilimitadas':configuracion.gratis_d}  oferta destacada al mes` : 'Cargando...', // Mostrar un mensaje de carga si no hay configuración
+           icon: <FaUserTie className="text-green-500 text-2xl" />, // Ícono para el plan gratuito
         },
         {
-            name: 'Estándar',
-            description: 'Publica hasta 10 ofertas de trabajo al mes y obtén mayor visibilidad.',
+            name: '2.Estándar',
+            description: configuracion ? `Publica hasta ${configuracion.estandar_ofer == 0? 'ilimitadas':configuracion.estandar_ofer} ofertas de trabajo al mes y obtén mayor visibilidad, con ${configuracion.estandar_d == 0? 'ilimitadas':configuracion.estandar_d} ofertas destacadas al mes'` : 'Cargando...',
             icon: <FaBriefcase className="text-blue-500 text-2xl" />, // Ícono para el plan estándar
         },
         {
-            name: 'Premium',
-            description: 'Publica hasta 50 ofertas de trabajo al mes y recibe destacados en tus ofertas.',
+            name: '3.Premium',
+            description: configuracion ?`Publica hasta ${configuracion.premium_ofer == 0? 'ilimitadas':configuracion.premium_ofer} ofertas de trabajo al mes, con ${configuracion.premiun_d == 0? 'ilimitadas':configuracion.premiun_d} ofertas destacadas al mes'`: 'Cargando...',
             icon: <FaGem className="text-purple-500 text-2xl" />, // Ícono para el plan premium
         },
         {
-            name: 'Ultimate',
-            description: 'Ofertas ilimitadas y máxima visibilidad en la plataforma.',
+            name: '4.Ultimate',
+            description: configuracion ?`${configuracion.u_ofer == 0? ' Ofertas ilimitadas': + configuracion.u_ofer + ' ofertas maximas'} , con ${configuracion.u_d == 0? 'ilimitadas':configuracion.u_d} ofertas destacadas al mes'`: 'Cargando...',
             icon: <FaCrown className="text-yellow-500 text-2xl" />, // Ícono para el plan ultimate
         },
     ];
