@@ -541,6 +541,8 @@ function AgregarO() {
           comentariosViaticos: values.comentariosViaticos || null,
           destacada: isChecked, 
           ciudad: showCiudad ? values.ciudad : null,
+          empresa_p: null,
+          sector_p: null,
         };
 
         // SweetAlert para confirmar la publicación
