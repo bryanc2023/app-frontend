@@ -42,6 +42,8 @@ interface Oferta {
     comentariosHorasExtras: string | null;
     comentariosViaticos: string | null;
     exp_m: boolean;
+    dest: boolean;
+    ciudad: string | null;
 }
 
 interface Pregunta {
@@ -247,7 +249,7 @@ function VerOfertasPPage() {
 
             switch (criterio.criterio) {
                 case 'Experiencia':
-                    return criterio.pivot.valor ? "Si el postulante cumple con los años/meses indicados para la oferta":"Si el postulante cumple con los años/meses indicados para la oferta";       
+                    return criterio.pivot.valor ? "Si el postulante cumple con los años/meses indicados para la oferta" : "Si el postulante cumple con los años/meses indicados para la oferta";
                 case 'Titulo':
                     return criterio.pivot.valor ? "Alguno de los títulos mencionados" : "Alguno de los títulos mencionados";
                 case 'Sueldo':
@@ -276,8 +278,8 @@ function VerOfertasPPage() {
 
             switch (criterio.criterio) {
                 case 'Experiencia':
-                
-                    return criterio.pivot.valor ? "Si el postulante cumple con los años/meses indicados para la oferta":"Si el postulante cumple con los años/meses indicados para la oferta";    
+
+                    return criterio.pivot.valor ? "Si el postulante cumple con los años/meses indicados para la oferta" : "Si el postulante cumple con los años/meses indicados para la oferta";
                 case 'Titulo':
                     return criterio.pivot.valor ? "Alguno de los títulos mencionados" : "Alguno de los títulos mencionados";
                 case 'Sueldo':
@@ -457,7 +459,13 @@ function VerOfertasPPage() {
 
             {selectedOferta && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-4 rounded-lg shadow-lg max-w-5xl w-full mx-4 overflow-auto" style={{ maxHeight: '80vh' }}>
+                    <div className={`bg-gradient-to-b from-gray-200 to-white p-4 rounded-lg shadow-lg max-w-5xl w-full mx-4 overflow-auto ${selectedOferta.dest ? 'bg-gradient-to-b from-white to-orange-200 border border-b-0 shadow-xl' : ''}`} style={{ maxHeight: '80vh', position: 'relative' }}>
+                        {selectedOferta.dest ? ( // Solo muestra el elemento si es 'dest'
+                            <div className="absolute top-2 right-2 text-gold text-xl font-semibold">
+                                ⭐ DESTACADA
+                            </div>
+                        ) : null}
+
                         <h2 className="text-xl mb-4 text-center text-blue-500">
                             <strong>CARGO:</strong> {selectedOferta.cargo}
                         </h2>
@@ -477,6 +485,9 @@ function VerOfertasPPage() {
                                     <p><strong>Estado:</strong> {selectedOferta.estado}</p>
                                     <p><strong>Área: </strong>{selectedOferta.areas.nombre_area}</p>
                                     <p><strong>Carga Horaria: </strong>{selectedOferta.carga_horaria}</p>
+                                    {selectedOferta.ciudad && (
+                                        <p><strong>Ciudad específica para la oferta: </strong>{selectedOferta.ciudad}</p>
+                                    )}
                                     <p><strong>Experiencia Mínima: </strong>
                                         {selectedOferta.experiencia === 0
                                             ? 'Ninguna'

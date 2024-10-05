@@ -41,6 +41,10 @@ interface Oferta {
     comentariosHorasExtras: string | null;
     comentariosViaticos: string | null;
     exp_m: boolean;
+    dest: boolean;
+    ciudad: string | null;
+    empre_p: string | null;
+    sector_p: string | null;
 }
 
 interface Pregunta {
@@ -443,7 +447,12 @@ function VerOfertasPPage() {
 
             {selectedOferta && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-4 rounded-lg shadow-lg max-w-5xl w-full mx-4 overflow-auto" style={{ maxHeight: '80vh' }}>
+                    <div className={`bg-gradient-to-b from-gray-200 to-white p-4 rounded-lg shadow-lg max-w-5xl w-full mx-4 overflow-auto ${selectedOferta.dest ? 'bg-gradient-to-b from-white to-orange-200 border border-b-0 shadow-xl' : ''}`} style={{ maxHeight: '80vh', position: 'relative' }}>
+                        {selectedOferta.dest ? ( // Solo muestra el elemento si es 'dest'
+                            <div className="absolute top-2 right-2 text-gold text-xl font-semibold">
+                                ⭐ DESTACADA
+                            </div>
+                        ) : null}
                         <h2 className="text-xl mb-4 text-center text-blue-500">
                             <strong>CARGO:</strong> {selectedOferta.cargo}
                         </h2>
@@ -463,6 +472,9 @@ function VerOfertasPPage() {
                                     <p><strong>Estado:</strong> {selectedOferta.estado}</p>
                                     <p><strong>Área: </strong>{selectedOferta.areas.nombre_area}</p>
                                     <p><strong>Carga Horaria: </strong>{selectedOferta.carga_horaria}</p>
+                                    {selectedOferta.ciudad && (
+                                        <p><strong>Ciudad específica para la oferta: </strong>{selectedOferta.ciudad}</p>
+                                    )}
                                     <p><strong>Experiencia Mínima: </strong>
                                         {selectedOferta.experiencia === 0
                                             ? 'Ninguna'
@@ -489,6 +501,8 @@ function VerOfertasPPage() {
                                     </>
                                 )}
                             </div>
+                            {/* Validación y división de 'empre_p' */}
+
 
                             <div className="p-4 bg-gray-100 rounded shadow">
                                 <p><strong>Funciones: </strong></p>
@@ -526,6 +540,33 @@ function VerOfertasPPage() {
                                 </ul>
                             </div>
                         </div>
+
+                        {selectedOferta.empre_p && (
+                            <div className="p-4 bg-gray-100 rounded shadow">
+                                {/* Validación si 'empre_p' contiene '/' */}
+                                {selectedOferta.empre_p.includes('/') ? (
+                                    <>
+                                        <p><strong>Nombre de empresa del cargo: </strong>{selectedOferta.empre_p.split('/')[0]}</p>
+                                        <p><strong>Descripción extra de la empresa: </strong>{selectedOferta.empre_p.split('/')[1]}</p>
+                                    </>
+                                ) : (
+                                    <p><strong>Nombre de empresa del cargo: </strong>{selectedOferta.empre_p}</p>
+                                )}
+
+                                {/* Validación para 'sector_p' */}
+                                {selectedOferta.sector_p && (
+                                    selectedOferta.sector_p.includes('/') ? (
+                                        <>
+                                            <p><strong>Sector de la empresa: </strong>{selectedOferta.sector_p.split('/')[0]}</p>
+                                            <p><strong>División de la empresa: </strong>{selectedOferta.sector_p.split('/')[1]}</p>
+                                        </>
+                                    ) : (
+                                        <p><strong>Sector de la empresa: </strong>{selectedOferta.sector_p}</p>
+                                    )
+                                )}
+                            </div>
+                        )}
+
                         {(selectedOferta.comisiones || selectedOferta.comentariosComisiones) && (
                             <>
                                 <div className="mt-4 p-4 bg-gray-100 rounded shadow">

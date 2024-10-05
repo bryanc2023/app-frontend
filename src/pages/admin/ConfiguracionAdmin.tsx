@@ -11,20 +11,36 @@ interface Configuracion {
     valor_prioridad_baja: number;
     vigencia: boolean;
     created_at: string;
-    terminos_condiciones?: string; // Añadir el nuevo campo
+    terminos_condiciones?: string; 
+    gratis_ofer: number;
+    gratis_d: number;
+    estandar_ofer: number;
+    estandar_d: number;
+    premium_ofer: number;
+    premiun_d: number;
+    u_ofer: number;
+    u_d: number;
 }
 
 const ConfiguracionComponent = () => {
     const [configuraciones, setConfiguraciones] = useState<Configuracion[]>([]);
     const [form, setForm] = useState<Configuracion>({
-        dias_max_edicion: 0,
-        dias_max_eliminacion: 0,
-        valor_prioridad_alta: 0,
-        valor_prioridad_media: 0,
-        valor_prioridad_baja: 0,
+        dias_max_edicion: 1,
+        dias_max_eliminacion: 1,
+        valor_prioridad_alta: 1,
+        valor_prioridad_media: 1,
+        valor_prioridad_baja: 1,
         vigencia: true,
         created_at: '',
-        terminos_condiciones: '', // Inicializar el nuevo campo
+        terminos_condiciones: '', 
+        gratis_ofer: 3,
+        gratis_d:  1,
+        estandar_ofer:  10,
+        estandar_d: 5,
+        premium_ofer:  50,
+        premiun_d:  0,
+        u_ofer:  0,
+        u_d:  0,
     });
     const [modalOpen, setModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState({ title: '', message: '', success: false });
@@ -127,6 +143,9 @@ const ConfiguracionComponent = () => {
                 <table className="min-w-full divide-y divide-gray-200 shadow-md rounded-lg overflow-hidden">
                     <thead className="bg-gray-50">
                         <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Vigencia
+                            </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Días Máx Edición
                             </th>
@@ -143,7 +162,28 @@ const ConfiguracionComponent = () => {
                                 Valor Prioridad Baja
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Vigencia
+                                Plan Gratis Ofertas Máximas
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Plan Gratis Ofertas Destacadas Máximas
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Plan Estándar Ofertas Máximas
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Plan Estándar Ofertas Destacadas Máximas
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Plan Premium Ofertas Máximas
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Plan Premium Ofertas Destacadas Máximas
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Plan Ultimate Ofertas Máximas
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Plan Ultimate Ofertas Destacadas Máximas
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Fecha de creación
@@ -156,6 +196,9 @@ const ConfiguracionComponent = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {configuraciones.map((config, index) => (
                             <tr key={index} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.vigencia ? 'Sí' : 'No'}
+                                </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {config.dias_max_edicion}
                                 </td>
@@ -172,7 +215,28 @@ const ConfiguracionComponent = () => {
                                     {config.valor_prioridad_baja}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
-                                    {config.vigencia ? 'Sí' : 'No'}
+                                    {config.gratis_ofer == 0 ? 'Ilimitada' : config.gratis_ofer}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.gratis_d == 0 ? 'Ilimitada' : config.gratis_d}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.estandar_ofer == 0 ? 'Ilimitada' : config.estandar_ofer}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.estandar_d == 0 ? 'Ilimitada' : config.estandar_d}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.premium_ofer == 0 ? 'Ilimitada' : config.premium_ofer}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.premiun_d == 0 ? 'Ilimitada' : config.premiun_d}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.u_ofer == 0 ? 'Ilimitada' : config.u_ofer}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {config.u_d == 0 ? 'Ilimitada' : config.u_d}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {new Date(config.created_at).toLocaleString("es-ES", {
@@ -222,6 +286,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="dias_max_edicion"
                             value={form.dias_max_edicion}
+                             min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -232,6 +297,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="dias_max_eliminacion"
                             value={form.dias_max_eliminacion}
+                             min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -242,6 +308,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="valor_prioridad_alta"
                             value={form.valor_prioridad_alta}
+                             min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -252,6 +319,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="valor_prioridad_media"
                             value={form.valor_prioridad_media}
+                             min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -262,6 +330,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="valor_prioridad_baja"
                             value={form.valor_prioridad_baja}
+                             min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -274,6 +343,94 @@ const ConfiguracionComponent = () => {
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                             rows={10}
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">Plan Gratis máximo ofertas:</label>
+                        <input
+                            type="number"
+                            name="gratis_ofer"
+                            value={form.gratis_ofer}
+                             min="1"
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">Plan Gratis máximo destacadas:</label>
+                        <input
+                            type="number"
+                            name="gratis_d"
+                            value={form.gratis_d}
+                             min="1"
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">Plan Estándar máximo ofertas:</label>
+                        <input
+                            type="number"
+                            name="estandar_ofer"
+                            value={form.estandar_ofer}
+                             min="1"
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">Plan Estándar máximo destacadas:</label>
+                        <input
+                            type="number"
+                            name="estandar_d"
+                            value={form.estandar_d}
+                             min="1"
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">Plan Premium máximo ofertas:</label>
+                        <input
+                            type="number"
+                            name="premium_ofer"
+                            value={form.premium_ofer}
+                             min="1"
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">Plan Premium máximo destacadas:</label>
+                        <input
+                            type="number"
+                            name="premiun_d"
+                            value={form.premiun_d}
+                             min="0"
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">Plan Ultimate máximo ofertas:</label>
+                        <input
+                            type="number"
+                            name="u_ofer"
+                            value={form.u_ofer}
+                             min="0"
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                        />
+                    </div>
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700">Plan Ultimate máximo destacadas:</label>
+                        <input
+                            type="number"
+                            name="u_d"
+                            value={form.u_d}
+                            min="0"
+                            onChange={handleChange}
+                            className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                     </div>
                     <button

@@ -10,27 +10,129 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserPlus, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import { FaBuilding, FaUser } from 'react-icons/fa';
 import { logout } from '../store/authSlice';
+import Modal from '../components/Postulante/PostulacionModalHome'
+
+import './home.css';
+
 
 interface Oferta {
   id_oferta: number;
+  estado: string;
   cargo: string;
-  sueldo: number;
-  carga_horaria: string;
-  modalidad: string;
-  funciones: string;
-  fecha_publi: string;
+  areas: {
+      id: number;
+      nombre_area: string;
+  };
   empresa: {
-    nombre_comercial: string;
-    logo: string;
+      id_empresa: string,
+      nombre_comercial: string;
+      logo: string;
+      ubicacion: {
+          canton: string;
+          provincia: string;
+      };
+      sector: {
+          sector: string;
+          division: string;
+      };
+  };
+  fecha_max_pos: string;
+  n_mostrar_empresa: number;
+  modalidad: string;
+  carga_horaria: string;
+  experiencia: number;
+  fecha_publi: string;
+  funciones: string;
+  objetivo_cargo: string;
+  detalles_adicionales: string;
+  criterios: Criterio[];
+  expe: {
+      titulo: string;
+      nivel_educacion: string;
+      campo_amplio: string;
+      pivot: {
+          titulo_per2: string | null;
+      };
+  }[];
+  sueldo: number;
+  n_mostrar_sueldo: number;
+  soli_sueldo: number;
+  correo_contacto: string;
+  numero_contacto: string;
+  preguntas: Pregunta[];
+  comisiones: number | null;
+  horasExtras: number | null;
+  viaticos: number | null;
+  comentariosComisiones: string | null;
+  comentariosHorasExtras: string | null;
+  comentariosViaticos: string | null;
+  exp_m: boolean;
+  ciudad: string | null;
+  empre_p: string | null;
+  sector_p: string | null;
+}
+
+interface Pregunta {
+  id: number;
+  id_oferta: number;
+  pregunta: string;
+}
+
+interface Criterio {
+  criterio: string;
+  pivot: {
+      valor: string;
   };
 }
 
+
+
+
+
 const Home: React.FC = () => {
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
+  const [selectedOferta, setSelectedOferta] = useState<Oferta | null>(null);
   const navigate = useNavigate();
   const { isLogged, role, user} = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
+
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleOpenModal = (oferta: Oferta) => {
+      setSelectedOferta(oferta);
+      setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+      setSelectedOferta(null);
+      setIsModalOpen(false);
+  };
+
+  const handlePrev = () => {
+    setCurrentIndex((prevIndex) => (prevIndex === 0 ? ofertas.length - 1 : prevIndex - 1));
+  };
+
+  const handleNext = () => {
+    setCurrentIndex((prevIndex) => (prevIndex === ofertas.length - 1 ? 0 : prevIndex + 1));
+  };
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 3,
+    slidesToScroll: 1,
+    responsive: [
+      {
+        breakpoint: 768,
+        settings: {
+          slidesToShow: 1,
+        },
+      },
+    ],
+  };
 
   useEffect(() => {
     const checkRegistrationStatus = async () => {
@@ -94,21 +196,30 @@ const Home: React.FC = () => {
 
     checkRegistrationStatus();
   }, [isLogged, role, user, navigate]);
-
   useEffect(() => {
     const fetchOfertas = async () => {
       try {
-        const response = await axios.get('/ofertaHome');
-        // Obtener solo las 3 primeras ofertas
-        setOfertas(response.data.ofertas.slice(0, 3));
+        const destacadasResponse = await axios.get('/destacadas');
+        const destacadasOfertas = destacadasResponse.data.ofertas;
+  
+        // Si hay menos de 3 ofertas destacadas, buscar más ofertas
+        let ofertasToShow = destacadasOfertas.slice(0, 3);
+        if (ofertasToShow.length < 3) {
+          const response = await axios.get('ofertaHome');
+          const otrasOfertas = response.data.ofertas;
+          // Completar con otras ofertas hasta 3
+          ofertasToShow = [...ofertasToShow, ...otrasOfertas.slice(0, 3 - ofertasToShow.length)];
+        }
+  
+        setOfertas(ofertasToShow);
       } catch (error) {
         console.error('Error fetching offers:', error);
       }
     };
-
+  
     fetchOfertas();
   }, []);
- 
+  
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -168,32 +279,76 @@ const Home: React.FC = () => {
           </div>
         ) : (
           <>
-            <h2 className="text-3xl font-bold text-orange-500">Actualmente se estan buscando las siguientes plazas de trabajo:</h2>
-<hr></hr>
-<hr></hr>
-<hr></hr>
-<hr></hr>
-<hr></hr>
-<hr></hr>
-<div>.</div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl w-full">
-              {ofertas.map(oferta => (
-                <div key={oferta.id_oferta} className="bg-white shadow-md rounded-lg p-6 flex flex-col items-center">
-                  <FaFileAlt className="text-orange-500 text-6xl mb-4" />
-                  <h2 className="text-xl font-semibold mb-2">Se esta buscando:</h2>
-                  <center> <h2 className="text-2xl font-bold italic mb-2">"{oferta.cargo}"</h2></center>
-                  <p className="text-gray-700"><p className="font-semibold">Modalidad:</p> <center>{oferta.modalidad}</center></p>
-                  <p className="text-gray-700">
-                    <p className="font-semibold">Fecha de publicación:</p>
-                    <center>
-                      {new Date(new Date(oferta.fecha_publi).setDate(new Date(oferta.fecha_publi).getDate() + 1)).toLocaleDateString('es-ES')}
-                    </center>
-                  </p> </div>
-              ))}
-            </div>
-          
-          
-          </>
+     <div className="relative">
+      <center><h2 className="text-3xl font-bold text-orange-500">
+        Actualmente se están buscando las siguientes plazas de trabajo:
+      </h2></center>
+      <div className="flex items-center">
+        <button onClick={handlePrev} className="p-2 bg-gray-300 rounded-l">
+          Anterior
+        </button>
+        <div className="flex overflow-hidden w-full">
+          <div
+            className="flex transition-transform duration-500"
+            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+          >
+            {ofertas.map((oferta) => (
+              <div key={oferta.id_oferta} className="min-w-full p-6 flex flex-col items-center bg-white shadow-md rounded-lg">
+                <FaFileAlt className="text-orange-500 text-6xl mb-4" />
+                <strong className="text-gray-700 mb-1">
+                                                    
+                                                    {oferta.n_mostrar_empresa === 1
+                                                        ? 'Confidencial'
+                                                        : oferta.empre_p
+                                                            ? oferta.empre_p.includes('/')
+                                                                ? oferta.empre_p.split('/')[0] // Muestra la parte antes de la barra
+                                                                : oferta.empre_p
+                                                            : oferta.empresa.nombre_comercial}
+                                                </strong>
+                                                <p className="text-gray-700 mb-1 flex items-center flex-wrap">
+                                                    <strong>Del sector - </strong>
+                                                    {oferta.n_mostrar_empresa === 1 ?
+                                                        'Confidencial' :
+                                                        oferta.sector_p? 
+                                                                oferta.sector_p.includes('/')
+                                                                ? '  '+ oferta.sector_p.split('/')[0]+' En '+oferta.sector_p.split('/')[1] // Muestra la parte antes de la barra
+                                                                : '  '+ oferta.sector_p
+                                                            : 
+                                                        ` ${oferta.empresa.sector.division} EN ${oferta.empresa.sector.sector}`
+                                                    }
+                                                </p>
+                                                <strong>Esta buscando:</strong>
+                <h2 className="text-2xl font-bold italic mb-2">"{oferta.cargo}"</h2>
+                <p className="text-gray-700">
+                  <strong>Modalidad:</strong> {oferta.modalidad}
+                </p>
+                <p className="text-gray-700">
+                  <strong>Fecha de publicación:</strong> {new Date(oferta.fecha_publi).toLocaleDateString('es-ES')}
+                </p>
+                <button 
+                        onClick={() => handleOpenModal(oferta)} 
+                        className="mt-4 px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+                    >
+                       Ver
+                    </button>
+              </div>
+            ))}
+          </div>
+        </div>
+        <button onClick={handleNext} className="p-2 bg-gray-300 rounded-r">
+          Siguiente
+        </button>
+      </div>
+    </div>
+     {/* Modal Component */}
+     {isModalOpen && (
+                <Modal 
+                    oferta={selectedOferta} 
+                    onClose={handleCloseModal} 
+                />
+            )}
+    </>
+    
         )}
       </div>
       <div className="bg-gray-50 rounded-lg shadow-md p-16 bg-cover bg-center flex flex-col justify-center">
