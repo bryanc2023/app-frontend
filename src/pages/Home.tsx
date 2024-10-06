@@ -20,21 +20,21 @@ interface Oferta {
   estado: string;
   cargo: string;
   areas: {
-      id: number;
-      nombre_area: string;
+    id: number;
+    nombre_area: string;
   };
   empresa: {
-      id_empresa: string,
-      nombre_comercial: string;
-      logo: string;
-      ubicacion: {
-          canton: string;
-          provincia: string;
-      };
-      sector: {
-          sector: string;
-          division: string;
-      };
+    id_empresa: string,
+    nombre_comercial: string;
+    logo: string;
+    ubicacion: {
+      canton: string;
+      provincia: string;
+    };
+    sector: {
+      sector: string;
+      division: string;
+    };
   };
   fecha_max_pos: string;
   n_mostrar_empresa: number;
@@ -47,12 +47,12 @@ interface Oferta {
   detalles_adicionales: string;
   criterios: Criterio[];
   expe: {
-      titulo: string;
-      nivel_educacion: string;
-      campo_amplio: string;
-      pivot: {
-          titulo_per2: string | null;
-      };
+    titulo: string;
+    nivel_educacion: string;
+    campo_amplio: string;
+    pivot: {
+      titulo_per2: string | null;
+    };
   }[];
   sueldo: number;
   n_mostrar_sueldo: number;
@@ -81,7 +81,7 @@ interface Pregunta {
 interface Criterio {
   criterio: string;
   pivot: {
-      valor: string;
+    valor: string;
   };
 }
 
@@ -93,7 +93,7 @@ const Home: React.FC = () => {
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [selectedOferta, setSelectedOferta] = useState<Oferta | null>(null);
   const navigate = useNavigate();
-  const { isLogged, role, user} = useSelector((state: RootState) => state.auth);
+  const { isLogged, role, user } = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -102,13 +102,13 @@ const Home: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleOpenModal = (oferta: Oferta) => {
-      setSelectedOferta(oferta);
-      setIsModalOpen(true);
+    setSelectedOferta(oferta);
+    setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
-      setSelectedOferta(null);
-      setIsModalOpen(false);
+    setSelectedOferta(null);
+    setIsModalOpen(false);
   };
 
   const handlePrev = () => {
@@ -118,21 +118,7 @@ const Home: React.FC = () => {
   const handleNext = () => {
     setCurrentIndex((prevIndex) => (prevIndex === ofertas.length - 1 ? 0 : prevIndex + 1));
   };
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 3,
-    slidesToScroll: 1,
-    responsive: [
-      {
-        breakpoint: 768,
-        settings: {
-          slidesToShow: 1,
-        },
-      },
-    ],
-  };
+
 
   useEffect(() => {
     const checkRegistrationStatus = async () => {
@@ -177,19 +163,19 @@ const Home: React.FC = () => {
           } else if (role === 'empresa_gestora') {
             navigate('/inicioG');
           }
-        }else{
-         
-           window.localStorage.removeItem("token");
-           window.localStorage.removeItem('role');
-           navigate("/");
-           return;
+        } else {
+
+          window.localStorage.removeItem("token");
+          window.localStorage.removeItem('role');
+          navigate("/");
+          return;
         }
       } catch (error) {
         console.error('Error checking registration status:', error);
         // Maneja el error según sea necesario (p. ej., mostrar un mensaje al usuario)
-      }  finally {
-          setIsLoading(false); // Ocultar indicador de carga después de la redirección
-        }
+      } finally {
+        setIsLoading(false); // Ocultar indicador de carga después de la redirección
+      }
     };
 
 
@@ -201,25 +187,25 @@ const Home: React.FC = () => {
       try {
         const destacadasResponse = await axios.get('/destacadas');
         const destacadasOfertas = destacadasResponse.data.ofertas;
-  
+
         // Si hay menos de 3 ofertas destacadas, buscar más ofertas
-        let ofertasToShow = destacadasOfertas.slice(0, 3);
-        if (ofertasToShow.length < 3) {
+        let ofertasToShow = destacadasOfertas.slice(0, 4);
+        if (ofertasToShow.length < 4) {
           const response = await axios.get('ofertaHome');
           const otrasOfertas = response.data.ofertas;
           // Completar con otras ofertas hasta 3
-          ofertasToShow = [...ofertasToShow, ...otrasOfertas.slice(0, 3 - ofertasToShow.length)];
+          ofertasToShow = [...ofertasToShow, ...otrasOfertas.slice(0, 4 - ofertasToShow.length)];
         }
-  
+
         setOfertas(ofertasToShow);
       } catch (error) {
         console.error('Error fetching offers:', error);
       }
     };
-  
+
     fetchOfertas();
   }, []);
-  
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -257,8 +243,8 @@ const Home: React.FC = () => {
                 <p className="font-light">▸Monitorear tu proceso de reclutamiento</p>
               </div>
               <div className="flex flex-col items-center">
-              <hr></hr>
-              <p className="font-semibold">Como postulante</p>
+                <hr></hr>
+                <p className="font-semibold">Como postulante</p>
                 <FaUser className="text-orange-500 text-6xl mb-2" />
                 <p className="font-light">▸Postularte a las ofertas publicadas</p>
                 <p className="font-light">▸Ver tus resultados directos</p>
@@ -273,104 +259,110 @@ const Home: React.FC = () => {
 
       <div className="flex-grow flex flex-col items-center bg-gray-100 py-10">
         {ofertas.length === 0 ? (
-          <div className="text-center bg-white p-6 rounded-lg shadow-md max-w-3xl">
-            <p className="text-xl text-gray-700 mb-4">El trabajo de tus sueños espera por ti a un click</p>
-            <a href="/registro" className="text-blue-500 hover:underline text-lg font-bold">Registrate ahora</a>
+          <div className="text-center bg-white p-6 rounded-lg shadow-md max-w-md w-full">
+            <p className="text-lg sm:text-xl text-gray-700 mb-4">
+              El trabajo de tus sueños espera por ti a un click
+            </p>
+            <a href="/registro" className="text-blue-500 hover:underline text-md sm:text-lg font-bold">Regístrate ahora</a>
           </div>
         ) : (
           <>
-     <div className="relative">
-      <center><h2 className="text-3xl font-bold text-orange-500">
-        Actualmente se están buscando las siguientes plazas de trabajo:
-      </h2></center>
-      <div className="flex items-center">
-        <button onClick={handlePrev} className="p-2 bg-gray-300 rounded-l">
-          Anterior
-        </button>
-        <div className="flex overflow-hidden w-full">
-          <div
-            className="flex transition-transform duration-500"
-            style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+            <div className="relative w-full px-4 lg:w-full lg:px-0">
+              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-orange-500 text-center mb-4">
+                Plazas de trabajo destacadas:
+              </h2>
+              <div className="flex items-center w-full">
+                <button onClick={handlePrev} className="p-2 bg-gray-300 rounded-l">
+                  Anterior
+                </button>
+                <div className="flex overflow-hidden w-full lg:mx-10 lg:px-64">
+  <div
+    className="flex transition-transform duration-500 lg:justify-center" // Añadido lg:justify-center
+    style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+  >
+    {ofertas.map((oferta) => (
+      <div
+        key={oferta.id_oferta}
+        className="min-w-full p-2 sm:p-2 flex flex-col items-center bg-white shadow-md rounded-full"
+      >
+        <div className="flex flex-col items-center text-center -ml-5 sm:-ml-0 ">
+          <FaFileAlt className="text-orange-500 text-3xl sm:text-2xl lg:text-3xl mb-2" />
+          <strong className="text-orange-700 mb-1 text-sm sm:text-xs lg:text-base">
+            {oferta.n_mostrar_empresa === 1
+              ? 'Confidencial'
+              : oferta.empresa.nombre_comercial}
+          </strong>
+          <p className="text-cyan-800 mb-1 flex flex-col items-center justify-center text-center text-sm sm:text-xs lg:text-base">
+            <strong>DEL SECTOR:</strong>
+            <span className='text-gray-700'>
+              {oferta.n_mostrar_empresa === 1
+                ? 'Confidencial'
+                : oferta.sector_p
+                  ? oferta.sector_p.includes('/')
+                    ? oferta.sector_p.split('/')[0] + ' En ' + oferta.sector_p.split('/')[1]
+                    : oferta.sector_p
+                  : `${oferta.empresa.sector.division} EN ${oferta.empresa.sector.sector}`}
+            </span>
+          </p>
+          <strong className="text-sm sm:text-xs lg:text-base text-cyan-800">ESTÁ BUSCANDO:</strong>
+          <h2 className="text-[15px] sm:text-xs lg:text-lg font-bold italic mb-1">"{oferta.cargo}"</h2>
+          <p className="text-gray-700 text-center text-sm sm:text-xs lg:text-base">
+            <strong className='text-cyan-800'>Modalidad:</strong> {oferta.modalidad}
+          </p>
+          <p className="text-gray-700 text-center text-sm sm:text-xs lg:text-base">
+            <strong className='text-cyan-800'>Fecha de publicación:</strong> {new Date(oferta.fecha_publi).toLocaleDateString('es-ES')}
+          </p>
+          <button
+            onClick={() => handleOpenModal(oferta)}
+            className="mt-2 px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 text-sm sm:text-xs lg:text-base"
           >
-            {ofertas.map((oferta) => (
-              <div key={oferta.id_oferta} className="min-w-full p-6 flex flex-col items-center bg-white shadow-md rounded-lg">
-                <FaFileAlt className="text-orange-500 text-6xl mb-4" />
-                <strong className="text-gray-700 mb-1">
-                                                    
-                                                    {oferta.n_mostrar_empresa === 1
-                                                        ? 'Confidencial'
-                                                        : oferta.empre_p
-                                                            ? oferta.empre_p.includes('/')
-                                                                ? oferta.empre_p.split('/')[0] // Muestra la parte antes de la barra
-                                                                : oferta.empre_p
-                                                            : oferta.empresa.nombre_comercial}
-                                                </strong>
-                                                <p className="text-gray-700 mb-1 flex items-center flex-wrap">
-                                                    <strong>Del sector - </strong>
-                                                    {oferta.n_mostrar_empresa === 1 ?
-                                                        'Confidencial' :
-                                                        oferta.sector_p? 
-                                                                oferta.sector_p.includes('/')
-                                                                ? '  '+ oferta.sector_p.split('/')[0]+' En '+oferta.sector_p.split('/')[1] // Muestra la parte antes de la barra
-                                                                : '  '+ oferta.sector_p
-                                                            : 
-                                                        ` ${oferta.empresa.sector.division} EN ${oferta.empresa.sector.sector}`
-                                                    }
-                                                </p>
-                                                <strong>Esta buscando:</strong>
-                <h2 className="text-2xl font-bold italic mb-2">"{oferta.cargo}"</h2>
-                <p className="text-gray-700">
-                  <strong>Modalidad:</strong> {oferta.modalidad}
-                </p>
-                <p className="text-gray-700">
-                  <strong>Fecha de publicación:</strong> {new Date(oferta.fecha_publi).toLocaleDateString('es-ES')}
-                </p>
-                <button 
-                        onClick={() => handleOpenModal(oferta)} 
-                        className="mt-4 px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
-                    >
-                       Ver
-                    </button>
-              </div>
-            ))}
-          </div>
+            Ver
+          </button>
         </div>
-        <button onClick={handleNext} className="p-2 bg-gray-300 rounded-r">
-          Siguiente
-        </button>
       </div>
-    </div>
-     {/* Modal Component */}
-     {isModalOpen && (
-                <Modal 
-                    oferta={selectedOferta} 
-                    onClose={handleCloseModal} 
-                />
-            )}
-    </>
-    
-        )}
-      </div>
-      <div className="bg-gray-50 rounded-lg shadow-md p-16 bg-cover bg-center flex flex-col justify-center">
-             <center> <p className="text-lg text-gray-700 mb-5">¿Estás listo para comenzar? Regístrate para acceder a todas nuestras ofertas y comenzar a postularte hoy mismo.</p></center>
-              <div className="flex flex-col md:flex-row justify-center gap-4">
-                <button
-                  onClick={() => window.location.href = '/registerE'}
-                  className="bg-gray-800 text-white py-3 px-6 rounded-full flex items-center justify-center gap-2 hover:bg-gray-700 transition duration-300"
-                >
-                  <FontAwesomeIcon icon={faBuilding} /> Registrarse como Empresa
+    ))}
+  </div>
+</div>
+
+                <button onClick={handleNext} className="p-2 bg-gray-300 rounded-r">
+                  Siguiente
                 </button>
-                <button
-                  onClick={() => window.location.href = '/register'}
-                  className="bg-orange-600 text-white py-3 px-6 rounded-full flex items-center justify-center gap-2 hover:bg-orange-500 transition duration-300"
-                >
-
-                  <FontAwesomeIcon icon={faUserPlus} /> Registrarse como Postulante
-                </button>
-
-
               </div>
             </div>
+
+
+            {/* Modal Component */}
+            {isModalOpen && (
+              <Modal
+                oferta={selectedOferta}
+                onClose={handleCloseModal}
+              />
+            )}
+          </>
+        )}
+      </div>
+
+
+      <div className="bg-gray-50 rounded-lg shadow-md p-16 bg-cover bg-center flex flex-col justify-center">
+        <center> <p className="text-lg text-gray-700 mb-5">¿Estás listo para comenzar? Regístrate para acceder a todas nuestras ofertas y comenzar a postularte hoy mismo.</p></center>
+        <div className="flex flex-col md:flex-row justify-center gap-4">
+          <button
+            onClick={() => window.location.href = '/registerE'}
+            className="bg-gray-800 text-white py-3 px-6 rounded-full flex items-center justify-center gap-2 hover:bg-gray-700 transition duration-300"
+          >
+            <FontAwesomeIcon icon={faBuilding} /> Registrarse como Empresa
+          </button>
+          <button
+            onClick={() => window.location.href = '/register'}
+            className="bg-orange-600 text-white py-3 px-6 rounded-full flex items-center justify-center gap-2 hover:bg-orange-500 transition duration-300"
+          >
+
+            <FontAwesomeIcon icon={faUserPlus} /> Registrarse como Postulante
+          </button>
+
+
+        </div>
+      </div>
       <footer className="bg-gray-800 text-white py-4 text-center mt-auto">
         <p className="text-sm">© {new Date().getFullYear()} Postula - Todos los derechos reservados</p>
         <p className="text-sm">Desarrollado por Proasetel S.A</p>
