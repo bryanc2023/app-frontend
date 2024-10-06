@@ -115,7 +115,7 @@ const VerOfertasAll = () => {
 
     const formatFechaMaxPos = (fecha: string) => {
         const date = new Date(fecha);
-        date.setDate(date.getDate() + 1);
+        date.setDate(date.getDate());
         const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
         return date.toLocaleDateString('es-ES', options);
     };

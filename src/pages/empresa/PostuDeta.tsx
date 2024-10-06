@@ -141,6 +141,14 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
         setShowRespuestasModal(false);
     };
 
+    useEffect(() => {
+        if (showComentarioModal || showRespuestasModal) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = 'auto';
+        }
+    }, [showComentarioModal, showRespuestasModal]);
+
     return (
         <div className="p-4 bg-white text-gray-900 rounded-lg relative">
             <h1 className="text-2xl font-bold mb-4 text-gray-900">Detalles del Postulante</h1>
