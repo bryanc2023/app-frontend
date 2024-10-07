@@ -6,7 +6,7 @@
   
   .section-title h2 {
     font-size: 2rem;
-    color: #FF8C00; /* Naranja */
+    color: #3251b4; /* Naranja */
     font-weight: bold;
   }
   
@@ -52,7 +52,7 @@
   .icono-oferta {
     padding-left: 12px;
     font-size: 6rem;
-    color: #ffffff; /* Color dorado para el icono */
+    color: #ff9232; /* Color dorado para el icono */
     flex-shrink: 0; /* Evitar que el icono se reduzca si el espacio es pequeño */
   }
   
@@ -68,9 +68,9 @@
 .oferta-card {
     padding: 15px;
     border-radius: 10px;
-    background: linear-gradient(145deg, #ffffff, #ffa379);
+    background: linear-gradient(145deg, #ffffff, #fadba63f);
      /* Borde dorado */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(248, 234, 155, 0.5); /* Sombra dorada */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(255, 109, 11, 0.855); /* Sombra dorada */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     cursor: pointer;
   }

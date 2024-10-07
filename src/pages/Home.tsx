@@ -275,7 +275,7 @@ const Home: React.FC = () => {
         ) : (
           <>
             <div className="section-title">
-              <h2>Ofertas destacadas</h2>
+              <h2>OFERTAS DESTACADAS </h2>
             </div>
 
             <div className="carrusel-container">
@@ -298,10 +298,15 @@ const Home: React.FC = () => {
                   >
                     <div className="oferta-content">
                       <div className="text-content">
-                        <h3 className='text-cyan-900 text-2xl font-bold '>
+                        <div className="text-content">
+                          <h3 className='text-orange-500 text-2xl font-bold'>
                           {oferta.empresa.nombre_comercial}
-                        </h3>
-                        <p className='font-semibold'><strong className='text-cyan-800'>Sector:</strong> {oferta.empresa.sector.sector}</p>
+                          </h3>
+                          <p className='font-semibold italic text-cyan-800'>
+                          <span className='italic'>PERTENECIENTE AL SECTOR  {oferta.empresa.sector.sector}</span>
+                          </p>
+                       
+                        </div>
                         <p className='font-semibold'><strong className='text-cyan-800'>Esta buscando:</strong> {oferta.cargo}</p>
                         <p className='font-semibold'><strong className='text-cyan-800'>Modalidad:</strong> {oferta.modalidad}</p>
                         <p className='font-semibold'><strong className='text-cyan-800'>Fecha de publicación:</strong> {new Date(oferta.fecha_publi).toLocaleDateString()}</p>
