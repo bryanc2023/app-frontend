@@ -329,8 +329,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                             <p className="text-gray-700 mb-1 flex items-center flex-wrap">
                                 <FontAwesomeIcon icon={faIndustry} className="mr-2" />
                                 <strong>Sector de la empresa: </strong>
-                                {oferta.n_mostrar_empresa === 1 ?
-                                    'Confidencial' :
+                                {
                                     oferta.sector_p ?
                                         oferta.sector_p.includes('/')
                                             ? oferta.sector_p.split('/')[0] + ' En ' + oferta.sector_p.split('/')[1] // Muestra la parte antes de la barra
