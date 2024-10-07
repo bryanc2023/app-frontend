@@ -300,7 +300,7 @@ const Home: React.FC = () => {
                       <div className="text-content">
                         <div className="text-content">
                           <h3 className='text-orange-500 text-2xl font-bold'>
-                          {oferta.n_mostrar_empresa === 1 ? 'Confidencial' : oferta.empre_p
+                          {oferta.n_mostrar_empresa === 1 ? 'Empresa Confidencial' : oferta.empre_p
                                     ? oferta.empre_p.includes('/')
                                         ? oferta.empre_p.split('/')[0] // Muestra la parte antes de la barra
                                         : oferta.empre_p
