@@ -5,14 +5,16 @@ import axios from "../services/axios";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from 'react-router-dom';
 import { RootState } from '../store';
-import { FaFileAlt } from 'react-icons/fa';
+import { FaBriefcase } from 'react-icons/fa'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserPlus, faBuilding } from '@fortawesome/free-solid-svg-icons';
 import { FaBuilding, FaUser } from 'react-icons/fa';
 import { logout } from '../store/authSlice';
 import Modal from '../components/Postulante/PostulacionModalHome'
-
 import './home.css';
+import { Carousel } from 'react-responsive-carousel';
+import 'react-responsive-carousel/lib/styles/carousel.min.css';
+import './CarruselOfertas.css';
 
 
 interface Oferta {
@@ -97,9 +99,9 @@ const Home: React.FC = () => {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const handleOpenModal = (oferta: Oferta) => {
     setSelectedOferta(oferta);
@@ -111,13 +113,6 @@ const Home: React.FC = () => {
     setIsModalOpen(false);
   };
 
-  const handlePrev = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === 0 ? ofertas.length - 1 : prevIndex - 1));
-  };
-
-  const handleNext = () => {
-    setCurrentIndex((prevIndex) => (prevIndex === ofertas.length - 1 ? 0 : prevIndex + 1));
-  };
 
 
   useEffect(() => {
@@ -206,6 +201,18 @@ const Home: React.FC = () => {
     fetchOfertas();
   }, []);
 
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768); // Actualizamos el estado cuando cambia el tamaño de la pantalla
+    };
+
+    window.addEventListener('resize', handleResize); // Escuchamos cambios en el tamaño de la ventana
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -267,71 +274,59 @@ const Home: React.FC = () => {
           </div>
         ) : (
           <>
-            <div className="relative w-full px-4 lg:w-full lg:px-0">
-              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-orange-500 text-center mb-4">
-                Plazas de trabajo destacadas:
-              </h2>
-              <div className="flex items-center w-full">
-                <button onClick={handlePrev} className="p-2 bg-gray-300 rounded-l">
-                  Anterior
-                </button>
-                <div className="flex overflow-hidden w-full lg:mx-10 lg:px-64">
-  <div
-    className="flex transition-transform duration-500 lg:justify-center" // Añadido lg:justify-center
-    style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-  >
-    {ofertas.map((oferta) => (
-      <div
-        key={oferta.id_oferta}
-        className="min-w-full p-2 sm:p-2 flex flex-col items-center bg-white shadow-md rounded-full"
-      >
-        <div className="flex flex-col items-center text-center -ml-5 sm:-ml-0 ">
-          <FaFileAlt className="text-orange-500 text-3xl sm:text-2xl lg:text-3xl mb-2" />
-          <strong className="text-orange-700 mb-1 text-sm sm:text-xs lg:text-base">
-            {oferta.n_mostrar_empresa === 1
-              ? 'Confidencial'
-              : oferta.empresa.nombre_comercial}
-          </strong>
-          <p className="text-cyan-800 mb-1 flex flex-col items-center justify-center text-center text-sm sm:text-xs lg:text-base">
-            <strong>DEL SECTOR:</strong>
-            <span className='text-gray-700'>
-              {oferta.n_mostrar_empresa === 1
-                ? 'Confidencial'
-                : oferta.sector_p
-                  ? oferta.sector_p.includes('/')
-                    ? oferta.sector_p.split('/')[0] + ' En ' + oferta.sector_p.split('/')[1]
-                    : oferta.sector_p
-                  : `${oferta.empresa.sector.division} EN ${oferta.empresa.sector.sector}`}
-            </span>
-          </p>
-          <strong className="text-sm sm:text-xs lg:text-base text-cyan-800">ESTÁ BUSCANDO:</strong>
-          <h2 className="text-[15px] sm:text-xs lg:text-lg font-bold italic mb-1">"{oferta.cargo}"</h2>
-          <p className="text-gray-700 text-center text-sm sm:text-xs lg:text-base">
-            <strong className='text-cyan-800'>Modalidad:</strong> {oferta.modalidad}
-          </p>
-          <p className="text-gray-700 text-center text-sm sm:text-xs lg:text-base">
-            <strong className='text-cyan-800'>Fecha de publicación:</strong> {new Date(oferta.fecha_publi).toLocaleDateString('es-ES')}
-          </p>
-          <button
-            onClick={() => handleOpenModal(oferta)}
-            className="mt-2 px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 text-sm sm:text-xs lg:text-base"
-          >
-            Ver
-          </button>
-        </div>
-      </div>
-    ))}
-  </div>
-</div>
-
-                <button onClick={handleNext} className="p-2 bg-gray-300 rounded-r">
-                  Siguiente
-                </button>
-              </div>
+            <div className="section-title">
+              <h2>OFERTAS DESTACADAS </h2>
             </div>
 
+            <div className="carrusel-container">
+              <Carousel
+                showThumbs={false}
+                infiniteLoop={true}
+                autoPlay={true}
+                showStatus={false}
+                dynamicHeight={true}
+                swipeable={true}
+                emulateTouch={true}
+                stopOnHover={!isMobile}
+                showIndicators={!isMobile}
+              >
+                {ofertas.map((oferta) => (
+                  <div
+                    key={oferta.id_oferta}
+                    className="oferta-card"
+                    onClick={() => isMobile && handleOpenModal(oferta)}
+                  >
+                    <div className="oferta-content">
+                      <div className="text-content">
+                        <div className="text-content">
+                          <h3 className='text-orange-500 text-2xl font-bold'>
+                          {oferta.empresa.nombre_comercial}
+                          </h3>
+                          <p className='font-semibold italic text-cyan-800'>
+                          <span className='italic'>PERTENECIENTE AL SECTOR  {oferta.empresa.sector.sector}</span>
+                          </p>
+                       
+                        </div>
+                        <p className='font-semibold'><strong className='text-cyan-800'>Esta buscando:</strong> {oferta.cargo}</p>
+                        <p className='font-semibold'><strong className='text-cyan-800'>Modalidad:</strong> {oferta.modalidad}</p>
+                        <p className='font-semibold'><strong className='text-cyan-800'>Fecha de publicación:</strong> {new Date(oferta.fecha_publi).toLocaleDateString()}</p>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenModal(oferta);
+                          }}
+                          className="mt-2 px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 text-sm sm:text-xs lg:text-base"
+                        >
+                          VER DETALLES
+                        </button>
+                      </div>
+                      <FaBriefcase className="icono-oferta" />
+                    </div>
+                  </div>
+                ))}
+              </Carousel>
+            </div>
 
-            {/* Modal Component */}
             {isModalOpen && (
               <Modal
                 oferta={selectedOferta}
