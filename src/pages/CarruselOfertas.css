@@ -1,0 +1,90 @@
+/* Contenedor del título */
+.section-title {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .section-title h2 {
+    font-size: 2rem;
+    color: #FF8C00; /* Naranja */
+    font-weight: bold;
+  }
+  
+  /* Responsividad para pantallas pequeñas */
+  @media (max-width: 768px) {
+    .section-title h2 {
+      font-size: 1.5rem;
+    }
+  }
+  
+  /* Contenedor del carrusel */
+  .carrusel-container {
+    max-width: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  
+  .oferta-card {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+  }
+  
+  .oferta-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  /* Contenido de texto alineado a la izquierda */
+  .text-content {
+    flex: 1; /* Ocupa todo el espacio disponible */
+    padding-right: 10px; /* Espacio entre texto e icono */
+  }
+  
+  /* Estilo para el icono de la oferta */
+  .icono-oferta {
+    padding-left: 12px;
+    font-size: 6rem;
+    color: #ffffff; /* Color dorado para el icono */
+    flex-shrink: 0; /* Evitar que el icono se reduzca si el espacio es pequeño */
+  }
+  
+  /* Para asegurarnos que los botones dentro del carrusel sean clickeables */
+  .oferta-card button {
+    position: relative;
+    z-index: 10;
+    margin-bottom: 10px;
+  }
+  
+
+  /* Efecto dorado para las tarjetas */
+.oferta-card {
+    padding: 15px;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #ffffff, #ffa379);
+     /* Borde dorado */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1), 0 6px 20px rgba(248, 234, 155, 0.5); /* Sombra dorada */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+  }
+  
+  .oferta-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 12px 30px rgba(255, 223, 0, 0.7); /* Más sombra dorada al hover */
+  }
+  
+ 
+  /* Estilo para los indicadores del carrusel */
+.carousel .control-dots {
+    bottom: -12px; /* Ajusta este valor para mover los puntos hacia abajo */
+  }
+
+
+  
