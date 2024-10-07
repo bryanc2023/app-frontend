@@ -300,10 +300,21 @@ const Home: React.FC = () => {
                       <div className="text-content">
                         <div className="text-content">
                           <h3 className='text-orange-500 text-2xl font-bold'>
-                          {oferta.empresa.nombre_comercial}
+                          {oferta.n_mostrar_empresa === 1 ? 'Confidencial' : oferta.empre_p
+                                    ? oferta.empre_p.includes('/')
+                                        ? oferta.empre_p.split('/')[0] // Muestra la parte antes de la barra
+                                        : oferta.empre_p
+                                    : oferta.empresa.nombre_comercial}
                           </h3>
                           <p className='font-semibold italic text-cyan-800'>
-                          <span className='italic'>PERTENECIENTE AL SECTOR  {oferta.empresa.sector.sector}</span>
+                          <span className='italic'>PERTENECIENTE AL SECTOR    {
+                                    oferta.sector_p ?
+                                        oferta.sector_p.includes('/')
+                                            ? oferta.sector_p.split('/')[0] + ' DE ' + oferta.sector_p.split('/')[1] // Muestra la parte antes de la barra
+                                            : oferta.sector_p
+                                        :
+                                        ` ${oferta.empresa.sector.sector}`
+                                }</span>
                           </p>
                        
                         </div>
