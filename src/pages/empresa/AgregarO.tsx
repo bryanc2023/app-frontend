@@ -543,6 +543,7 @@ function AgregarO() {
           ciudad: showCiudad ? values.ciudad : null,
           empresa_p: null,
           sector_p: null,
+          gestoraId: null, 
         };
 
         // SweetAlert para confirmar la publicación

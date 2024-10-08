@@ -3,7 +3,7 @@ import axios from '../../services/axios';
 import { useSelector } from 'react-redux';
 import Modal from 'react-modal';
 import { RootState } from '../../store';
-import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaGlobe, FaXing, FaXTwitter, FaUserTie, FaBriefcase, FaTrash } from 'react-icons/fa6';
+import { FaUser, FaCrown, FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaGlobe, FaXing, FaXTwitter, FaUserTie, FaBriefcase, FaTrash } from 'react-icons/fa6';
 import AddRedModal from '../../components/Empresa/AddRedEModal';
 import EditLogoModal from '../../components/Empresa/EditProfilePicEModal';
 import PlanModal from '../../components/Empresa/PlanModal';
@@ -45,7 +45,7 @@ const EmpresaDetails: React.FC = () => {
     const [editedEmpresa, setEditedEmpresa] = useState<Empresa | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [isPlanModalOpen, setIsPlanModalOpen] = useState<boolean>(false); // Estado para el modal de planes
-    const { user } = useSelector((state: RootState) => state.auth);
+    const { user, role } = useSelector((state: RootState) => state.auth);
 
     const [provinces, setProvinces] = useState<string[]>([]);
     const [cantons, setCantons] = useState<{ id: number; canton: string }[]>([]);
@@ -65,37 +65,75 @@ const EmpresaDetails: React.FC = () => {
     const [customDivision, setCustomDivision] = useState('');
     const [isCustomSector, setIsCustomSector] = useState(false);
     const [isDivisionEnabled2, setIsDivisionEnabled2] = useState(true);
-        
-        const handleCheckboxChange = () => {
-            setIsCustomSector(!isCustomSector);
-            if (!isCustomSector) {
-                setSelectedSector('Otro'); // Cambia el valor del sector a "Otro"
-                setIsDivisionEnabled2(false); // Deshabilita el select de división
-                setSelectedDivision(''); // Limpia la selección de división
-            } else {
-                setSelectedSector(''); // Resetea el sector si se desmarca
-                setIsDivisionEnabled2(true); // Habilita el select de división
+    const [users, setUsers] = useState([]);
+
+
+    useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await axios.get('/parteGestora'); // Asegúrate de que esta URL sea correcta
+                setUsers(response.data);
+            } catch (error) {
+                console.error('Error al obtener los usuarios:', error);
             }
         };
 
+        fetchUsers();
+    }, []);
+
+    const handleCheckboxChange = () => {
+        setIsCustomSector(!isCustomSector);
+        if (!isCustomSector) {
+            setSelectedSector('Otro'); // Cambia el valor del sector a "Otro"
+            setIsDivisionEnabled2(false); // Deshabilita el select de división
+            setSelectedDivision(''); // Limpia la selección de división
+        } else {
+            setSelectedSector(''); // Resetea el sector si se desmarca
+            setIsDivisionEnabled2(true); // Habilita el select de división
+        }
+    };
+
     const fetchRedes = async (empresaId: number) => {
-        
+
         try {
-            const response = await axios.get(`/empresa-red/${empresaId}`);
-            if (response.data && Array.isArray(response.data)) {
-                setEmpresa((prevState) => ({
-                    ...prevState!,
-                    red: response.data,
-                    // Preservar el plan original si ya existe en el estado de la empresa
-                    plan: 'Estándar', // Preserva el plan actual
-                }));
+
+            if (role === 'p_empresa_g') {
+                // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+                const responseId = await axios.get(`/idGestora`);
+                const empresaG = responseId.data.id; // Accede solo al id
+                const response = await axios.get(`/empresa-red/${empresaG}`);
+                if (response.data && Array.isArray(response.data)) {
+                    setEmpresa((prevState) => ({
+                        ...prevState!,
+                        red: response.data,
+                        // Preservar el plan original si ya existe en el estado de la empresa
+                        plan: 'Estándar', // Preserva el plan actual
+                    }));
+                } else {
+                    setEmpresa((prevState) => ({
+                        ...prevState!,
+                        red: [],
+                        plan: 'Estándar', // Preserva el plan actual
+                    }));
+                }
             } else {
-                setEmpresa((prevState) => ({
-                    ...prevState!,
-                    red: [],
-                    plan: 'Estándar', // Preserva el plan actual
-                }));
+                const response = await axios.get(`/empresa-red/${empresaId}`);
+                if (response.data && Array.isArray(response.data)) {
+                    setEmpresa((prevState) => ({
+                        ...prevState!,
+                        red: response.data,
+                        // Preservar el plan original si ya existe en el estado de la empresa
+                        plan: 'Estándar', // Preserva el plan actual
+                    }));
+                } else {
+                    setEmpresa((prevState) => ({
+                        ...prevState!,
+                        red: [],
+                        plan: 'Estándar', // Preserva el plan actual
+                    }));
+                }
             }
+
         } catch (error) {
             console.error('Error fetching redes:', error);
             setEmpresa((prevState) => ({
@@ -121,22 +159,45 @@ const EmpresaDetails: React.FC = () => {
         const fetchProfileData = async () => {
             try {
                 if (user) {
-                    const response = await axios.get(`/empresaById/${user.id}`);
-                    const empresaData = response.data;
+                    if (role === 'p_empresa_g') {
+                        // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+                        const responseId = await axios.get(`/idGestora`);
+                        const empresaId = responseId.data.id; // Accede solo al id
+                        const response = await axios.get(`/empresaById/${empresaId}`);
+                        const empresaData = response.data;
 
-                    const redesResponse = await axios.get(`/empresa-red/${empresaData.id_empresa}`);
-                    empresaData.red = redesResponse.data;
-                    empresaData.plan = 'Estándar'; // Asigna el plan actual aquí
+                        const redesResponse = await axios.get(`/empresa-red/${empresaData.id_empresa}`);
+                        empresaData.red = redesResponse.data;
+                        empresaData.plan = 'Estándar'; // Asigna el plan actual aquí
 
-                    setEmpresa(empresaData);
+                        setEmpresa(empresaData);
 
-                    if (empresaData.ubicacion) {
-                        setSelectedProvince(empresaData.ubicacion.provincia || '');
-                        setSelectedCanton(empresaData.ubicacion.canton || '');
-                    }
-                    if (empresaData.sector) {
-                        setSelectedSector(empresaData.sector.sector || '');
-                        setSelectedDivision(empresaData.sector.division || '');
+                        if (empresaData.ubicacion) {
+                            setSelectedProvince(empresaData.ubicacion.provincia || '');
+                            setSelectedCanton(empresaData.ubicacion.canton || '');
+                        }
+                        if (empresaData.sector) {
+                            setSelectedSector(empresaData.sector.sector || '');
+                            setSelectedDivision(empresaData.sector.division || '');
+                        }
+                    } else {
+                        const response = await axios.get(`/empresaById/${user.id}`);
+                        const empresaData = response.data;
+
+                        const redesResponse = await axios.get(`/empresa-red/${empresaData.id_empresa}`);
+                        empresaData.red = redesResponse.data;
+                        empresaData.plan = 'Estándar'; // Asigna el plan actual aquí
+
+                        setEmpresa(empresaData);
+
+                        if (empresaData.ubicacion) {
+                            setSelectedProvince(empresaData.ubicacion.provincia || '');
+                            setSelectedCanton(empresaData.ubicacion.canton || '');
+                        }
+                        if (empresaData.sector) {
+                            setSelectedSector(empresaData.sector.sector || '');
+                            setSelectedDivision(empresaData.sector.division || '');
+                        }
                     }
                 }
             } catch (error) {
@@ -316,7 +377,8 @@ const EmpresaDetails: React.FC = () => {
         if (editedEmpresa) {
             const { name, value } = e.target;
             const [mainKey, subKey] = name.split('.');
-            // Validación específica para el campo "descripcion"
+
+            // Validación para la descripción (puedes agregar más si lo necesitas)
             if (name === 'descripcion') {
                 if (value.length > 1000) {
                     setErrorDescripcion('La descripción no puede tener más de 1000 caracteres.');
@@ -325,33 +387,56 @@ const EmpresaDetails: React.FC = () => {
                     setErrorDescripcion(''); // Limpia el error si está dentro del límite
                 }
             }
+
             if (subKey) {
-                setEditedEmpresa({
-                    ...editedEmpresa,
+                // Si el campo es anidado (e.g., ubicacion.provincia)
+                setEditedEmpresa(prevState => ({
+                    ...prevState,
                     [mainKey]: {
-                        ...(editedEmpresa[mainKey as keyof Empresa] as any),
+                        ...(prevState[mainKey as keyof Empresa] as any),
                         [subKey]: value,
                     },
-                });
+                }));
             } else {
-                setEditedEmpresa({
-                    ...editedEmpresa,
+                // Si el campo no es anidado
+                setEditedEmpresa(prevState => ({
+                    ...prevState,
                     [name]: value,
-                });
+                }));
             }
         }
     };
 
+
     const reloadProfile = async () => {
         if (user) {
             try {
-                const response = await axios.get(`/empresaById/${user.id}`);
-                const empresaData = response.data;
+                if (role === 'p_empresa_g') {
+                    // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+                    const responseId = await axios.get(`/idGestora`);
+                    const empresaId = responseId.data.id; // Accede solo al id
+                    const response = await axios.get(`/empresaById/${empresaId}`);
+                    const empresaData = response.data;
 
-                const redesResponse = await axios.get(`/empresa-red/${empresaData.id_empresa}`);
-                empresaData.red = redesResponse.data;
+                    const redesResponse = await axios.get(`/empresa-red/${empresaData.id_empresa}`);
+                    empresaData.red = redesResponse.data;
 
-                setEmpresa(empresaData);
+                    setEmpresa(empresaData);
+
+
+                } else {
+                    const response = await axios.get(`/empresaById/${user.id}`);
+                    const empresaData = response.data;
+
+                    const redesResponse = await axios.get(`/empresa-red/${empresaData.id_empresa}`);
+                    empresaData.red = redesResponse.data;
+
+                    setEmpresa(empresaData);
+
+                }
+
+
+
             } catch (error) {
                 console.error('Error fetching profile data:', error);
                 setError('Error fetching profile data');
@@ -365,20 +450,39 @@ const EmpresaDetails: React.FC = () => {
                 const empresaToSave = {
                     ...editedEmpresa,
                     division: isCustomSector ? null : selectedDivision, // Enviar null si es un sector personalizado
-                    customDivision: isCustomSector ? customDivision : '', 
+                    customDivision: isCustomSector ? customDivision : '',
+                    canton: selectedCanton,
                 }
-               
-                await axios.put(`/updateEmpresaById/${user.id}`, empresaToSave);
-                setSuccessMessage("Datos guardados con éxito!");
-                setTimeout(() => {
-                    setSuccessMessage(null);
-                }, 3000);
 
-                // Recargar los datos del perfil después de guardar
-                await reloadProfile();
 
-                setModalIsOpen(false);
-                setError(null);
+                if (role === 'p_empresa_g') {
+                    // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+                    const responseId = await axios.get(`/idGestora`);
+                    const empresaId = responseId.data.id; //
+                    await axios.put(`/updateEmpresaById/${empresaId}`, empresaToSave);
+                    setSuccessMessage("Datos guardados con éxito!");
+                    setTimeout(() => {
+                        setSuccessMessage(null);
+                    }, 3000);
+
+                    // Recargar los datos del perfil después de guardar
+                    await reloadProfile();
+
+                    setModalIsOpen(false);
+                    setError(null);
+                } else {
+                    await axios.put(`/updateEmpresaById/${user.id}`, empresaToSave);
+                    setSuccessMessage("Datos guardados con éxito!");
+                    setTimeout(() => {
+                        setSuccessMessage(null);
+                    }, 3000);
+
+                    // Recargar los datos del perfil después de guardar
+                    await reloadProfile();
+
+                    setModalIsOpen(false);
+                    setError(null);
+                }
             } catch (err: any) {
                 setError(`Axios error: ${err.response?.data?.message || err.message}`);
             }
@@ -413,6 +517,8 @@ const EmpresaDetails: React.FC = () => {
                 return <FaUserTie className="text-green-500 text-2xl" />;
             case 'Estándar':
                 return <FaBriefcase className="text-blue-500 text-2xl" />;
+            case 'Ultimate':
+                return <FaCrown className="text-blue-500 text-2xl" />;
             default:
                 return null;
         }
@@ -440,22 +546,49 @@ const EmpresaDetails: React.FC = () => {
     return (
         <div className="max-w-4xl mx-auto mt-10 p-6 bg-white text-black rounded-lg shadow-md" style={{ borderColor: '#d1552a', borderWidth: '4px' }}>
             {successMessage && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mt-4" role="alert">
-                    <strong className="font-bold">Éxito! </strong>
+                <div
+                    className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded fixed top-4 left-1/2 transform -translate-x-1/2 z-50"
+                    role="alert"
+                >
+                    <strong className="font-bold">¡Éxito! </strong>
                     <span className="block sm:inline">{successMessage}</span>
                 </div>
             )}
+            {role == 'p_empresa_g' && (
+                <>
+                    <center>
+                        <h2 className="text-lg font-bold mb-4 text-orange-500 border-b-2 border-orange-500 inline-block">COLABORADOR EMPRESA GESTORA</h2></center>
+
+                    <div className="flex flex-col items-center mb-4">
+                        <FaUser className="text-orange-500 text-8xl mr-3" />{/* Ícono a la izquierda */}
+                        <div className="text-gray-700">
+                            <strong>Código de usuario: </strong><p>{user.id}</p>
+                            <strong>Nombre de usuario: </strong><p>{user.name}</p>
+                            <strong>Correo electrónico:  </strong><p>{user.email}</p>
+                        </div>
+                    </div>
+
+                </>
+            )}
+            {role === 'p_empresa_g' && (
+                <center><h2 className="text-lg font-bold mb-4 text-cyan-600 border-b-2 border-cyan-600 inline-block">DATOS DE LA EMPRESA GESTORA</h2></center>
+            )}
             <div className="flex flex-col sm:flex-row items-center sm:items-start">
                 <div className="flex flex-col items-center sm:items-start text-center sm:text-left mr-0 sm:mr-8">
+
+
                     <h1 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-center text-black">{empresa?.nombre_comercial}</h1>
                     <img
                         src={empresa?.logo}
                         alt="Logo"
                         className="w-32 h-32 object-cover border-2 border-black rounded-full mb-4 sm:mb-0 mx-auto cursor-pointer"
-                        onClick={openEditLogoModal}
+                        onClick={role !== 'p_empresa_g' ? openEditLogoModal : undefined}
                     />
-                    <button onClick={openModal} className="bg-blue-500 text-white px-4 py-2 rounded mb-4 mt-4 self-center">Editar Datos</button>
-                </div>
+                    {role !== 'p_empresa_g' && (
+                        <button onClick={openModal} className="bg-blue-500 text-white px-4 py-2 rounded mb-4 mt-4 self-center">
+                            Editar Datos
+                        </button>
+                    )} </div>
                 <div className="w-full">
                     <div className="bg-gray-100 p-4 rounded-lg mb-6">
                         <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-black">Detalles del Perfil</h2>
@@ -477,20 +610,24 @@ const EmpresaDetails: React.FC = () => {
                             <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-black">
                                 Redes Sociales
                             </h2>
+                            {role !== 'p_empresa_g' && (
+                                <>
+                                    {/* Ícono de información con tooltip */}
+                                    <div className="relative group">
+                                        <FaInfoCircle className="text-black text-lg cursor-pointer" />
 
-                            {/* Ícono de información con tooltip */}
-                            <div className="relative group">
-                                <FaInfoCircle className="text-black text-lg cursor-pointer" />
-
-                                {/* Tooltip */}
-                                <span className="absolute left-1/2 -translate-x-1/2 bottom-8 w-max bg-white text-gray-800 text-sm rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    Si necesita cambiar una red social, elimine la existente y agregue la nueva red social.
-                                </span>
-                            </div>
-
-                            <button onClick={openAddRedModal} className="text-orange-400 hover:underline">
-                                + Agregar red
-                            </button>
+                                        {/* Tooltip */}
+                                        <span className="absolute left-1/2 -translate-x-1/2 bottom-8 w-max bg-white text-gray-800 text-sm rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                            Si necesita cambiar una red social, elimine la existente y agregue la nueva red social.
+                                        </span>
+                                    </div>
+                                </>
+                            )}
+                            {role !== 'p_empresa_g' && (
+                                <button onClick={openAddRedModal} className="text-orange-400 hover:underline">
+                                    + Agregar red
+                                </button>
+                            )}
                         </div>
 
                         {/* Renderizado condicional de redes */}
@@ -507,14 +644,17 @@ const EmpresaDetails: React.FC = () => {
                                         >
                                             {renderIcon(red.nombre_red)}
                                         </a>
-
-                                        {/* Botón para eliminar red con confirmación */}
-                                        <button
-                                            onClick={() => openConfirmDeleteModal(red)}
-                                            className="text-red-500 hover:text-red-700"
-                                        >
-                                            <FaTrash className="text-sm" />
-                                        </button>
+                                        {role !== 'p_empresa_g' && (
+                                            <>
+                                                {/* Botón para eliminar red con confirmación */}
+                                                <button
+                                                    onClick={() => openConfirmDeleteModal(red)}
+                                                    className="text-red-500 hover:text-red-700"
+                                                >
+                                                    <FaTrash className="text-sm" />
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 ))}
                             </div>
@@ -529,14 +669,57 @@ const EmpresaDetails: React.FC = () => {
                         <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-black">Plan Contratado</h2>
                         <div className="flex items-center justify-between">
                             <div className="flex items-center space-x-2">
-                                {getPlanIcon('Estandar')}
-                                <span className="text-lg font-semibold">{'Estandar'}</span>
+                                {getPlanIcon('Ultimate')}
+                                <span className="text-lg font-semibold">{'Ultimate'}</span>
                             </div>
-                            <button onClick={openPlanModal} className="bg-blue-500 text-white px-4 py-2 rounded">Ver Otros Planes</button>
+                            {role !== 'p_empresa_g' && (
+                                <button onClick={openPlanModal} className="bg-blue-500 text-white px-4 py-2 rounded">Ver Otros Planes</button>
+                            )}
                         </div>
                     </div>
+
+
                 </div>
+
             </div>
+            {role != 'p_empresa_g' && (
+                <>
+                <hr></hr>
+                 <center>
+                        <h2 className="text-lg font-bold mb-4 mt-6 text-orange-500 border-b-2 border-orange-500 inline-block">USUARIOS REGISTRADOS EN EMPRESA GESTORA (COLABORADORES)</h2></center>
+
+                    <div className="bg-gray-100 p-4 rounded-lg mt-6">
+                            <div className="flex items-center justify-between">
+                            {users.length === 0 ? (
+                                <p className="text-gray-500">No hay usuarios disponibles con este rol.</p> // Mensaje cuando no hay usuarios
+                            ) : (
+                                users.map(user => (
+                                    <div key={user.id} className="border p-4 m-2 rounded shadow-lg max-w-xs">
+                                        <div className="flex flex-col items-center">
+                                            <FaUser className="text-cyan-700 text-8xl mb-2" />
+                                            <div className="text-gray-700 text-center">
+                                                <strong>Código usuario:</strong> <p>{user.id}</p>
+                                                <strong>Nombre de usuario:</strong> <p>{user.name}</p>
+                                                <strong>Correo electrónico:</strong> <p>{user.email}</p>
+                                                <strong>Estado:</strong>
+                                                <center>
+                                                    <p className="flex items-center justify-center">
+                                                        <span
+                                                            className={`w-2.5 h-2.5 rounded-full mr-2 ${user.is_active === 1 ? 'bg-green-500' : 'bg-gray-500'}`}
+                                                        />
+                                                        {user.is_active === 1 ? 'Activo' : 'Inactivo'}
+                                                    </p>
+                                                </center>
+                                                <strong>Fecha de creación:</strong> <p>{new Date(user.created_at).toLocaleDateString()}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                </>
+            )}
             {modalIsOpen && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex justify-center items-center">
                     <div className="relative mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white">
@@ -604,6 +787,7 @@ const EmpresaDetails: React.FC = () => {
                                                 onChange={(e) => {
                                                     handleInputChange(e);
                                                     setSelectedProvince(e.target.value);
+
                                                 }}
                                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                             >
@@ -626,6 +810,7 @@ const EmpresaDetails: React.FC = () => {
                                                 onChange={(e) => {
                                                     handleInputChange(e);
                                                     setSelectedCanton(e.target.value);
+
                                                 }}
                                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                             >
@@ -638,72 +823,72 @@ const EmpresaDetails: React.FC = () => {
                                             </select>
                                         </div>
                                         <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="sector">
-                    Sector
-                </label>
-                <select
-                    id="sector"
-                    name="sector.sector"
-                    value={selectedSector}
-                    onChange={(e) => {
-                        handleInputChange(e);
-                        setSelectedSector(e.target.value);
-                    }}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                >
-                    <option value="">Seleccione</option>
-                    {sectores.map((sector, index) => (
-                        <option key={index} value={sector}>
-                            {sector}
-                        </option>
-                    ))}
-                    {isCustomSector && <option value="Otro">Otro</option>}
-                </select>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="division">
-                    División
-                </label>
-                {isDivisionEnabled2 ? (
-                    <select
-                        id="division"
-                        name="sector.division"
-                        value={selectedDivision}
-                        onChange={(e) => {
-                            handleInputChange(e);
-                            setSelectedDivision(e.target.value);
-                        }}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    >
-                        <option value="">Seleccione</option>
-                        {divisiones.map((division) => (
-                            <option key={division.id} value={division.id}>
-                                {division.division}
-                            </option>
-                        ))}
-                    </select>
-                ) : (
-                    <input
-                        type="text"
-                        value={customDivision}
-                        onChange={(e) => setCustomDivision(e.target.value)}
-                        placeholder="Escriba la división a la que pertenece su empresa"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                )}
-            </div>
-            <div className="mb-4">
-                <label className="flex items-center">
-                    <input
-                        type="checkbox"
-                        checked={isCustomSector}
-                        onChange={handleCheckboxChange}
-                        className="mr-2"
-                    />
-                    Introducir nuevo sector/división
-                </label>
-            </div>
-      
+                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="sector">
+                                                Sector
+                                            </label>
+                                            <select
+                                                id="sector"
+                                                name="sector.sector"
+                                                value={selectedSector}
+                                                onChange={(e) => {
+                                                    handleInputChange(e);
+                                                    setSelectedSector(e.target.value);
+                                                }}
+                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                            >
+                                                <option value="">Seleccione</option>
+                                                {sectores.map((sector, index) => (
+                                                    <option key={index} value={sector}>
+                                                        {sector}
+                                                    </option>
+                                                ))}
+                                                {isCustomSector && <option value="Otro">Otro</option>}
+                                            </select>
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="division">
+                                                División
+                                            </label>
+                                            {isDivisionEnabled2 ? (
+                                                <select
+                                                    id="division"
+                                                    name="sector.division"
+                                                    value={selectedDivision}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        setSelectedDivision(e.target.value);
+                                                    }}
+                                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                >
+                                                    <option value="">Seleccione</option>
+                                                    {divisiones.map((division) => (
+                                                        <option key={division.id} value={division.id}>
+                                                            {division.division}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <input
+                                                    type="text"
+                                                    value={customDivision}
+                                                    onChange={(e) => setCustomDivision(e.target.value)}
+                                                    placeholder="Escriba la división a la que pertenece su empresa"
+                                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                />
+                                            )}
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isCustomSector}
+                                                    onChange={handleCheckboxChange}
+                                                    className="mr-2"
+                                                />
+                                                Introducir nuevo sector/división
+                                            </label>
+                                        </div>
+
                                     </div>
                                     <div className="flex items-center justify-center mt-4">
                                         <button onClick={handleSave} className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-700">
@@ -772,7 +957,7 @@ const EmpresaDetails: React.FC = () => {
             <PlanModal
                 isOpen={isPlanModalOpen}
                 onRequestClose={closePlanModal}
-                currentPlan={'Estándar'}
+                currentPlan={'Ultimate'}
             />
         </div>
 

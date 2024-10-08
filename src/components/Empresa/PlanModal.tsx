@@ -51,22 +51,22 @@ const PlanModal: React.FC<PlanModalProps> = ({ isOpen, onRequestClose, currentPl
 
     const plans = [
         {
-           name: '1.Gratuito',
+           name: 'Gratuito',
            description: configuracion ? `Publica hasta ${configuracion.gratis_ofer == 0? 'ilimitadas':configuracion.gratis_ofer} ofertas de trabajo al mes,  ${configuracion.gratis_d == 0? 'ilimitadas':configuracion.gratis_d}  oferta destacada al mes` : 'Cargando...', // Mostrar un mensaje de carga si no hay configuración
            icon: <FaUserTie className="text-green-500 text-2xl" />, // Ícono para el plan gratuito
         },
         {
-            name: '2.Estándar',
+            name: 'Estándar',
             description: configuracion ? `Publica hasta ${configuracion.estandar_ofer == 0? 'ilimitadas':configuracion.estandar_ofer} ofertas de trabajo al mes y obtén mayor visibilidad, con ${configuracion.estandar_d == 0? 'ilimitadas':configuracion.estandar_d} ofertas destacadas al mes'` : 'Cargando...',
             icon: <FaBriefcase className="text-blue-500 text-2xl" />, // Ícono para el plan estándar
         },
         {
-            name: '3.Premium',
+            name: 'Premium',
             description: configuracion ?`Publica hasta ${configuracion.premium_ofer == 0? 'ilimitadas':configuracion.premium_ofer} ofertas de trabajo al mes, con ${configuracion.premiun_d == 0? 'ilimitadas':configuracion.premiun_d} ofertas destacadas al mes'`: 'Cargando...',
             icon: <FaGem className="text-purple-500 text-2xl" />, // Ícono para el plan premium
         },
         {
-            name: '4.Ultimate',
+            name: 'Ultimate',
             description: configuracion ?`${configuracion.u_ofer == 0? ' Ofertas ilimitadas': + configuracion.u_ofer + ' ofertas maximas'} , con ${configuracion.u_d == 0? 'ilimitadas':configuracion.u_d} ofertas destacadas al mes'`: 'Cargando...',
             icon: <FaCrown className="text-yellow-500 text-2xl" />, // Ícono para el plan ultimate
         },

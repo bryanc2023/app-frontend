@@ -366,6 +366,7 @@ const EmpresaDetails: React.FC = () => {
                     ...editedEmpresa,
                     division: isCustomSector ? null : selectedDivision, // Enviar null si es un sector personalizado
                     customDivision: isCustomSector ? customDivision : '', 
+                    canton: selectedCanton,
                 }
                 
                 await axios.put(`/updateEmpresaById/${user.id}`, empresaToSave);

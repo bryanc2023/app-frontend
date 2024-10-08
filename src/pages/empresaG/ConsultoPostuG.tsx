@@ -101,7 +101,7 @@ const PostulantesList: React.FC = () => {
     const [selectedPostulante, setSelectedPostulante] = useState<Postulante | null>(null);
     const [showModal, setShowModal] = useState(false);
     const [selectedOfertaId, setSelectedOfertaId] = useState<number | null>(null);
-    const { user } = useSelector((state: RootState) => state.auth);
+    const { user,role } = useSelector((state: RootState) => state.auth);
     const [numCVs, setNumCVs] = useState<number>(1);
     const [showSteps, setShowSteps] = useState(false);
     const [currentPage, setCurrentPage] = useState<number>(1);
@@ -193,10 +193,18 @@ const PostulantesList: React.FC = () => {
     useEffect(() => {
         const fetchPostulaciones = async () => {
             try {
+                if (role === 'p_empresa_g') {
+                    // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+                  const responseId = await axios.get(`/idGestora`);
+                  const empresaId = responseId.data.id;
+                  const response = await axios.get(`postulacionesE/${empresaId}`);
+                  const postulacionesData = transformarRespuesta(response.data.postulaciones);
+                  setPostulaciones(postulacionesData);
+                }else{
                 const response = await axios.get(`postulacionesE/${user?.id}`);
                 const postulacionesData = transformarRespuesta(response.data.postulaciones);
                 setPostulaciones(postulacionesData);
-
+            }
 
             } catch (error) {
                 console.error('Error fetching postulaciones:', error);

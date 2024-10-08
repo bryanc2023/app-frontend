@@ -92,6 +92,8 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
                         navigate('/verOfertasE');
                     } else if (role === 'empresa_gestora') {
                         navigate('/inicioG');
+                    }else if (role === 'p_empresa_g') {
+                        navigate('/inicioG');
                     }
 
                 });

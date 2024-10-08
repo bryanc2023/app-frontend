@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from "../../services/axios";
 import Modal from '../../components/Admin/CargaModal';
+import Swal from 'sweetalert2';
 
 interface User {
     id?: number;
@@ -75,6 +76,52 @@ const GestionUsuarios = () => {
         setModalOpen(false);
     };
 
+    const grantAccessToUser = async (userId:number) => {
+        try {
+            const response = await axios.put(`/users/${userId}/grant-access`);
+            // Actualiza la lista de usuarios después de cambiar el estado
+              // Actualiza la lista de usuarios después de cambiar el rol
+              await fetchUsers(); 
+            setModalContent({
+                title: 'Acceso actualizado',
+                message: `El usuario ha sido registrado como parte de empresa gestora con éxito.`,
+                success: true
+            });
+            setModalOpen(true);
+        } catch (error) {
+            console.error('Error updating user status:', error);
+            setModalContent({
+                title: 'Error',
+                message: 'No se pudo actualizar el estado del usuario.',
+                success: false
+            });
+            setModalOpen(true);
+        }
+    };
+
+    const nograntAccessToUser = async (userId:number) => {
+        try {
+            const response = await axios.put(`/users/${userId}/no-grant-access`);
+            // Actualiza la lista de usuarios después de cambiar el estado
+              // Actualiza la lista de usuarios después de cambiar el rol
+              await fetchUsers(); 
+            setModalContent({
+                title: 'Acceso actualizado',
+                message: `El usuario ha sido denegado como parte de empresa gestora con éxito.`,
+                success: true
+            });
+            setModalOpen(true);
+        } catch (error) {
+            console.error('Error updating user status:', error);
+            setModalContent({
+                title: 'Error',
+                message: 'No se pudo actualizar el estado del usuario.',
+                success: false
+            });
+            setModalOpen(true);
+        }
+    };
+
     return (
         <div className="p-4">
             <center><h1 className="text-2xl font-bold mb-4">Gestión de Usuarios</h1></center>
@@ -90,15 +137,25 @@ const GestionUsuarios = () => {
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rol</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fecha de creación</th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
-                        </tr>
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                            </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                         {users.map((user, index) => (
                             <tr key={index} className="hover:bg-gray-50">
                                 <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
                                 <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                                <td className="px-6 py-4 whitespace-nowrap">{user.role.name}</td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {user.role && user.role.name ? (
+                                        user.role.name
+                                    ) : (
+                                        <strong style={{ color: 'red' }} title="Este usuario ha solicitado acceso como empresa gestora">
+                                            Solicitud:
+                                            <p style={{ color: 'orange' }}>EMPRESA GESTORA</p>
+                                        </strong>
+                                    )}
+                                </td>
+
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {new Date(user.created_at).toLocaleString("es-ES", {
                                         day: "2-digit",
@@ -111,7 +168,54 @@ const GestionUsuarios = () => {
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     {user.is_active ? 'Activo' : 'Inactivo'}
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-6  py-4 text-center whitespace-nowrap">
+                                   {/* Mostrar el botón "Dar acceso" solo si el rol es nulo */}
+                                   {user.role === null && (
+                                  <>
+                                        <button
+                                            className="px-4 mx-2 py-2 bg-blue-500 text-white rounded"
+                                            onClick={() => {
+                                                Swal.fire({
+                                                    icon: "warning",
+                                                    title: "Acceso de empresa gestora",
+                                                    text: "Al dar acceso a este usuario podrá gestionar ofertas desde el perfil de empresa gestora.",
+                                                    showCancelButton: true,
+                                                    confirmButtonText: 'Dar acceso',
+                                                    cancelButtonText: 'Cancelar'
+                                                }).then((result) => {
+                                                    if (result.isConfirmed) {
+                                                        // Aquí puedes agregar la función que realiza la acción de dar acceso al usuario
+                                                        grantAccessToUser(user.id);
+                                                    }
+                                                });
+                                            }}
+                                        >
+                                            Dar acceso
+                                        </button>
+                                        <button
+                                        className="px-4 mx-2 py-2 bg-violet-500 text-white rounded"
+                                        onClick={() => {
+                                            Swal.fire({
+                                                icon: "warning",
+                                                title: "Acceso de empresa gestora",
+                                                text: "Al negar acceso a este usuario no podrá gestionar ofertas desde el perfil de empresa gestora.",
+                                                showCancelButton: true,
+                                                confirmButtonText: 'Negar acceso',
+                                                cancelButtonText: 'Cancelar'
+                                            }).then((result) => {
+                                                if (result.isConfirmed) {
+                                                    // Aquí puedes agregar la función que realiza la acción de dar acceso al usuario
+                                                    nograntAccessToUser(user.id);
+                                                }
+                                            });
+                                        }}
+                                    >
+                                        Negar acceso
+                                    </button>
+                                    </>
+                                    
+                                )}
+                               
                                     <button
                                         className={`px-4 py-2 text-white ${user.is_active ? 'bg-red-500' : 'bg-green-500'} rounded`}
                                         onClick={() => updateUserStatus(user.id!, !user.is_active)}
@@ -119,6 +223,7 @@ const GestionUsuarios = () => {
                                         {user.is_active ? 'Desactivar' : 'Activar'}
                                     </button>
                                 </td>
+                             
                             </tr>
                         ))}
                     </tbody>

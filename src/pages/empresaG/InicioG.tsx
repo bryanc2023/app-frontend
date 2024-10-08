@@ -45,6 +45,7 @@ interface Oferta {
     ciudad: string | null;
     empre_p: string | null;
     sector_p: string | null;
+    personal_id: number | null;
 }
 
 interface Pregunta {
@@ -91,7 +92,7 @@ function VerOfertasPPage() {
     const [selectedArea, setSelectedArea] = useState<string>(''); // Estado para almacenar el área seleccionada
     const [selectedCargaHoraria, setSelectedCargaHoraria] = useState<string>(''); // Estado para almacenar la carga horaria seleccionada
     const [selectedCargo, setSelectedCargo] = useState<string>(''); // Estado para almacenar el estado seleccionado
-    const { user } = useSelector((state: RootState) => state.auth);
+    const { user,role } = useSelector((state: RootState) => state.auth);
     const [currentPage, setCurrentPage] = useState(1);
     const [ofertasPerPage] = useState(5);
     const [loading, setLoading] = useState(true);
@@ -132,8 +133,25 @@ function VerOfertasPPage() {
             try {
                 setLoading(true);
                 const response2 = await axios.get('areas');
-                const response = await axios.get(`empresa/${user.id}/ofertas`); // Reemplaza con tu URL y ID de empresa
-                setOfertas(response.data.ofertas);
+                if (role === 'p_empresa_g') {
+                    try {
+                        // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+                        const responseId = await axios.get(`/idGestora`);
+                        const empresaId = responseId.data.id; // Accede solo al id
+                        
+                        // Ahora obtén los datos de la empresa utilizando el ID obtenido
+                        const response = await axios.get(`empresa/${empresaId}/ofertas`);
+                        setOfertas(response.data.ofertas);
+                    
+                    } catch (error) {
+                        console.error("Error al obtener los datos de la empresa:", error);
+                        // Manejo adicional del error si es necesario
+                    } // Reemplaza con tu URL y ID de empresa
+                }else{
+                    const response = await axios.get(`empresa/${user.id}/ofertas`);
+                    setOfertas(response.data.ofertas);
+                }
+               
                 setAreas(response2.data.areas);
             } catch (error) {
                 console.error('Error fetching ofertas:', error);
@@ -164,6 +182,24 @@ function VerOfertasPPage() {
                 setLoading(false);
                 return;
             }
+
+            if (role === 'p_empresa_g') {
+                      // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+                    const responseId = await axios.get(`/idGestora`);
+                    const empresaId = responseId.data.id; // Accede solo al id
+                    const response = await axios.get(`empresa/${empresaId}/ofertas`, {
+                        params: {
+                            ...(selectedCargo && { cargo: selectedCargo }),
+                            ...(selectedFechaInicio && { fecha_inicio: selectedFechaInicio }),
+                            ...(selectedFechaFin && { fecha_fin: selectedFechaFin }),
+                            ...(selectedEstado && { estado: selectedEstado }),
+                            ...(selectedArea && { area: selectedArea }),
+                            ...(selectedCargaHoraria && { carga_horaria: selectedCargaHoraria }),
+                        },
+                    });
+                    setOfertas(response.data.ofertas);
+                } else{
+                   
             const response = await axios.get(`empresa/${user?.id}/ofertas`, {
                 params: {
                     ...(selectedCargo && { cargo: selectedCargo }),
@@ -174,8 +210,10 @@ function VerOfertasPPage() {
                     ...(selectedCargaHoraria && { carga_horaria: selectedCargaHoraria }),
                 },
             });
-
             setOfertas(response.data.ofertas);
+        }
+
+           
         } catch (error) {
             console.error('Error filtering ofertas:', error);
         } finally {
@@ -453,9 +491,15 @@ function VerOfertasPPage() {
                                 ⭐ DESTACADA
                             </div>
                         ) : null}
+                       
                         <h2 className="text-xl mb-4 text-center text-blue-500">
                             <strong>CARGO:</strong> {selectedOferta.cargo}
                         </h2>
+                        {selectedOferta.personal_id ? ( // Solo muestra el elemento si es 'dest'
+                           <h2 className="text-sm mb-1 text-center text-cyan-600">
+                                <strong>OFERTA PUBLICADA/EDITADA POR EL USUARIO CON CÓDIGO:  </strong>{selectedOferta.personal_id}
+                                </h2>
+                        ) : null}
                         <div className="text-center mb-4 text-sm text-gray-500">
                             <p>
                                 <FaCalendarAlt className="inline-block mr-1" />

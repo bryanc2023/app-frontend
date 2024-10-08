@@ -34,18 +34,27 @@ export const loginUser = createAsyncThunk(
 
       if (response.statusCode === 200) {
         window.localStorage.setItem("token",response.data.token);
-     
-        return response.data; // Asegúrate de retornar 'response.data'
+        // Si no hay role asignado, asegúrate de establecerlo como "Sin rol asignado"
+      // Asegúrate de que el rol existe, si no asigna un valor predeterminado
+      if (!response.data.user.role) {
+        response.data.user.role = { name: "Sin rol asignado" }; // Corrige la asignación del rol
+      }
+
+      
+        return response.data;
+         // Asegúrate de retornar 'response.data'
       }else if (response.statusCode === 403){
         return rejectWithValue('403');
       }
       else if (response.statusCode === 401){
         return rejectWithValue('401');
       }else{
-        return rejectWithValue('Error desconocido');
+        return rejectWithValue('300');
       }
       
     } catch (error) {
+      // Muestra el error en la consola para mayor información
+      console.error("Error en la solicitud:", error);
       return rejectWithValue('Request failed');
     }
   }

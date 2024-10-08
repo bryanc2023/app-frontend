@@ -297,7 +297,7 @@ export const routes: TypeRoute[] = [
         path: '/',
         element: EmpresaGLayout,
         isProtected: true,
-        allowedRoles: ['empresa_gestora'],
+        allowedRoles: ['empresa_gestora','p_empresa_g'],
         children: [
             {
                 path: 'InicioG',

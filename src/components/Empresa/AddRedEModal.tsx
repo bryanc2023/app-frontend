@@ -16,16 +16,24 @@ const AddRedModal: React.FC<AddRedModalProps> = ({ isOpen, onRequestClose, reloa
     const [nombreRed, setNombreRed] = useState('');
     const [enlace, setEnlace] = useState('');
     const [idEmpresaState, setIdEmpresaState] = useState<number | null>(idEmpresa); // Estado para almacenar el id_empresa
-    const { user } = useSelector((state: RootState) => state.auth);
+    const { user,role } = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
         const fetchProfileData = async () => {
             try {
                 if (user) {
-                    const response = await axios.get(`/empresaById/${user.id}`);
+                    if (role === 'p_empresa_g') {
+                        // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+                        const responseId = await axios.get(`/idGestora`);
+                        const empresaId = responseId.data.id; //
+                    const response = await axios.get(`/empresaById/${empresaId}`);
                     const empresaData = response.data;
                     setIdEmpresaState(empresaData.id_empresa); // Guardar el id_empresa en el estado
-                   
+                }else{
+                    const response = await axios.get(`/empresaById/${user.id}`);
+                    const empresaData = response.data;
+                    setIdEmpresaState(empresaData.id_empresa);
+                }
                 }
             } catch (error) {
                 console.error('Error fetching profile data:', error);
