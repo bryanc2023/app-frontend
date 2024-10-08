@@ -119,7 +119,7 @@ function EditarOG() {
   const [selectedCanton, setSelectedCanton] = useState('');
   const [defaultAreaId, setDefaultAreaId] = useState('');
   const [defaultArea, setDefaultArea] = useState('');
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user,role } = useSelector((state: RootState) => state.auth);
   const [loading, setLoading] = useState(true);
   const [requirePregunta, setRequirePregunta] = useState(false);
   const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
@@ -142,11 +142,20 @@ function EditarOG() {
     const fetchCantidadDest = async () => {
       try {
         if (user) {
+          if (role === 'p_empresa_g') {
+            // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+          const responseId = await axios.get(`/idGestora`);
+          const empresaId = responseId.data.id; // Accede solo al id
+          const response = await axios.get(`/empresa/cantidaddest/${empresaId}`);
+          setCantidadDest(response.data.cantidad_dest);
+          setPlan(response.data.plan);
+        }else{
           const usuario = user.id;
           const response = await axios.get(`/empresa/cantidaddest/${usuario}`);
           setCantidadDest(response.data.cantidad_dest);
           setPlan(response.data.plan);
         }
+      }
       } catch (error) {
         console.error('Error al obtener cantidad_dest:', error);
       }
@@ -681,7 +690,17 @@ function EditarOG() {
             values.div || ''
           ].filter(Boolean).join('/') || null // Usa filter para eliminar elementos vacíos
         : null;
-      
+        let gestoraId = null;
+
+        // Si el rol es "p_empresa_g", obtenemos el ID de la gestora
+        if (role === 'p_empresa_g') {
+          try {
+            const responseId = await axios.get(`/idGestora`);
+            gestoraId = responseId.data.id;  // Obtén el ID de la gestora desde la API
+          } catch (error) {
+            console.log('Error al obtener el ID de la gestora:', error);
+          }
+        }
         const dataToSend = {
           ...values,
           usuario: usuarioid,
@@ -703,6 +722,7 @@ function EditarOG() {
           ciudad: showCiudad ? values.ciudad : null,
           empresa_p: showEmpresa? empresaData: null,
           sector_p:showEmpresa? empresaData2: null,
+          gestoraId: gestoraId || null, 
         };
 
         // SweetAlert para confirmar la publicación

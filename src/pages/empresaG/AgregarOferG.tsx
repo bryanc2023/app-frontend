@@ -84,7 +84,7 @@ function AgregarO() {
   const [selectedCriterioId, setSelectedCriterioId] = useState<number | null>(null);
   const [valorCriterio, setValorCriterio] = useState<string>('');
   const [prioridadCriterio, setPrioridadCriterio] = useState<number | null>(null);
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user, role } = useSelector((state: RootState) => state.auth);
   const [languages, setLanguages] = useState<idioma[]>([]);
   const [showExperiencia, setShowExperiencia] = useState(false);
   const [provinces, setProvinces] = useState<string[]>([]);
@@ -112,11 +112,20 @@ function AgregarO() {
     const fetchCantidadDest = async () => {
       try {
         if (user) {
+          if (role === 'p_empresa_g') {
+            // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+          const responseId = await axios.get(`/idGestora`);
+          const empresaId = responseId.data.id; // Accede solo al id
+          const response = await axios.get(`/empresa/cantidaddest/${empresaId}`);
+          setCantidadDest(response.data.cantidad_dest);
+          setPlan(response.data.plan);
+        }else{
           const usuario = user.id;
           const response = await axios.get(`/empresa/cantidaddest/${usuario}`);
           setCantidadDest(response.data.cantidad_dest);
           setPlan(response.data.plan);
         }
+      }
       } catch (error) {
         console.error('Error al obtener cantidad_dest:', error);
       }
@@ -487,18 +496,31 @@ function AgregarO() {
         const usuario = user.id;
         const experienciaEnMeses = values.experienciaTipo === 'meses';
         const empresaData = showEmpresa
-        ? [
+          ? [
             values.empresa || '',
             values.info || ''
           ].filter(Boolean).join('/') || null // Usa filter para eliminar elementos vacíos
-        : null;
-      
-      const empresaData2 = showEmpresa
-        ? [
+          : null;
+
+        const empresaData2 = showEmpresa
+          ? [
             values.sec || '',
             values.div || ''
           ].filter(Boolean).join('/') || null // Usa filter para eliminar elementos vacíos
-        : null;
+          : null;
+
+        let gestoraId = null;
+
+        // Si el rol es "p_empresa_g", obtenemos el ID de la gestora
+        if (role === 'p_empresa_g') {
+          try {
+            const responseId = await axios.get(`/idGestora`);
+            gestoraId = responseId.data.id;  // Obtén el ID de la gestora desde la API
+          } catch (error) {
+            console.log('Error al obtener el ID de la gestora:', error);
+          }
+        }
+
         const dataToSend = {
           ...values,
           usuario: usuario,
@@ -518,8 +540,9 @@ function AgregarO() {
           comentariosViaticos: values.comentariosViaticos || null,
           destacada: isChecked,
           ciudad: showCiudad ? values.ciudad : null,
-          empresa_p: showEmpresa? empresaData: null,
-          sector_p:showEmpresa? empresaData2: null,
+          empresa_p: showEmpresa ? empresaData : null,
+          sector_p: showEmpresa ? empresaData2 : null,
+          gestoraId: gestoraId || null, 
         };
 
         // SweetAlert para confirmar la publicación

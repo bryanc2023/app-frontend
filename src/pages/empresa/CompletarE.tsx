@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useForm, SubmitHandler, useFieldArray } from 'react-hook-form';
 import axios from "../../services/axios";
-import { useSelector } from 'react-redux';
+import {  useDispatch,useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import { storage } from '../../config/firebaseConfig';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { FaFacebook, FaTwitter, FaInstagram, FaLinkedin, FaPlusCircle, FaTrashAlt } from 'react-icons/fa';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faInfoCircle, faHardHat } from '@fortawesome/free-solid-svg-icons'; // Persona con casco
+import { logout } from '../../store/authSlice';
+
 import Modal from 'react-modal';
 
 interface IFormInput {
@@ -52,7 +56,7 @@ const CompletarE: React.FC = () => {
   const [termsText, setTermsText] = useState<string>('');
   const [isOtherSelected, setIsOtherSelected] = useState<boolean>(false); // Para controlar la opción "Otro"
   const [otherSector, setOtherSector] = useState<string>('');
-
+  const dispatch = useDispatch();
   useEffect(() => {
     const handlePopState = () => {
       window.location.reload(); // Recarga la página cuando se presiona el botón "volver"
@@ -229,20 +233,20 @@ const CompletarE: React.FC = () => {
         }
 
         // Verificar si el sector es "Otro" y tomar el valor del input personalizado
-      const sectorValue = selectedDivision? selectedDivision?.id.toString() : '0';
+        const sectorValue = selectedDivision ? selectedDivision?.id.toString() : '0';
 
-      const formData = {
-        logo: logoUrl, // URL del logo subido a Firebase o URL por defecto
-        companyName: data.companyName,
-        numberOfEmployees: data.numberOfEmployees,
-        sector: sectorValue, 
-        division: otherSector? otherSector:'No',// Usar valor personalizado o división seleccionada
-        ubicacion: ubicacionId,
-        email: data.email,
-        description: data.description || 'No hay descripción', // Valor predeterminado si no hay descripción
-        usuario_id: user.id,
-        socialLinks: data.socialLinks
-      };
+        const formData = {
+          logo: logoUrl, // URL del logo subido a Firebase o URL por defecto
+          companyName: data.companyName,
+          numberOfEmployees: data.numberOfEmployees,
+          sector: sectorValue,
+          division: otherSector ? otherSector : 'No',// Usar valor personalizado o división seleccionada
+          ubicacion: ubicacionId,
+          email: data.email,
+          description: data.description || 'No hay descripción', // Valor predeterminado si no hay descripción
+          usuario_id: user.id,
+          socialLinks: data.socialLinks
+        };
 
 
         await axios.post('empresaC', formData, {
@@ -279,6 +283,50 @@ const CompletarE: React.FC = () => {
         setLogoPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+    }
+  };
+
+  const handleGestora = async () => {
+    const result = await Swal.fire({
+      title: 'Información',
+      text: 'Esta funcionalidad es para los usuarios que forman parte de "Proasetel S.A". Si usted es parte de la empresa, haga clic en continuar, de lo contrario, en cancelar.',
+      icon: 'info',
+      showCancelButton: true,
+      confirmButtonText: 'Continuar',
+      cancelButtonText: 'Cancelar',
+    });
+
+    if (result.isConfirmed) {
+      if (user) {
+        try {
+          const formData = {
+            usuario_id: user.id,
+          };
+
+          // Hacemos la solicitud con await
+          await axios.post('parteG', formData, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+          Swal.fire('Usuario de la empresa gestora', 'Usted ha indicado que es parte de la empresa gestora. Será redirigido al inicio hasta que la empresa confirme su autenticidad por su nombre de usuario y correo. Por favor, espere hasta confirmación para continuar.', 'success')
+              .then(() => {
+                dispatch(logout())
+                navigate('/'); // Redirigir a home
+              });
+          
+        } catch (error) {
+          console.error('Error al enviar el formulario:', error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Hubo un problema al solicitar acceso de gestora. Por favor, inténtalo de nuevo más tarde.',
+          });
+        }
+      }
+    } else if (result.isDismissed) {
+      Swal.fire('Cancelado', 'Usted ha cancelado la operación puede continuar con el registro', 'error');
     }
   };
 
@@ -510,6 +558,15 @@ const CompletarE: React.FC = () => {
           Registrar empresa
         </button>
       </form>
+      <button
+        type="button"
+        onClick={handleGestora}
+        className="fixed bottom-5 right-5 flex items-center py-3 px-4 bg-orange-400 text-white font-bold rounded-lg hover:bg-orange-900 shadow-lg"
+      >
+        <FontAwesomeIcon icon={faInfoCircle} className="mr-2" />
+        Soy parte de empresa gestora
+        <FontAwesomeIcon icon={faHardHat} className="ml-2 text-white" />
+      </button>
 
       <Modal
         isOpen={showAgreement}

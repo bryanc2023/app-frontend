@@ -143,12 +143,13 @@ const initialEmpresaData: EmpresaData = {
     red: []
 };
 
+
 function EmpresaLayout() {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [dropdownOpen2, setDropdownOpen2] = useState(false);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [empresa, setEmpresa] = useState<Empresa | null>(null);
-    const { user } = useSelector((state: RootState) => state.auth);
+    const { user, role } = useSelector((state: RootState) => state.auth);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const notifyRef = useRef<HTMLDivElement>(null);
     const searchRef = useRef<HTMLDivElement>(null);
@@ -223,8 +224,24 @@ function EmpresaLayout() {
         const fetchEmpresa = async () => {
             if (user) {
                 try {
-                    const response = await axios.get<Empresa>(`/empresaById/${user.id}`);
-                    setEmpresa(response.data);
+                    if (role === 'p_empresa_g') {
+                        try {
+                            // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+                            const responseId = await axios.get(`/idGestora`);
+                            const empresaId = responseId.data.id; // Accede solo al id
+
+                            // Ahora obtén los datos de la empresa utilizando el ID obtenido
+                            const response = await axios.get<Empresa>(`/empresaById/${empresaId}`);
+                            setEmpresa(response.data);
+                        } catch (error) {
+                            console.error("Error al obtener los datos de la empresa:", error);
+                            // Manejo adicional del error si es necesario
+                        }
+                    } else {
+                        // Si el rol no es 5, obtiene la empresa correspondiente al usuario
+                        const response = await axios.get<Empresa>(`/empresaById/${user.id}`);
+                        setEmpresa(response.data);
+                    }
                 } catch (err) {
                     console.error('Error fetching empresa data:', err);
                 }
@@ -419,7 +436,10 @@ function EmpresaLayout() {
                             className="rounded-full profile-image w-24 h-24 object-cover border-4 border-white"
                         />
                     )}
-                    <span className="mt-2">{empresa ? empresa.nombre_comercial : 'Nombre del Usuario'}</span>
+                    <span className="mt-2">
+                        {role === 'p_empresa_g' ? user.name : (empresa ? empresa.nombre_comercial : 'Nombre del Usuario')}
+                    </span>
+
                 </div>
                 <div className="w-full relative mt-4 " ref={searchRef}>
                     <div className="bg-white rounded-lg text-gray-700 flex gap-1 p-2">
@@ -618,7 +638,8 @@ function EmpresaLayout() {
                                     className="w-8 h-8 object-cover border-2 border-white rounded-full mr-2"
                                 />
                             )}
-                            <span className="hidden lg:inline">{empresa ? empresa.nombre_comercial : 'Empresa oferente'}</span>
+                            <span className="hidden lg:inline">{role === 'p_empresa_g' ? user.name : (empresa ? empresa.nombre_comercial : 'Nombre del Usuario')}
+                            </span>
                             <FontAwesomeIcon icon={faChevronDown} className="ml-2" />
                         </button>
                         {dropdownOpen && (
