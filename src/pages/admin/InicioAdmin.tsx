@@ -107,10 +107,10 @@ function InicioAdmin() {
 
     return (
         <div className="p-4">
-            <center><h1 className="text-2xl font-bold mb-4">Gestión de tablas satélites</h1></center>
-            <p> En esta sección se maneja los datos de las tablas satélites de la aplicación esenciales para el funcionamiento correcto de la aplicación web</p>
+            <center><h1 className="text-2xl font-bold mb-4">Gestión de tablas catalogos de información</h1></center>
+            <p> En esta sección se maneja los datos de las tablas catálogo base de la aplicación con información de la aplicación esenciales para el funcionamiento correcto de la aplicación web</p>
             <hr className="my-4" />
-            <h1 className="text-xl text-orange-400 mb-4">TABLAS SATÉLITES</h1>
+            <h1 className="text-xl text-orange-400 mb-4">TABLAS CATÁLOGO DE INFORMACIÓN</h1>
              {/* Mensaje de aviso mejorado */}
              <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
               <div className="flex items-center">

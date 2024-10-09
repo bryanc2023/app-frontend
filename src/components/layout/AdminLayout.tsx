@@ -48,7 +48,7 @@ function AdminLayout() {
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/InicioAdmin' ? 'bg-gray-700' : ''}`}>
                         <Link to="/InicioAdmin" className="flex items-center w-full">
                             <FontAwesomeIcon icon={faTable} className="mr-2" />
-                            <span>Gestión tablas satélites</span>
+                            <span>Gestión tablas catálogo base</span>
                         </Link>
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/gestion-u' ? 'bg-gray-700' : ''}`}>
