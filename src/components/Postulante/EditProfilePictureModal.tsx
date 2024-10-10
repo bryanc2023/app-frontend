@@ -46,7 +46,7 @@ const EditProfilePictureModal: React.FC<EditProfilePictureModalProps> = ({
         }
       });
       // Definir la URL base del host
-      const urlHost = `${import.meta.env.VITE_API_URL2.replace('/api', '')}/storage/`;
+      const urlHost = `${import.meta.env.VITE_API_URL3}/storage/`;
 
       // Crear un objeto FormData para enviar la imagen
       const formData = new FormData();

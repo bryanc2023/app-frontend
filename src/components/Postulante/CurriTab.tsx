@@ -676,7 +676,7 @@ const CurriTab: React.FC = () => {
         const pdfFile = new File([pdfBlob], pdfFileName, { type: 'application/pdf' });
         
         try {
-          const urlHost = `${import.meta.env.VITE_API_URL2.replace('/api', '')}/storage/`;
+          const urlHost = `${import.meta.env.VITE_API_URL3}/storage/`;
           const formData = new FormData();
           formData.append('cv', pdfFile); // Agregar el blob y el nombre del archivo al FormData
           formData.append('url', urlHost);

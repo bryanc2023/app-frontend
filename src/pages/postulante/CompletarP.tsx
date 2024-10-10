@@ -154,7 +154,7 @@ const CompletarP: React.FC = () => {
       try {
         const response = await axios.get(`ubicaciones/${selectedProvince}/${selectedCanton}`);
         const ubicacionId = response.data.ubicacion_id;
-        const urlHost = `${import.meta.env.VITE_API_URL2.replace('/api', '')}/storage/`;
+        const urlHost = `${import.meta.env.VITE_API_URL3}/storage/`;
         // Inicializa formData para enviar datos al backend
         const formData = new FormData();
 
