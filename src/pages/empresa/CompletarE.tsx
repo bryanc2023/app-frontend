@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useForm, SubmitHandler, useFieldArray } from 'react-hook-form';
 import axios from "../../services/axios";
-import {  useDispatch,useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
@@ -223,35 +223,38 @@ const CompletarE: React.FC = () => {
         const response = await axios.get(`ubicaciones/${selectedProvince}/${selectedCanton}`);
         const ubicacionId = response.data.ubicacion_id;
 
-        let logoUrl = 'https://firebasestorage.googleapis.com/v0/b/postu-a5f32.appspot.com/o/logos%2Fdefault-empresa.jpg?alt=media&token=5f04fd56-8881-4397-b219-a258c71714d0';
+        // Define la URL base para el host
+        const urlHost = `${import.meta.env.VITE_API_URL2.replace('/api', '')}/storage/`;
+
+        // Inicializa formData para enviar datos al backend
+        const formData = new FormData();
+
+     
 
         if (data.logo && data.logo.length > 0) {
           const logoFile = data.logo[0];
-          const storageRef = ref(storage, `logos/${logoFile.name}`);
-          await uploadBytes(storageRef, logoFile);
-          logoUrl = await getDownloadURL(storageRef);
+          let logoF = logoFile;
+          formData.append('logo', logoF);  // Solo añadir el logo si existe
         }
 
         // Verificar si el sector es "Otro" y tomar el valor del input personalizado
         const sectorValue = selectedDivision ? selectedDivision?.id.toString() : '0';
 
-        const formData = {
-          logo: logoUrl, // URL del logo subido a Firebase o URL por defecto
-          companyName: data.companyName,
-          numberOfEmployees: data.numberOfEmployees,
-          sector: sectorValue,
-          division: otherSector ? otherSector : 'No',// Usar valor personalizado o división seleccionada
-          ubicacion: ubicacionId,
-          email: data.email,
-          description: data.description || 'No hay descripción', // Valor predeterminado si no hay descripción
-          usuario_id: user.id,
-          socialLinks: data.socialLinks
-        };
-
+        // Añade el resto de los datos al FormData
+        formData.append('companyName', data.companyName);
+        formData.append('numberOfEmployees', data.numberOfEmployees.toString());
+        formData.append('sector', sectorValue);
+        formData.append('division', otherSector ? otherSector : 'No'); // Usar valor personalizado o división seleccionada
+        formData.append('ubicacion', ubicacionId);
+        formData.append('email', data.email);
+        formData.append('description', data.description || 'No hay descripción'); // Valor predeterminado si no hay descripción
+        formData.append('usuario_id', user.id.toString());
+        formData.append('socialLinks', JSON.stringify(data.socialLinks));
+        formData.append('url', urlHost);
 
         await axios.post('empresaC', formData, {
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'multipart/form-data',
           },
         });
 
@@ -260,7 +263,7 @@ const CompletarE: React.FC = () => {
           title: '¡Registro completo!',
           text: 'Bienvenido a Postula',
         }).then(() => {
-          navigate("/inicio-e");
+          navigate("/verOfertasE");
         });
 
       } catch (error) {
@@ -311,11 +314,11 @@ const CompletarE: React.FC = () => {
           });
 
           Swal.fire('Usuario de la empresa gestora', 'Usted ha indicado que es parte de la empresa gestora. Será redirigido al inicio hasta que la empresa confirme su autenticidad por su nombre de usuario y correo. Por favor, espere hasta confirmación para continuar.', 'success')
-              .then(() => {
-                dispatch(logout())
-                navigate('/'); // Redirigir a home
-              });
-          
+            .then(() => {
+              dispatch(logout())
+              navigate('/'); // Redirigir a home
+            });
+
         } catch (error) {
           console.error('Error al enviar el formulario:', error);
           Swal.fire({

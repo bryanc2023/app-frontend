@@ -154,35 +154,38 @@ const CompletarP: React.FC = () => {
       try {
         const response = await axios.get(`ubicaciones/${selectedProvince}/${selectedCanton}`);
         const ubicacionId = response.data.ubicacion_id;
-  
-        let imageUrl = null;
-      
+        const urlHost = `${import.meta.env.VITE_API_URL2.replace('/api', '')}/storage/`;
+        // Inicializa formData para enviar datos al backend
+        const formData = new FormData();
+
         // Verifica si el usuario subió una imagen
         if (data.image && data.image.length > 0) {
           const imageFile = data.image[0];
-          const storageRef = ref(storage, `images/${imageFile.name}`);
-          await uploadBytes(storageRef, imageFile);
-          imageUrl = await getDownloadURL(storageRef);
-        } else {
-          // Asigna la URL de imagen por defecto si no se sube una
-          imageUrl = 'https://firebasestorage.googleapis.com/v0/b/postu-a5f32.appspot.com/o/images%2Fdefault.jpg?alt=media&token=29ddc3cf-4752-4dd2-81d6-b1c2a4d91440'; // Reemplaza esto con tu URL de imagen por defecto
-        }
-  
-        const formData = {
-          foto: imageUrl,
-          firstName: data.firstName,
-          lastName: data.lastName,
-          ubicacion_id: ubicacionId,
-          birthDate: data.birthDate,
-          idNumber: data.idNumber,
-          gender: data.gender,
-          maritalStatus: data.maritalStatus,
-          description: data.description,
-          usuario_id: user.id,
-          telefono: data.telefono
-        };
-  
-        await axios.post('postulanteC', formData);
+          console.log('Image file:', imageFile);
+          console.log('Image type:', imageFile.type);
+          console.log('Image size:', imageFile.size);
+          
+          // Añade la imagen al FormData
+          formData.append('foto', imageFile);
+      } 
+        // Añade el resto de los datos al FormData
+        formData.append('firstName', data.firstName);
+        formData.append('lastName', data.lastName);
+        formData.append('ubicacion_id', ubicacionId);
+        formData.append('birthDate', data.birthDate);
+        formData.append('idNumber', data.idNumber);
+        formData.append('gender', data.gender);
+        formData.append('maritalStatus', data.maritalStatus);
+        formData.append('description', data.description);
+        formData.append('usuario_id', user.id.toString());
+        formData.append('telefono', data.telefono);
+        formData.append('url', urlHost);
+
+        await axios.post('postulanteC', formData, {
+          headers: {
+              'Content-Type': 'multipart/form-data'
+          }
+      });
         Swal.fire({
           icon: 'success',
           title: '¡Registro incial completado!',
