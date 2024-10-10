@@ -351,8 +351,8 @@ const PostulantesList: React.FC = () => {
     
             if (postulante.cv) {
                 // Usar la API para obtener el CV en lugar de la URL directa
-                const cvUrl = `${postulante.cv}`; // Extraer solo el nombre del archivo
-    console.log(cvUrl)
+                const cvUrl = `${import.meta.env.VITE_API_URL2}/cv/${postulante.cv.split('/').pop()}`; // Extraer solo el nombre del archivo
+    
                 promises.push(
                     fetch(cvUrl)
                         .then(response => {
