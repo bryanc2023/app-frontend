@@ -282,7 +282,7 @@ const CurriTab: React.FC = () => {
       
       const img = new Image();
       img.crossOrigin = "anonymous";
-      img.src = imageSrc // Obtener solo el nombre del archivo
+      img.src = `${import.meta.env.VITE_API_URL2}/images/${profileData.postulante.foto.split('/').pop()}`; // Obtener solo el nombre del archivo
       img.onload = async () => {
         const imgWidth = 50;
         const imgHeight = 50;
