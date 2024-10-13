@@ -24,6 +24,10 @@ interface IFormInput {
   contactNumber: string;
   socialLinks: { platform: string; url: string }[];
   description: string;
+  ruc: string;          // RUC de la empresa, debe ser un string con 13 caracteres
+  razon_s: string;     // Razón social de la empresa
+  sitio: string;       // Sitio web de la empresa
+  telefono: string;    // Teléfono de contacto de la empresa
 }
 
 interface Division {
@@ -229,7 +233,7 @@ const CompletarE: React.FC = () => {
         // Inicializa formData para enviar datos al backend
         const formData = new FormData();
 
-     
+
 
         if (data.logo && data.logo.length > 0) {
           const logoFile = data.logo[0];
@@ -249,8 +253,17 @@ const CompletarE: React.FC = () => {
         formData.append('email', data.email);
         formData.append('description', data.description || 'No hay descripción'); // Valor predeterminado si no hay descripción
         formData.append('usuario_id', user.id.toString());
-        formData.append('socialLinks', JSON.stringify(data.socialLinks));
+        if(data.socialLinks && hasSocialLinks){
+          formData.append('socialLinks', JSON.stringify(data.socialLinks));
+        }
+        
         formData.append('url', urlHost);
+        // Enviar sitio como null si no está llenado
+        formData.append('sitio', data.sitio || 'No definido');
+        formData.append('ruc', data.ruc);
+        formData.append('razon_s', data.razon_s);
+        // Enviar teléfono como null si no está llenado
+        formData.append('telefono', data.telefono || 'No definido');
 
         await axios.post('empresaC', formData, {
           headers: {
@@ -338,7 +351,7 @@ const CompletarE: React.FC = () => {
       <h1 className="text-3xl font-bold text-center mb-8">Completar registro de empresa</h1>
       <form className="bg-white p-10 rounded-lg shadow-lg w-full max-w-4xl">
         <div className="form-group mb-8">
-          <label htmlFor="logo" className="block text-gray-700 font-semibold mb-2">Logo:</label>
+          <label htmlFor="logo" className="block text-gray-700 font-semibold mb-2">Logo (Opcional):</label>
           <div className="flex items-center">
             {logoPreview ? (
               <img src={logoPreview} alt="Preview" className="w-40 h-40 object-cover border border-gray-300 mr-4 rounded-lg" />
@@ -385,7 +398,67 @@ const CompletarE: React.FC = () => {
             {errors.numberOfEmployees && <p className="text-red-500 text-xs mt-1">{errors.numberOfEmployees.message}</p>}
           </div>
         </div>
+        {/* RUC */}
+        <div className="form-group col-span-7 md:col-span-2">
+          <label htmlFor="ruc" className="block text-gray-700 font-semibold mb-2">RUC:</label>
+          <input
+            type="text"
+            id="ruc"
+            {...register('ruc', {
+              required: 'El RUC es requerido.',
+              pattern: {
+                value: /^\d{13}$/,
+                message: 'El RUC debe tener 13 dígitos.',
+              },
+            })}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600 ${errors.ruc ? 'border-red-500' : ''}`}
+          />
+          {errors.ruc && <p className="text-red-500 text-xs mt-1">{errors.ruc.message}</p>}
+        </div>
 
+        {/* Razón Social */}
+        <div className="form-group col-span-7 md:col-span-2">
+          <label htmlFor="razon_s" className="block text-gray-700 font-semibold mb-2">Razón Social:</label>
+          <input
+            type="text"
+            id="razon_s"
+            {...register('razon_s', {
+              required: 'La razón social es requerida.',
+            })}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600 ${errors.razon_s ? 'border-red-500' : ''}`}
+          />
+          {errors.razon_s && <p className="text-red-500 text-xs mt-1">{errors.razon_s.message}</p>}
+        </div>
+
+        {/* Sitio Web */}
+        <div className="form-group col-span-7 md:col-span-2">
+          <label htmlFor="sitio" className="block text-gray-700 font-semibold mb-2">Sitio Web (Opcional):</label>
+          <input
+            type="url"
+            id="sitio"
+            {...register('sitio'
+            )}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600 ${errors.sitio ? 'border-red-500' : ''}`}
+          />
+          {errors.sitio && <p className="text-red-500 text-xs mt-1">{errors.sitio.message}</p>}
+        </div>
+
+        {/* Teléfono */}
+        <div className="form-group col-span-7 md:col-span-2">
+          <label htmlFor="telefono" className="block text-gray-700 font-semibold mb-2">Teléfono de contacto (Opcional):</label>
+          <input
+            type="text"
+            id="telefono"
+            {...register('telefono', {
+              pattern: {
+                value: /^\d{10}$/,  // Asumiendo un formato de 10 dígitos
+                message: 'El teléfono debe tener 10 dígitos.',
+              },
+            })}
+            className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600 ${errors.telefono ? 'border-red-500' : ''}`}
+          />
+          {errors.telefono && <p className="text-red-500 text-xs mt-1">{errors.telefono.message}</p>}
+        </div>
         <div className="form-group mb-8">
           <label htmlFor="sector" className="block text-gray-700 font-semibold mb-2">Sector:</label>
           <select

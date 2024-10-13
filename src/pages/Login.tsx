@@ -55,7 +55,13 @@ const Login = () => {
         dispatch(loginUser(values)).then((response) => {
             Swal.close();
              
-            if (response.payload === "403") {
+            if (response.payload === "300") {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Cuenta no verificada',
+                    text: 'Tu cuenta no ha sido verificada. Revisa tu bandeja de entrada para continuar (Esto podria tomar unos minutos).',
+                });
+            }else if (response.payload === "403") {
                 Swal.fire({
                     icon: 'error',
                     title: 'Acceso denegado',

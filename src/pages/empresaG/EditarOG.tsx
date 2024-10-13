@@ -6,6 +6,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { FiEdit } from 'react-icons/fi';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import Select from 'react-select';
 
 interface Experiencia {
   id: number;
@@ -136,6 +137,7 @@ function EditarOG() {
   const [maximo, setMaximo] = useState(2);
   const [plan, setPlan] = useState(2);
   const [showEmpresa, setEmpresa] = useState(false);
+  const [loadingTitles, setLoadingTitles] = useState(false);
 
   useEffect(() => {
     // Función para obtener cantidad_dest y plan
@@ -502,20 +504,24 @@ function EditarOG() {
 
   useEffect(() => {
     const fetchTitulos = async () => {
-      if (selectedNivel && selectedCampo) {
+      
+      if (selectedNivel) {
+        setLoadingTitles(true);
         try {
           // Si no se ha seleccionado un campo específico ("No especificado"), traer todos los títulos del nivel
           const campoQuery = selectedCampo === 'No' ? 'todos' : selectedCampo;
-          const response = await axios.get(`titulos/${selectedNivel}/${campoQuery}`);
+          const response = await axios.get(`titulos/${selectedNivel}/todos`);
           setTitulos(response.data);
         } catch (error) {
           console.error('Error fetching titulos:', error);
+        }finally {
+          setLoadingTitles(false); // Terminar la carga
         }
       }
     };
-
+  
     fetchTitulos();
-  }, [selectedNivel, selectedCampo]);
+  }, [selectedNivel]);
 
   const handleProvinceChange = (event: any) => {
     setSelectedProvince(event.target.value);
@@ -532,6 +538,7 @@ function EditarOG() {
   const handleNivelChange = (event: any) => {
     setSelectedNivel(event.target.value);
     setSelectedTituloId(0);
+
   };
 
   const handleCampoChange = (event: any) => {
@@ -584,8 +591,9 @@ function EditarOG() {
 
   };
 
-  const handleTituloChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedTituloId = parseInt(event.target.value, 10);
+ 
+  const handleTituloChange = (selectedOption) => {
+    const selectedTituloId = selectedOption ? selectedOption.value : undefined;
     setSelectedTituloId(selectedTituloId);
     if (isNaN(selectedTituloId)) {
       setShowCheckbox(false);
@@ -600,6 +608,7 @@ function EditarOG() {
     }
 
   };
+
 
   const handleAgregarTitulo = () => {
     // Verifica si se debe ingresar un título específico y si el campo está vacío
@@ -773,7 +782,10 @@ function EditarOG() {
       </div>
     );
   }
-
+  const tituloOptions = titulos.map((titulo) => ({
+    value: titulo.id,
+    label: titulo.titulo,
+  }));
 
   return (
     <>
@@ -928,37 +940,20 @@ function EditarOG() {
                   </select>
                 </div>
 
+                
                 <div className="form-group mb-8">
-                  <label htmlFor="campoAmplio" className="block text-gray-700 font-semibold mb-2">Campo Amplio:</label>
-                  <select
-                    id="campoAmplio"
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600"
-                    onChange={handleCampoChange}
-                    disabled={!selectedNivel}>
-                    <option value="">Seleccione</option>
-                    <option value="No">No especificado</option>
-                    {campos.map((campo, index) => (
-                      <option key={index} value={campo}>
-                        {campo}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group mb-8">
-                  <label htmlFor="titulo" className="block text-gray-700 font-semibold mb-2">Título:</label>
-                  <select
+                  <label htmlFor="titulo" className="block text-gray-700 font-semibold mb-2">Título (Acreditado por la Senecyt):</label>
+                  <Select
                     id="titulo"
+                    options={loadingTitles ? [] : tituloOptions} // Mostrar opciones solo si no está cargando
+                    onChange={handleTituloChange} // Manejador de cambio
+                    value={tituloOptions.find(option => option.value === selectedTituloId) || 0} // Mostrar el valor seleccionado o nada si no hay selección
+                    isClearable
+                    isDisabled={loadingTitles || !selectedNivel} // Deshabilitar si está cargando o faltan campos
+                    placeholder={loadingTitles ? 'Cargando...' : 'Escribe o selecciona un título...'}
+                    noOptionsMessage={() => (loadingTitles ? 'Cargando títulos...' : 'No hay opciones disponibles')}
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600"
-                    onChange={handleTituloChange}
-                    disabled={!selectedNivel || !selectedCampo}>
-                    <option value="">Seleccione</option>
-                    {titulos.map((titulo, index) => (
-                      <option key={index} value={titulo.id}>
-                        {titulo.titulo}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
                 {/* Checkbox for custom title */}
                 {showCheckbox && (

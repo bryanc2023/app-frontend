@@ -431,7 +431,7 @@ const VerOfertasAll = () => {
                                                 </div>
 
                                                 <p className="text-gray-700 mb-1">
-                                                    <strong>Empresa publicadora:</strong>
+                                                    <strong>Empresa que ofrece la vacante:</strong>
                                                     {oferta.n_mostrar_empresa === 1
                                                         ? 'Confidencial'
                                                         : oferta.empre_p

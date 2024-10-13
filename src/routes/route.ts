@@ -39,6 +39,7 @@ import EditarOG from "../pages/empresaG/EditarOG";
 import EmailRequest from "../pages/EmailRequest";
 import ResetPassword from "../pages/ResetPassword";
 import Acerca from "../pages/Acerca";
+import GestionOfertas from "../pages/admin/GestionOfertas";
 
 type TypeRoute = {
     path: string;
@@ -289,6 +290,11 @@ export const routes: TypeRoute[] = [
             {
                 path: 'gestion-u',
                 element: GestionUsuarios,
+                allowedRoles: ['admin'],
+            },
+            {
+                path: 'gestion-o',
+                element: GestionOfertas,
                 allowedRoles: ['admin'],
             },
         ],

@@ -224,7 +224,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose }) => {
                             </p>
                             <p className="text-gray-700 mb-1 flex items-center">
                                 <FontAwesomeIcon icon={faBuilding} className="mr-2" />
-                                <strong>Empresa publicadora: </strong> {oferta.n_mostrar_empresa === 1 ? 'Confidencial' : oferta.empre_p
+                                <strong>Empresa que ofrece la vacante: </strong> {oferta.n_mostrar_empresa === 1 ? 'Confidencial' : oferta.empre_p
                                     ? oferta.empre_p.includes('/')
                                         ? oferta.empre_p.split('/')[0] // Muestra la parte antes de la barra
                                         : oferta.empre_p
@@ -260,7 +260,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose }) => {
                     <>
                         <hr className="my-4" />
                         <p className="text-gray-600 mb-1">
-                            <strong>Información extra de la empresa publicadora:</strong> {oferta.empre_p.split('/')[1]} {/* Muestra la parte después de la barra */}
+                            <strong>Información extra de la empresa que ofrece la vacante:</strong> {oferta.empre_p.split('/')[1]} {/* Muestra la parte después de la barra */}
                         </p>
 
                         <hr className="my-4" />

@@ -29,6 +29,10 @@ interface Empresa {
     cantidad_empleados: number;
     red: { id_empresa_red: number; enlace: string; nombre_red: string }[];
     plan: string; // Nuevo campo para el plan contratado
+    ruc: string;
+    razon_s: string;
+    sitio: string;
+    telefono: string
 }
 
 interface Red {
@@ -66,6 +70,9 @@ const EmpresaDetails: React.FC = () => {
     const [isCustomSector, setIsCustomSector] = useState(false);
     const [isDivisionEnabled2, setIsDivisionEnabled2] = useState(true);
     const [users, setUsers] = useState([]);
+    const [errorRuc, setErrorRuc] = useState('');
+    const [errorTelefono, setErrorTelefono] = useState('');
+    const [loading2, setLoading2] = useState(false);
 
 
     useEffect(() => {
@@ -376,9 +383,33 @@ const EmpresaDetails: React.FC = () => {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         if (editedEmpresa) {
             const { name, value } = e.target;
-            const [mainKey, subKey] = name.split('.');
+            // Verifica si 'name' es válido antes de proceder
+            if (!name) {
+                console.error('El campo name está undefined o es inválido.');
+                return;
+            }
 
-            // Validación para la descripción (puedes agregar más si lo necesitas)
+            // Solo dividir si el nombre tiene un punto (subKey y mainKey)
+            const [mainKey, subKey] = name.includes('.') ? name.split('.') : [name, null];
+
+            // Validar RUC
+            if (name === 'ruc') {
+                if (value.length !== 13) {
+                    setErrorRuc('El RUC debe tener exactamente 13 caracteres.');
+                } else {
+                    setErrorRuc('');
+                }
+            }
+
+            // Validar Teléfono
+            if (name === 'telefono') {
+                if (value.length < 10 || value.length > 15) {
+                    setErrorTelefono('El teléfono debe tener exactamente 10 caracteres.');
+                } else {
+                    setErrorTelefono('');
+                }
+            }
+            // Validación específica para el campo "descripcion"
             if (name === 'descripcion') {
                 if (value.length > 1000) {
                     setErrorDescripcion('La descripción no puede tener más de 1000 caracteres.');
@@ -389,24 +420,22 @@ const EmpresaDetails: React.FC = () => {
             }
 
             if (subKey) {
-                // Si el campo es anidado (e.g., ubicacion.provincia)
-                setEditedEmpresa(prevState => ({
-                    ...prevState,
+                setEditedEmpresa({
+                    ...editedEmpresa,
                     [mainKey]: {
-                        ...(prevState[mainKey as keyof Empresa] as any),
+                        ...(editedEmpresa[mainKey as keyof Empresa] as any),
                         [subKey]: value,
                     },
-                }));
+                });
             } else {
-                // Si el campo no es anidado
-                setEditedEmpresa(prevState => ({
-                    ...prevState,
+                setEditedEmpresa({
+                    ...editedEmpresa,
                     [name]: value,
-                }));
+                });
             }
         }
     };
-
+    const isFormValid = !errorRuc && !errorTelefono;
 
     const reloadProfile = async () => {
         if (user) {
@@ -446,6 +475,7 @@ const EmpresaDetails: React.FC = () => {
 
     const handleSave = async () => {
         if (editedEmpresa && user) {
+            setLoading2(true);
             try {
                 const empresaToSave = {
                     ...editedEmpresa,
@@ -485,6 +515,8 @@ const EmpresaDetails: React.FC = () => {
                 }
             } catch (err: any) {
                 setError(`Axios error: ${err.response?.data?.message || err.message}`);
+            }finally {
+                setLoading2(false); // Termina el cargando
             }
         }
     };
@@ -599,7 +631,11 @@ const EmpresaDetails: React.FC = () => {
                             <p><strong>División:</strong> {empresa?.sector?.division || 'N/A'}</p>
                             <p><strong>Tamaño:</strong> {empresa?.tamanio || 'N/A'}</p>
                             <p><strong>Cantidad de Empleados:</strong> {empresa?.cantidad_empleados || 'N/A'}</p>
+                            <p><strong>RUC:</strong> {empresa?.ruc || 'N/A'}</p>
+                            <p><strong>Razon Social:</strong> {empresa?.razon_s || 'N/A'}</p>
+                            <p><strong>Teléfono de contacto:</strong> {empresa?.telefono || 'No definido'}</p>
                         </div>
+                        <p><strong>Sitio web:</strong> {empresa.sitio? empresa.sitio: 'No definido'}</p>
                     </div>
                     <div className="bg-gray-100 p-4 rounded-lg mb-6">
                         <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-black">Descripción</h2>
@@ -760,6 +796,74 @@ const EmpresaDetails: React.FC = () => {
                                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                             />
                                         </div>
+                                        {/* RUC */}
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ruc">
+                                                RUC
+                                            </label>
+                                            <input
+                                                id="ruc"
+                                                name="ruc"
+                                                type="number"
+                                                value={editedEmpresa.ruc}
+                                                onChange={handleInputChange}
+                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                placeholder="Ej. 1799999999001"
+                                            />
+                                            {errorRuc && (
+                                                <p className="text-red-500 text-sm mt-2">{errorRuc}</p>
+                                            )}
+                                        </div>
+
+                                        {/* Razón Social */}
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="razon_s">
+                                                Razón Social
+                                            </label>
+                                            <input
+                                                id="razon_s"
+                                                name="razon_s"
+                                                type="text"
+                                                value={editedEmpresa.razon_s}
+                                                onChange={handleInputChange}
+                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                            />
+                                        </div>
+
+                                        {/* Sitio Web */}
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="sitio">
+                                                Sitio Web
+                                            </label>
+                                            <input
+                                                id="sitio"
+                                                name="sitio"
+                                                type="url"
+                                                value={editedEmpresa.sitio}
+                                                onChange={handleInputChange}
+                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                placeholder="Ej. www.ejemplo.com"
+                                            />
+                                        </div>
+
+                                        {/* Teléfono de Contacto */}
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="telefono">
+                                                Teléfono de Contacto
+                                            </label>
+                                            <input
+                                                id="telefono"
+                                                name="telefono"
+                                                type="number"
+                                                value={editedEmpresa.telefono}
+                                                onChange={handleInputChange}
+                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                placeholder="Ej. 0999999999"
+                                            />
+                                            {errorTelefono && (
+                                                <p className="text-red-500 text-sm mt-2">{errorTelefono}</p>
+                                            )}
+                                        </div>
                                         <div className="mb-4 sm:col-span-2">
                                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="descripcion">
                                                 Descripción
@@ -891,9 +995,13 @@ const EmpresaDetails: React.FC = () => {
 
                                     </div>
                                     <div className="flex items-center justify-center mt-4">
-                                        <button onClick={handleSave} className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-700">
-                                            Guardar
-                                        </button>
+                                    <button
+                                                onClick={handleSave}
+                                                disabled={!isFormValid || loading2}
+                                                className={`px-4 py-2 text-white rounded-md ${loading2 || !isFormValid ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+                                            >
+                                                {loading2 ? 'Guardando...' : 'Guardar'}
+                                            </button>
                                         <button onClick={closeModal} className="px-4 py-2 text-red-500 border border-red-500 rounded-md hover:bg-red-500 hover:text-white ml-4">
                                             Cancelar
                                         </button>
