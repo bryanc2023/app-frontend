@@ -7,6 +7,8 @@ import { RootState } from '../../store';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus } from 'react-icons/fi';
 import { max } from 'date-fns';
+import Select from 'react-select';
+
 
 interface Titulo {
   id: number;
@@ -52,7 +54,7 @@ interface Configuracion {
   valor_prioridad_baja: number;
   vigencia: boolean;
   created_at: string;
-  terminos_condiciones?: string; 
+  terminos_condiciones?: string;
   gratis_ofer: number;
   gratis_d: number;
   estandar_ofer: number;
@@ -76,7 +78,7 @@ function AgregarO() {
   const [requireEducation, setRequireEducation] = useState(false);
   const [requireCriterio, setRequireCriterio] = useState(false);
   const [requirePregunta, setRequirePregunta] = useState(false);
-  
+
   const [selectedTitles, setSelectedTitles] = useState<Titulo[]>([]);
   const [showCorreo, setShowCorreo] = useState(false);
   const [showNumeroContacto, setShowNumeroContacto] = useState(false);
@@ -100,11 +102,11 @@ function AgregarO() {
   const [showAdd, setShowAdd] = useState(false);
   const [soliSueldo, setSolicitarSueldo] = useState(0);
   const [isChecked, setIsChecked] = useState(false);
-  const [configuracion, setConfiguracion] = useState<Configuracion | null>(null); 
+  const [configuracion, setConfiguracion] = useState<Configuracion | null>(null);
   const [cantidadDest, setCantidadDest] = useState(0);
   const [maximo, setMaximo] = useState(2);
   const [plan, setPlan] = useState(2);
-
+  const [loadingTitles, setLoadingTitles] = useState(false);
   const [showCiudad, setShowCiudad] = useState(false);
   // Observamos el valor del campo 'experienciaTipo'
   const experienciaTipo = watch('experienciaTipo', 'años'); // 'años' es el valor por defecto
@@ -220,6 +222,7 @@ function AgregarO() {
     setShowCustomInput(!showCustomInput);
     setCustomTitulo('');
   };
+
   const handleCustomTituloChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setCustomTitulo(event.target.value);
   };
@@ -335,20 +338,24 @@ function AgregarO() {
 
   useEffect(() => {
     const fetchTitulos = async () => {
-      if (selectedNivel && selectedCampo) {
+      
+      if (selectedNivel) {
+        setLoadingTitles(true);
         try {
           // Si no se ha seleccionado un campo específico ("No especificado"), traer todos los títulos del nivel
           const campoQuery = selectedCampo === 'No' ? 'todos' : selectedCampo;
-          const response = await axios.get(`titulos/${selectedNivel}/${campoQuery}`);
+          const response = await axios.get(`titulos/${selectedNivel}/todos`);
           setTitulos(response.data);
         } catch (error) {
           console.error('Error fetching titulos:', error);
+        }finally {
+          setLoadingTitles(false); // Terminar la carga
         }
       }
     };
-
+  
     fetchTitulos();
-  }, [selectedNivel, selectedCampo]);
+  }, [selectedNivel]);
 
   const handleProvinceChange = (event: any) => {
     setSelectedProvince(event.target.value);
@@ -363,8 +370,13 @@ function AgregarO() {
   };
 
   const handleNivelChange = (event: any) => {
-    setSelectedNivel(event.target.value);
-    setSelectedTituloId(0);
+    const nivelSeleccionado = event.target.value;
+    setSelectedNivel(nivelSeleccionado);
+
+    // Limpiar los valores de título y su ID
+    setSelectedTituloId(null); // O el valor inicial que desees
+
+
   };
 
   const handleCampoChange = (event: any) => {
@@ -429,8 +441,9 @@ function AgregarO() {
 
   };
 
-  const handleTituloChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const selectedTituloId = parseInt(event.target.value, 10);
+
+  const handleTituloChange = (selectedOption) => {
+    const selectedTituloId = selectedOption ? selectedOption.value : undefined;
     setSelectedTituloId(selectedTituloId);
     if (isNaN(selectedTituloId)) {
       setShowCheckbox(false);
@@ -445,6 +458,7 @@ function AgregarO() {
     }
 
   };
+
 
   const handleAgregarTitulo = () => {
     // Verifica si se debe ingresar un título específico y si el campo está vacío
@@ -539,11 +553,11 @@ function AgregarO() {
           comentariosComisiones: values.comentariosComisiones || null,
           comentariosHorasExtras: values.comentariosHorasExtras || null,
           comentariosViaticos: values.comentariosViaticos || null,
-          destacada: isChecked, 
+          destacada: isChecked,
           ciudad: showCiudad ? values.ciudad : null,
           empresa_p: null,
           sector_p: null,
-          gestoraId: null, 
+          gestoraId: null,
         };
 
         // SweetAlert para confirmar la publicación
@@ -582,7 +596,10 @@ function AgregarO() {
 
 
   const criterioDescripcion = criterios.find(c => c.id_criterio === selectedCriterioId)?.descripcion || '';
-
+  const tituloOptions = titulos.map((titulo) => ({
+    value: titulo.id,
+    label: titulo.titulo,
+  }));
   return (
     <>
       <div className="bg-white p-6 rounded-lg shadow-lg ">
@@ -645,37 +662,21 @@ function AgregarO() {
                   </select>
                 </div>
 
-                <div className="form-group mb-8">
-                  <label htmlFor="campoAmplio" className="block text-gray-700 font-semibold mb-2">Campo Amplio:</label>
-                  <select
-                    id="campoAmplio"
-                    className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600"
-                    onChange={handleCampoChange}
-                    disabled={!selectedNivel}>
-                    <option value="">Seleccione</option>
-                    <option value="No">No especificado</option>
-                    {campos.map((campo, index) => (
-                      <option key={index} value={campo}>
-                        {campo}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              
 
                 <div className="form-group mb-8">
-                  <label htmlFor="titulo" className="block text-gray-700 font-semibold mb-2">Título:</label>
-                  <select
+                  <label htmlFor="titulo" className="block text-gray-700 font-semibold mb-2">Título (Acreditado por la Senecyt):</label>
+                  <Select
                     id="titulo"
+                    options={loadingTitles ? [] : tituloOptions} // Mostrar opciones solo si no está cargando
+                    onChange={handleTituloChange} // Manejador de cambio
+                    isClearable
+                    value={tituloOptions.find(option => option.value === selectedTituloId) || 0} // Mostrar el valor seleccionado o nada si no hay selección
+                    isDisabled={loadingTitles || !selectedNivel} // Deshabilitar si está cargando o faltan campos
+                    placeholder={loadingTitles ? 'Cargando...' : 'Escribe o selecciona un título...'}
+                    noOptionsMessage={() => (loadingTitles ? 'Cargando títulos...' : 'No hay opciones disponibles')}
                     className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-600"
-                    onChange={handleTituloChange}
-                    disabled={!selectedNivel || !selectedCampo}>
-                    <option value="">Seleccione</option>
-                    {titulos.map((titulo, index) => (
-                      <option key={index} value={titulo.id}>
-                        {titulo.titulo}
-                      </option>
-                    ))}
-                  </select>
+                  />
                 </div>
                 {/* Checkbox for custom title */}
                 {showCheckbox && (
@@ -1455,7 +1456,7 @@ function AgregarO() {
                 <hr className="my-4" />
               </>)}
 
-             
+
           </div>
           <hr className="my-4" />
 
@@ -1483,7 +1484,7 @@ function AgregarO() {
                 </h1>
               </div>
             </div>
-           
+
             <div className="flex items-center">
               <input
                 className="mr-2 leading-tight"
@@ -1519,10 +1520,10 @@ function AgregarO() {
               id="checkboxId"
               checked={isChecked}
               onChange={handleCheckboxChangeD}
-            // Deshabilitar el checkbox si ha alcanzado el límite
+              // Deshabilitar el checkbox si ha alcanzado el límite
               className="mr-2"
             />
-              
+
             <label htmlFor="checkboxId" className="text-sm text-gray-700">
               ¿Publicar como destacada?
             </label>

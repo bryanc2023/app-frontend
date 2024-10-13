@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import axios from '../../services/axios';
 import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
-import { FiEdit, FiPlus, FiEye, FiTrash2, FiSearch } from 'react-icons/fi';
+import { FiEdit, FiPlus, FiEye, FiTrash2, FiSearch, FiRefreshCw } from 'react-icons/fi';
 import { FaBriefcase, FaCalendarAlt } from 'react-icons/fa';
 import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
@@ -98,6 +98,53 @@ function VerOfertasPPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false); // Estado para el menú desplegable
     const [areas, setAreas] = useState<Area[]>([]);
     const [configuracion, setConfiguracion] = useState<Configuracion | null>(null);
+    const [showModal, setShowModal] = useState(false); // Estado para controlar el modal
+    const [selectedDate, setSelectedDate] = useState(""); // Fecha seleccionada
+    const [ofertaIdReactivar, setOfertaIdReactivar] = useState(null); // Estado para el id de la oferta a reactivar
+
+
+    // Obtener la fecha de hoy
+    const handleReactivar = async () => {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: 'Se reactivara esta oferta',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, reactivar',
+            cancelButtonText: 'Cancelar',
+        });
+
+        if (result.isConfirmed) {
+
+            try {
+                await axios.put(`/reactivarO/${ofertaIdReactivar}`, {
+                    fecha_max_pos: selectedDate // Envía la fecha seleccionada
+                });
+                Swal.fire({
+                    title: 'Oferta Reactivada',
+                    text: 'La oferta se ha reactivado',
+                    icon: 'success',
+                    confirmButtonText: 'Ok'
+                }).then(() => {
+                    fetchOfertas();
+                    setOfertaIdReactivar(null);
+                    setShowModal(false);
+                });
+            } catch (error) {
+                Swal.fire('Error', 'Hubo un error al reactivar la oferta.', 'error');
+            }
+
+        }
+
+    };
+
+    const handleDateChange = (e) => {
+        setSelectedDate(e.target.value);
+    };
+
+    const today = new Date().toISOString().split("T")[0]; // Obtener la fecha de hoy
+
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -159,6 +206,8 @@ function VerOfertasPPage() {
         setSelectedOferta(oferta);
         // Lógica para mostrar el modal aquí (puedes usar estados, context, etc.)
     };
+
+
 
     // Función para cerrar el modal de detalles
     const handleCloseModal = () => {
@@ -456,7 +505,50 @@ function VerOfertasPPage() {
 
 
             </div>
-
+            {/* Modal de reactivación */}
+            {showModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                        <h2 className="text-xl font-bold mb-4">Reactivar Oferta</h2>
+                        <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+                            <div className="flex items-center">
+                                <svg
+                                    className="h-5 w-5 text-yellow-500 mr-2"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                                    />
+                                </svg>
+                                <h1 className="text-xs font-semibold">
+                                    Reactivarla permite volver a publicar la oferta y que sea visible nuevamente
+                                </h1>
+                            </div>
+                        </div>
+                        <label htmlFor="fechaReactivacion" className="block mb-2">
+                            Selecciona la fecha de maxima de postulacion:
+                        </label>
+                        <input
+                            type="date"
+                            id="fechaReactivacion"
+                            value={selectedDate}
+                            onChange={handleDateChange}
+                            min={today}
+                            className="border rounded px-4 py-2 w-full"
+                        />
+                        <div className="flex justify-end mt-4">
+                            <button onClick={() => setShowModal(false)} className="mr-4 px-4 py-2 bg-gray-300 rounded">Cancelar</button>
+                            <button onClick={handleReactivar} className="px-4 py-2 bg-green-500 text-white rounded">Reactivar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {selectedOferta && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
                     <div className={`bg-gradient-to-b from-gray-200 to-white p-4 rounded-lg shadow-lg max-w-5xl w-full mx-4 overflow-auto ${selectedOferta.dest ? 'bg-gradient-to-b from-white to-orange-200 border border-b-0 shadow-xl' : ''}`} style={{ maxHeight: '80vh', position: 'relative' }}>
@@ -717,6 +809,7 @@ function VerOfertasPPage() {
                                 <tbody>
                                     {currentOfertas.map((oferta) => {
                                         const { editable, eliminable } = isEditableOrDeletable(oferta.fecha_publi);
+                                        const isInactive = oferta.estado === "Inactiva"; // Verifica si la oferta está inactiva
 
                                         return (
                                             <tr key={oferta.id_oferta} className={`py-4 px-6 ${oferta.estado === 'Culminada' ? 'bg-green-100' : (oferta.estado === 'En espera' ? 'bg-gray-100' : 'bg-orange-200')}`}>
@@ -744,6 +837,14 @@ function VerOfertasPPage() {
                                                     {eliminable && (
                                                         <button onClick={() => handleDeleteOferta(oferta.id_oferta)} className="flex items-center text-red-600 hover:text-red-900">
                                                             <FiTrash2 className="w-4 h-4 mr-1" /> Eliminar
+                                                        </button>
+                                                    )}
+                                                    {isInactive && (
+                                                        <button onClick={() => {
+                                                            setShowModal(true);
+                                                            setOfertaIdReactivar(oferta.id_oferta); // Guardar el id de la oferta a reactivar
+                                                        }} className="flex items-center text-yellow-600 hover:text-yellow-900">
+                                                            <FiRefreshCw className="w-4 h-4 mr-1" /> Reactivar
                                                         </button>
                                                     )}
                                                 </td>

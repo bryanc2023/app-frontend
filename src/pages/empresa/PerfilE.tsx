@@ -29,6 +29,10 @@ interface Empresa {
     cantidad_empleados: number;
     red: { id_empresa_red: number; enlace: string; nombre_red: string }[];
     plan: string; // Nuevo campo para el plan contratado
+    ruc: string;
+    razon_s: string;
+    sitio: string;
+    telefono: string
 }
 
 interface Red {
@@ -65,21 +69,24 @@ const EmpresaDetails: React.FC = () => {
     const [customDivision, setCustomDivision] = useState('');
     const [isCustomSector, setIsCustomSector] = useState(false);
     const [isDivisionEnabled2, setIsDivisionEnabled2] = useState(true);
-        
-        const handleCheckboxChange = () => {
-            setIsCustomSector(!isCustomSector);
-            if (!isCustomSector) {
-                setSelectedSector('Otro'); // Cambia el valor del sector a "Otro"
-                setIsDivisionEnabled2(false); // Deshabilita el select de división
-                setSelectedDivision(''); // Limpia la selección de división
-            } else {
-                setSelectedSector(''); // Resetea el sector si se desmarca
-                setIsDivisionEnabled2(true); // Habilita el select de división
-            }
-        };
+    const [errorRuc, setErrorRuc] = useState('');
+    const [errorTelefono, setErrorTelefono] = useState('');
+    const [loading2, setLoading2] = useState(false);
+
+    const handleCheckboxChange = () => {
+        setIsCustomSector(!isCustomSector);
+        if (!isCustomSector) {
+            setSelectedSector('Otro'); // Cambia el valor del sector a "Otro"
+            setIsDivisionEnabled2(false); // Deshabilita el select de división
+            setSelectedDivision(''); // Limpia la selección de división
+        } else {
+            setSelectedSector(''); // Resetea el sector si se desmarca
+            setIsDivisionEnabled2(true); // Habilita el select de división
+        }
+    };
 
     const fetchRedes = async (empresaId: number) => {
-        
+
         try {
             const response = await axios.get(`/empresa-red/${empresaId}`);
             if (response.data && Array.isArray(response.data)) {
@@ -315,7 +322,32 @@ const EmpresaDetails: React.FC = () => {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         if (editedEmpresa) {
             const { name, value } = e.target;
-            const [mainKey, subKey] = name.split('.');
+            // Verifica si 'name' es válido antes de proceder
+            if (!name) {
+                console.error('El campo name está undefined o es inválido.');
+                return;
+            }
+
+            // Solo dividir si el nombre tiene un punto (subKey y mainKey)
+            const [mainKey, subKey] = name.includes('.') ? name.split('.') : [name, null];
+
+            // Validar RUC
+            if (name === 'ruc') {
+                if (value.length !== 13) {
+                    setErrorRuc('El RUC debe tener exactamente 13 caracteres.');
+                } else {
+                    setErrorRuc('');
+                }
+            }
+
+            // Validar Teléfono
+            if (name === 'telefono') {
+                if (value.length < 10 || value.length > 15) {
+                    setErrorTelefono('El teléfono debe tener exactamente 10 caracteres.');
+                } else {
+                    setErrorTelefono('');
+                }
+            }
             // Validación específica para el campo "descripcion"
             if (name === 'descripcion') {
                 if (value.length > 1000) {
@@ -325,6 +357,7 @@ const EmpresaDetails: React.FC = () => {
                     setErrorDescripcion(''); // Limpia el error si está dentro del límite
                 }
             }
+
             if (subKey) {
                 setEditedEmpresa({
                     ...editedEmpresa,
@@ -361,14 +394,15 @@ const EmpresaDetails: React.FC = () => {
 
     const handleSave = async () => {
         if (editedEmpresa && user) {
+            setLoading2(true);
             try {
                 const empresaToSave = {
                     ...editedEmpresa,
                     division: isCustomSector ? null : selectedDivision, // Enviar null si es un sector personalizado
-                    customDivision: isCustomSector ? customDivision : '', 
+                    customDivision: isCustomSector ? customDivision : '',
                     canton: selectedCanton,
                 }
-                
+
                 await axios.put(`/updateEmpresaById/${user.id}`, empresaToSave);
                 setSuccessMessage("Datos guardados con éxito!");
                 setTimeout(() => {
@@ -382,6 +416,8 @@ const EmpresaDetails: React.FC = () => {
                 setError(null);
             } catch (err: any) {
                 setError(`Axios error: ${err.response?.data?.message || err.message}`);
+            } finally {
+                setLoading2(false); // Termina el cargando
             }
         }
     };
@@ -437,15 +473,20 @@ const EmpresaDetails: React.FC = () => {
     if (!empresa) {
         return <div className="flex justify-center items-center h-screen">No company data available</div>;
     }
-
+    const isFormValid = !errorRuc && !errorTelefono;
     return (
         <div className="max-w-4xl mx-auto mt-10 p-6 bg-white text-black rounded-lg shadow-md" style={{ borderColor: '#d1552a', borderWidth: '4px' }}>
             {successMessage && (
-                <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mt-4" role="alert">
+                <div
+                    className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded  mt-4 z-50 fixed top-0 left-1/2 transform -translate-x-1/2 shadow-lg"
+                    role="alert"
+                    style={{ width: '90%', maxWidth: '600px' }}
+                >
                     <strong className="font-bold">Éxito! </strong>
                     <span className="block sm:inline">{successMessage}</span>
                 </div>
             )}
+
             <div className="flex flex-col sm:flex-row items-center sm:items-start">
                 <div className="flex flex-col items-center sm:items-start text-center sm:text-left mr-0 sm:mr-8">
                     <h1 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-center text-black">{empresa?.nombre_comercial}</h1>
@@ -467,7 +508,11 @@ const EmpresaDetails: React.FC = () => {
                             <p><strong>División:</strong> {empresa?.sector?.division || 'N/A'}</p>
                             <p><strong>Tamaño:</strong> {empresa?.tamanio || 'N/A'}</p>
                             <p><strong>Cantidad de Empleados:</strong> {empresa?.cantidad_empleados || 'N/A'}</p>
+                            <p><strong>RUC:</strong> {empresa?.ruc || 'N/A'}</p>
+                            <p><strong>Razon Social:</strong> {empresa?.razon_s || 'N/A'}</p>
+                            <p><strong>Teléfono de contacto:</strong> {empresa?.telefono || 'No definido'}</p>
                         </div>
+                        <p><strong>Sitio web:</strong> {empresa.sitio? empresa.sitio: 'No definido'}</p>
                     </div>
                     <div className="bg-gray-100 p-4 rounded-lg mb-6">
                         <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-black">Descripción</h2>
@@ -578,6 +623,74 @@ const EmpresaDetails: React.FC = () => {
                                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                             />
                                         </div>
+                                        {/* RUC */}
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="ruc">
+                                                RUC
+                                            </label>
+                                            <input
+                                                id="ruc"
+                                                name="ruc"
+                                                type="number"
+                                                value={editedEmpresa.ruc}
+                                                onChange={handleInputChange}
+                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                placeholder="Ej. 1799999999001"
+                                            />
+                                            {errorRuc && (
+                                                <p className="text-red-500 text-sm mt-2">{errorRuc}</p>
+                                            )}
+                                        </div>
+
+                                        {/* Razón Social */}
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="razon_s">
+                                                Razón Social
+                                            </label>
+                                            <input
+                                                id="razon_s"
+                                                name="razon_s"
+                                                type="text"
+                                                value={editedEmpresa.razon_s}
+                                                onChange={handleInputChange}
+                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                            />
+                                        </div>
+
+                                        {/* Sitio Web */}
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="sitio">
+                                                Sitio Web
+                                            </label>
+                                            <input
+                                                id="sitio"
+                                                name="sitio"
+                                                type="url"
+                                                value={editedEmpresa.sitio}
+                                                onChange={handleInputChange}
+                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                placeholder="Ej. www.ejemplo.com"
+                                            />
+                                        </div>
+
+                                        {/* Teléfono de Contacto */}
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="telefono">
+                                                Teléfono de Contacto
+                                            </label>
+                                            <input
+                                                id="telefono"
+                                                name="telefono"
+                                                type="number"
+                                                value={editedEmpresa.telefono}
+                                                onChange={handleInputChange}
+                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                placeholder="Ej. 0999999999"
+                                            />
+                                            {errorTelefono && (
+                                                <p className="text-red-500 text-sm mt-2">{errorTelefono}</p>
+                                            )}
+                                        </div>
                                         <div className="mb-4 sm:col-span-2">
                                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="descripcion">
                                                 Descripción
@@ -639,80 +752,87 @@ const EmpresaDetails: React.FC = () => {
                                             </select>
                                         </div>
                                         <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="sector">
-                    Sector
-                </label>
-                <select
-                    id="sector"
-                    name="sector.sector"
-                    value={selectedSector}
-                    onChange={(e) => {
-                        handleInputChange(e);
-                        setSelectedSector(e.target.value);
-                    }}
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                >
-                    <option value="">Seleccione</option>
-                    {sectores.map((sector, index) => (
-                        <option key={index} value={sector}>
-                            {sector}
-                        </option>
-                    ))}
-                    {isCustomSector && <option value="Otro">Otro</option>}
-                </select>
-            </div>
-            <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="division">
-                    División
-                </label>
-                {isDivisionEnabled2 ? (
-                    <select
-                        id="division"
-                        name="sector.division"
-                        value={selectedDivision}
-                        onChange={(e) => {
-                            handleInputChange(e);
-                            setSelectedDivision(e.target.value);
-                        }}
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    >
-                        <option value="">Seleccione</option>
-                        {divisiones.map((division) => (
-                            <option key={division.id} value={division.id}>
-                                {division.division}
-                            </option>
-                        ))}
-                    </select>
-                ) : (
-                    <input
-                        type="text"
-                        value={customDivision}
-                        onChange={(e) => setCustomDivision(e.target.value)}
-                        placeholder="Escriba la división a la que pertenece su empresa"
-                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                    />
-                )}
-            </div>
-            <div className="mb-4">
-                <label className="flex items-center">
-                    <input
-                        type="checkbox"
-                        checked={isCustomSector}
-                        onChange={handleCheckboxChange}
-                        className="mr-2"
-                    />
-                    Introducir nuevo sector/división
-                </label>
-            </div>
-      
+                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="sector">
+                                                Sector
+                                            </label>
+                                            <select
+                                                id="sector"
+                                                name="sector.sector"
+                                                value={selectedSector}
+                                                onChange={(e) => {
+                                                    handleInputChange(e);
+                                                    setSelectedSector(e.target.value);
+                                                }}
+                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                            >
+                                                <option value="">Seleccione</option>
+                                                {sectores.map((sector, index) => (
+                                                    <option key={index} value={sector}>
+                                                        {sector}
+                                                    </option>
+                                                ))}
+                                                {isCustomSector && <option value="Otro">Otro</option>}
+                                            </select>
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="division">
+                                                División
+                                            </label>
+                                            {isDivisionEnabled2 ? (
+                                                <select
+                                                    id="division"
+                                                    name="sector.division"
+                                                    value={selectedDivision}
+                                                    onChange={(e) => {
+                                                        handleInputChange(e);
+                                                        setSelectedDivision(e.target.value);
+                                                    }}
+                                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                >
+                                                    <option value="">Seleccione</option>
+                                                    {divisiones.map((division) => (
+                                                        <option key={division.id} value={division.id}>
+                                                            {division.division}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            ) : (
+                                                <input
+                                                    type="text"
+                                                    value={customDivision}
+                                                    onChange={(e) => setCustomDivision(e.target.value)}
+                                                    placeholder="Escriba la división a la que pertenece su empresa"
+                                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                />
+                                            )}
+                                        </div>
+                                        <div className="mb-4">
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={isCustomSector}
+                                                    onChange={handleCheckboxChange}
+                                                    className="mr-2"
+                                                />
+                                                Introducir nuevo sector/división
+                                            </label>
+                                        </div>
+
                                     </div>
                                     <div className="flex items-center justify-center mt-4">
-                                        <button onClick={handleSave} className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-700">
-                                            Guardar
-                                        </button>
-                                        <button onClick={closeModal} className="px-4 py-2 text-red-500 border border-red-500 rounded-md hover:bg-red-500 hover:text-white ml-4">
-                                            Cancelar
-                                        </button>
+                                        <div className="mb-4 sm:col-span-2">
+                                            <button
+                                                onClick={handleSave}
+                                                disabled={!isFormValid || loading2}
+                                                className={`px-4 py-2 text-white rounded-md ${loading2 || !isFormValid ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'}`}
+                                            >
+                                                {loading2 ? 'Guardando...' : 'Guardar'}
+                                            </button>
+                                            <button onClick={closeModal} className="px-4 py-2 text-red-500 border border-red-500 rounded-md hover:bg-red-500 hover:text-white ml-4">
+                                                Cancelar
+                                            </button>
+                                        </div>
+
                                     </div>
                                 </div>
                             )}
@@ -728,7 +848,8 @@ const EmpresaDetails: React.FC = () => {
             />
             <EditLogoModal
                 isOpen={isEditLogoModalOpen}
-                onRequestClose={() => {closeEditLogoModal; window.location.reload(); // Recargar los datos del postulante al cerrar el modal
+                onRequestClose={() => {
+                    closeEditLogoModal; window.location.reload(); // Recargar los datos del postulante al cerrar el modal
                 }}
                 onSave={(newLogoURL) => {
                     setEmpresa((prevData) => {

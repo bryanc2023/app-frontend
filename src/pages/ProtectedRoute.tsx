@@ -48,7 +48,10 @@ function ProtectedRoute({ children, allowedRoles = [] }: Props) {
                 // Para permitir un mensaje, aunque no funcione en todos los navegadores
                 event.preventDefault();
                 event.returnValue = ""; // Algunos navegadores requieren esto
-                // Aquí no se cierra sesión, solo se avisa que se va a cerrar la pestaña
+                localStorage.clear();
+                sessionStorage.clear(); 
+                dispatch(logout());
+                navigate("/login");// Aquí no se cierra sesión, solo se avisa que se va a cerrar la pestaña
             }
         };
 
@@ -74,7 +77,7 @@ function ProtectedRoute({ children, allowedRoles = [] }: Props) {
 
     // Mostrar un estado de "cargando" o redirigir mientras se verifica
     if (isVerifying) {
-        return null; // O un componente de Loading
+        return; // O un componente de Loading
     }
 
     return <>{children}</>;
