@@ -5,10 +5,12 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import jsPDF from 'jspdf';
 import { storage } from '../../config/firebaseConfig';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { getStorage,ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Swal from 'sweetalert2';
 import { format } from 'date-fns';
 import Modal from 'react-modal';
+import FileSaver from 'file-saver';
+
 
 interface Postulante {
   id_postulante: number;
@@ -485,27 +487,56 @@ const CurriTab: React.FC = () => {
             yOffset += 10;
           });
         }
-       
-        
-        if (profileData.postulante.certificado.length > 0) {
-          addSection('CAPACITACIONES REALIZADAS',30);
+        const addTextL = (text, link) => {
+          if (link) {
+              // Establecer el color azul para el enlace
+              doc.setTextColor(0, 0, 255); // Azul
+              doc.setFont('helvetica', 'normal'); // Cambiar a fuente normal para el enlace
+      
+              // Dibujar el texto del enlace
+              const textWidth = doc.getTextWidth(text);
+              const textHeight = 10; // Ajustar según el tamaño de la fuente
+              doc.text(text, 10, yOffset);
+      
+              // Agregar el enlace
+              doc.link(10, yOffset - textHeight, textWidth, textHeight, { url: link });
+      
+              // Restablecer el color a negro
+              doc.setTextColor(0); // Negro
+          } else {
+              // Agrega solo texto normal si no hay enlace
+              doc.setFont('helvetica', 'normal');
+              doc.text(text, 10, yOffset);
+          }
+      };
+      
+      // Resto del código para generar el PDF
+      if (profileData.postulante.certificado.length > 0) {
+          addSection('CAPACITACIONES REALIZADAS', 30);
           profileData.postulante.certificado.forEach((curso) => {
-            const lineYStart = yOffset;
-            doc.setDrawColor(230, 230, 230);
-            doc.line(10, lineYStart, doc.internal.pageSize.width - 10, lineYStart);
-            yOffset += 8;
-
-            doc.setFont('helvetica', 'bold');
-            addText(`${curso.titulo}`);
-            doc.setFont('helvetica', 'normal');
-            addText(`Enlace: ${curso.certificado}`);
-
-            yOffset += 2;
-            const lineYEnd = yOffset;
-            doc.line(10, lineYEnd, doc.internal.pageSize.width - 10, lineYEnd);
-            yOffset += 10;
+              const lineYStart = yOffset;
+              doc.setDrawColor(230, 230, 230);
+              doc.line(10, lineYStart, doc.internal.pageSize.width - 10, lineYStart);
+              yOffset += 8;
+      
+              doc.setFont('helvetica', 'bold');
+              addText(`${curso.titulo}`);
+              doc.setFont('helvetica', 'normal');
+      
+              // Aquí se establece el enlace
+              const linkText = curso.certificado ? 'Ver certificado' : 'No adjuntada';
+              const linkUrl = curso.certificado || null;
+      
+              // Agrega el texto con enlace
+              addTextL(linkText, linkUrl);
+      
+              yOffset += 2;
+              const lineYEnd = yOffset;
+              doc.line(10, lineYEnd, doc.internal.pageSize.width - 10, lineYEnd);
+              yOffset += 10;
           });
-        }
+      }
+      
         if (profileData.postulante.idiomas.length > 0) {
           addSection('IDIOMAS',30);
           profileData.postulante.idiomas.forEach((idioma) => {
@@ -590,7 +621,7 @@ const CurriTab: React.FC = () => {
           });
         }
         if (profileData.postulante.formapro.length > 0) {
-          addSection('REFERENCIAS PERSONALES',30);
+          addSection('REFERENCIAS PERSONALES', 30);
           profileData.postulante.formapro.forEach((exp) => {
             // Comprobar si hay espacio suficiente para una nueva iteración
             const requiredSpace = 30; // Ajusta este valor según el espacio necesario para cada iteración
@@ -598,27 +629,45 @@ const CurriTab: React.FC = () => {
               doc.addPage();
               yOffset = 10;
             }
-              doc.setFont('helvetica', 'normal');
-              doc.setFontSize(12);
-              doc.setTextColor(0);
-
+            
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(12);
+            doc.setTextColor(0);
+        
             const lineYStart = yOffset;
             doc.setDrawColor(230, 230, 230); // Color gris claro
             doc.line(10, lineYStart, doc.internal.pageSize.width - 10, lineYStart);
             yOffset += 5;
-
-            doc.setFont('helvetica', 'bold');
-            addText(`${exp.persona_referencia}`);
+        
+            // Obtener el valor de persona_referencia
+            const personaReferencia = exp.persona_referencia || '';
+            
+            if (personaReferencia.includes('/')) {
+              // Separar cargo y nombre si existe "/"
+              const [cargo, nombre] = personaReferencia.split('/').map(item => item.trim());
+              addText(nombre); // Información después de la barra
+              if (cargo) {
+                addText(`Cargo: ${cargo}`); // Información antes de la barra
+              } else {
+                addText(`Cargo: Persona Referencia`); // Si no hay cargo, mostrar este mensaje
+              }
+            } else {
+              // Si no hay "/", mostrar persona_referencia como está
+              addText(personaReferencia); // Mostrar directamente la información
+              addText(`Cargo: No definido`); // Indicar que no se tiene información de cargo
+            }
+        
             doc.setFont('helvetica', 'normal');
             addText(`Perteneciente a: ${exp.empresa}`);
             addText(`Contacto: ${exp.contacto}`);
             yOffset += 5;
-
+        
             const lineYEnd = yOffset;
             doc.line(10, lineYEnd, doc.internal.pageSize.width - 10, lineYEnd);
             yOffset += 10; // Ajustar el yOffset para la siguiente iteración
           });
         }
+        
         const pdfBlob = doc.output('blob');
         const pdfFileName = `${profileData.postulante.nombres}_${profileData.postulante.apellidos}_CV.pdf`;
 
@@ -662,13 +711,32 @@ const CurriTab: React.FC = () => {
   };
 
   const handleViewCV = (url: string) => {
-    setPreviewUrl(previewUrl === url ? null : url);
-  };
-
-  const handleDownloadCV = (url: string) => {
+    // Abrir el CV en una nueva pestaña
     const newWindow = window.open(url, '_blank');
-    if (newWindow) newWindow.opener = null;
-  };
+    if (newWindow) newWindow.opener = null; // Para evitar que la nueva pestaña tenga un vínculo de regreso a la pestaña original
+};
+
+const handleDownloadCV = async (cvUrl: string, nombreArchivo: string) => {
+  try {
+    // Obtén la referencia del archivo en Firebase Storage
+    const storage = getStorage();
+    const starsRef = ref(storage, cvUrl);
+
+    // Obtén el URL de descarga
+    const url = await getDownloadURL(starsRef);
+
+    // Haz la solicitud para obtener el archivo en formato blob
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Error al descargar el archivo');
+
+    const blob = await response.blob();
+
+    // Usa FileSaver para guardar el archivo
+    FileSaver.saveAs(blob, nombreArchivo);
+} catch (error) {
+    console.error("Error al descargar el CV:", error);
+}
+};
   const handleAgreementAccept = () => {
     setAgreementAccepted(!agreementAccepted);
   };
@@ -735,9 +803,13 @@ const CurriTab: React.FC = () => {
                   <FaEye className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={() => handleDownloadCV(cv.url)}
+                onClick={() => {
+                  const nombreArchivo = `${cv.nombre}_CV.pdf`; // O el formato que desees
+                  handleDownloadCV(cv.url, nombreArchivo);
+              }}
                   className="px-2 py-1 bg-green-500 text-white rounded-md hover:bg-green-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-green-300"
-                >
+               rel="noopener noreferrer"
+               >
                   <FaDownload className="w-4 h-4" />
                 </button>
               </div>

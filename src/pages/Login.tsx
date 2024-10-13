@@ -8,6 +8,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import Swal from 'sweetalert2';
 import Navbar from '../components/layout/Navbar';
+import { logout } from '../store/authSlice';
 
 interface LoginFormValues {
     email: string;
@@ -50,15 +51,15 @@ const Login = () => {
                 Swal.showLoading(Swal.getConfirmButton());
             }
         });
-
+       
         dispatch(loginUser(values)).then((response) => {
             Swal.close();
-
+             
             if (response.payload === "403") {
                 Swal.fire({
                     icon: 'error',
-                    title: 'Error de verificación',
-                    text: 'Este usuario no ha sido verificado todavía, por favor verifica el enlace en tu correo para continuar con el login',
+                    title: 'Acceso denegado',
+                    text: 'Tu cuenta ha sido desactivada. Contacta al administrador para más información.',
                 });
             } else if (response.payload === "401") {
                 Swal.fire({
@@ -66,9 +67,10 @@ const Login = () => {
                     title: 'Credenciales inválidas',
                     text: 'El usuario o contraseña ingresado no es correcto',
                 });
+                
             } else if (response.type === 'auth/loginUser/fulfilled') {
                 const { user, role } = response.payload;
-
+      
                 if (role === 'admin') {
                     navigate("/configuracion");
                 } else if (role === 'postulante') {
@@ -85,14 +87,26 @@ const Login = () => {
                     }
                 } else if (role === 'empresa_gestora') {
                     navigate("/inicioG");
+                }else if (role === 'p_empresa_g') {
+                    navigate("/inicioG");
+                }
+                else {
+                    // Si el rol no es reconocido
+                    dispatch(logout())
+                    Swal.fire({
+                      icon: "info",
+                      title: "Usuario empresa gestora",
+                      text: "Este usuario ha solicitado ser parte de la empresa gestora. Porfavor, espere hasta que la administración acepte su solicitud y pueda ingresar",
+                    });
                 }
             }
-
+        
             setSubmitting(false);
         }).catch(() => {
             Swal.close();
             setSubmitting(false);
         });
+        
     };
 
     const validationSchema = Yup.object({

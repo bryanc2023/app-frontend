@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { useNavigate } from 'react-router-dom';
 import { FiPlus } from 'react-icons/fi';
+import { max } from 'date-fns';
 
 interface Titulo {
   id: number;
@@ -42,10 +43,29 @@ interface canton {
 
 }
 
+interface Configuracion {
+  id?: number;
+  dias_max_edicion: number;
+  dias_max_eliminacion: number;
+  valor_prioridad_alta: number;
+  valor_prioridad_media: number;
+  valor_prioridad_baja: number;
+  vigencia: boolean;
+  created_at: string;
+  terminos_condiciones?: string;
+  gratis_ofer: number;
+  gratis_d: number;
+  estandar_ofer: number;
+  estandar_d: number;
+  premium_ofer: number;
+  premiun_d: number;
+  u_ofer: number;
+  u_d: number;
+}
 
 function AgregarO() {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, watch, formState: { errors } } = useForm();
   const [niveles, setNiveles] = useState([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [campos, setCampos] = useState([]);
@@ -64,7 +84,7 @@ function AgregarO() {
   const [selectedCriterioId, setSelectedCriterioId] = useState<number | null>(null);
   const [valorCriterio, setValorCriterio] = useState<string>('');
   const [prioridadCriterio, setPrioridadCriterio] = useState<number | null>(null);
-  const { user } = useSelector((state: RootState) => state.auth);
+  const { user, role } = useSelector((state: RootState) => state.auth);
   const [languages, setLanguages] = useState<idioma[]>([]);
   const [showExperiencia, setShowExperiencia] = useState(false);
   const [provinces, setProvinces] = useState<string[]>([]);
@@ -78,32 +98,96 @@ function AgregarO() {
   const [showCheckbox, setShowCheckbox] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [soliSueldo, setSolicitarSueldo] = useState(0);
+  const [isChecked, setIsChecked] = useState(false);
+  const [cantidadDest, setCantidadDest] = useState(0);
+  const [maximo, setMaximo] = useState(0);
+  const [plan, setPlan] = useState(4);
+
+  const [showCiudad, setShowCiudad] = useState(false);
+  const [showEmpresa, setEmpresa] = useState(false);
+  // Observamos el valor del campo 'experienciaTipo'
+  const experienciaTipo = watch('experienciaTipo', 'años'); // 'años' es el valor por defecto
+  useEffect(() => {
+    // Función para obtener cantidad_dest y plan
+    const fetchCantidadDest = async () => {
+      try {
+        if (user) {
+          if (role === 'p_empresa_g') {
+            // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+          const responseId = await axios.get(`/idGestora`);
+          const empresaId = responseId.data.id; // Accede solo al id
+          const response = await axios.get(`/empresa/cantidaddest/${empresaId}`);
+          setCantidadDest(response.data.cantidad_dest);
+          setPlan(response.data.plan);
+        }else{
+          const usuario = user.id;
+          const response = await axios.get(`/empresa/cantidaddest/${usuario}`);
+          setCantidadDest(response.data.cantidad_dest);
+          setPlan(response.data.plan);
+        }
+      }
+      } catch (error) {
+        console.error('Error al obtener cantidad_dest:', error);
+      }
+    };
+
+
+    // Llama a las funciones de obtención de datos
+    fetchCantidadDest();
+
+  }, []); // 
+
+
+  // Dependencias de plan y configuracion
+
+  // Mostrar valores para depuración
+
+
+  const handleCheckboxChangeD = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.checked;
+
+
+
+    // Cambia el estado del checkbox
+    setIsChecked(newValue);
+
+    // Mostrar SweetAlert si el checkbox es marcado
+    if (newValue) {
+      Swal.fire({
+        title: 'Información',
+        text: "Al publicar como destacada, se tendrá mayor visibilidad. Como empresa gestora no se tiene límite",
+        icon: 'info',
+        confirmButtonText: 'Aceptar',
+      });
+    }
+  };
+
 
   const handleTextArea = (e) => {
     if (e.key === 'Enter') {
-        e.preventDefault(); // Previene el salto al siguiente input
-        
-        const currentValue = e.target.value; // Obtiene el valor actual del textarea
-        // Añade un punto final y un salto de línea
-        e.target.value = currentValue.trim() + '.' + '\n'; 
-    }
-};
+      e.preventDefault(); // Previene el salto al siguiente input
 
-const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+      const currentValue = e.target.value; // Obtiene el valor actual del textarea
+      // Añade un punto final y un salto de línea
+      e.target.value = currentValue.trim() + '.' + '\n';
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     // Verifica si el elemento activo es un textarea
     const target = e.target as HTMLElement;
     if (target.tagName === 'TEXTAREA') {
-        return; // No hace nada si está en un textarea
+      return; // No hace nada si está en un textarea
     }
 
     if (e.key === 'Enter') {
-        e.preventDefault(); // Evita el comportamiento por defecto del formulario
-        const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
-        if (boton) {
-            boton.click(); // Ejecuta el clic en el botón
-        }
+      e.preventDefault(); // Evita el comportamiento por defecto del formulario
+      const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
+      if (boton) {
+        boton.click(); // Ejecuta el clic en el botón
+      }
     }
-};
+  };
   // Toggle custom title input
   const handleToggleCustomInput = () => {
     setShowCustomInput(!showCustomInput);
@@ -265,7 +349,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     const id = parseInt(event.target.value);
     setSelectedCriterioId(id);
     setValorCriterio('');
-   
+
   };
 
   const handleAgregarCriterio = () => {
@@ -273,20 +357,20 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
       const criterioSeleccionado = criterios.find(criterio => criterio.id_criterio === selectedCriterioId);
       if (criterioSeleccionado) {
         const exists = selectedCriterios.some(c => c.id_criterio === selectedCriterioId);
-    
+
         if (!exists) {
-        
+
           const criterioConValor: SelectedCriterio = {
             ...criterioSeleccionado,
             valor: selectedCriterioId === 3 ? 'Sueldo prospecto a ganar del postulante' : valorCriterio || '',
             prioridad: prioridadCriterio
           };
-            // Si el criterio agregado es el con id 3, seteamos soliSueldo1 a 1
-        if (selectedCriterioId === 3) {
-          setSolicitarSueldo(1);
-        }
+          // Si el criterio agregado es el con id 3, seteamos soliSueldo1 a 1
+          if (selectedCriterioId === 3) {
+            setSolicitarSueldo(1);
+          }
 
-       
+
           setSelectedCriterios([...selectedCriterios, criterioConValor]);
           setSelectedCriterioId(null);
           setValorCriterio('');
@@ -315,7 +399,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     if (id === 3) {
       setSolicitarSueldo(0);
     }
-    
+
   };
 
   const handleTituloChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -408,59 +492,92 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
 
   const onSubmit = handleSubmit(async (values) => {
     if (user) {
-        try {
-            const usuario = user.id;
-            const dataToSend = {
-                ...values,
-                usuario: usuario,
-                experiencia: showExperiencia ? values.experiencia : 0,
-                correo_contacto: showCorreo ? values.correo_contacto : null,
-                numero_contacto: showNumeroContacto ? values.numero_contacto : null,
-                solicitar_sueldo: soliSueldo === 1 ? true : false,
-                titulos: selectedTitles,
-                criterios: selectedCriterios,
-                preguntas: preguntas,
-                comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
-                horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
-                viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
-                comentariosComisiones: values.comentariosComisiones || null,
-                comentariosHorasExtras: values.comentariosHorasExtras || null,
-                comentariosViaticos: values.comentariosViaticos || null,
-            };
+      try {
+        const usuario = user.id;
+        const experienciaEnMeses = values.experienciaTipo === 'meses';
+        const empresaData = showEmpresa
+          ? [
+            values.empresa || '',
+            values.info || ''
+          ].filter(Boolean).join('/') || null // Usa filter para eliminar elementos vacíos
+          : null;
 
-            // SweetAlert para confirmar la publicación
-            const result = await Swal.fire({
-                title: 'Confirmación',
-                text: "¿Está seguro de publicar la oferta con los datos actualmente ingresados?",
-                icon: 'question',
-                showCancelButton: true,
-                confirmButtonText: 'Sí, publicar',
-                cancelButtonText: 'Cancelar'
-            });
+        const empresaData2 = showEmpresa
+          ? [
+            values.sec || '',
+            values.div || ''
+          ].filter(Boolean).join('/') || null // Usa filter para eliminar elementos vacíos
+          : null;
 
-            // Si el usuario confirma, se procede con el envío
-            if (result.isConfirmed) {
-                await axios.post('add-oferta', dataToSend, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-                
+        let gestoraId = null;
 
-                Swal.fire({
-                    title: '¡Publicada!',
-                    text: 'La oferta se encuentra publicada',
-                    icon: 'success',
-                    confirmButtonText: 'Ok'
-                }).then(() => {
-                    navigate("/inicioG");
-                });
-            }
-        } catch (error) {
-            console.log(error);
+        // Si el rol es "p_empresa_g", obtenemos el ID de la gestora
+        if (role === 'p_empresa_g') {
+          try {
+            const responseId = await axios.get(`/idGestora`);
+            gestoraId = responseId.data.id;  // Obtén el ID de la gestora desde la API
+          } catch (error) {
+            console.log('Error al obtener el ID de la gestora:', error);
+          }
         }
+
+        const dataToSend = {
+          ...values,
+          usuario: usuario,
+          experiencia: showExperiencia ? values.experiencia : 0,
+          experienciaEnMeses: showExperiencia ? experienciaEnMeses : 0,
+          correo_contacto: showCorreo ? values.correo_contacto : null,
+          numero_contacto: showNumeroContacto ? values.numero_contacto : null,
+          solicitar_sueldo: soliSueldo === 1 ? true : false,
+          titulos: selectedTitles,
+          criterios: selectedCriterios,
+          preguntas: preguntas,
+          comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
+          horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
+          viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
+          comentariosComisiones: values.comentariosComisiones || null,
+          comentariosHorasExtras: values.comentariosHorasExtras || null,
+          comentariosViaticos: values.comentariosViaticos || null,
+          destacada: isChecked,
+          ciudad: showCiudad ? values.ciudad : null,
+          empresa_p: showEmpresa ? empresaData : null,
+          sector_p: showEmpresa ? empresaData2 : null,
+          gestoraId: gestoraId || null, 
+        };
+
+        // SweetAlert para confirmar la publicación
+        const result = await Swal.fire({
+          title: 'Confirmación',
+          text: "¿Está seguro de publicar la oferta con los datos actualmente ingresados?",
+          icon: 'question',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, publicar',
+          cancelButtonText: 'Cancelar'
+        });
+
+        // Si el usuario confirma, se procede con el envío
+        if (result.isConfirmed) {
+          await axios.post('add-oferta', dataToSend, {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+
+
+          Swal.fire({
+            title: '¡Publicada!',
+            text: 'La oferta se encuentra publicada',
+            icon: 'success',
+            confirmButtonText: 'Ok'
+          }).then(() => {
+            navigate("/inicioG");
+          });
+        }
+      } catch (error) {
+        console.log(error);
+      }
     }
-});
+  });
 
 
   const criterioDescripcion = criterios.find(c => c.id_criterio === selectedCriterioId)?.descripcion || '';
@@ -475,6 +592,97 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
           </h3>
         </div>
         <p>Para publicar una oferta completa los datos necesarios:</p>
+        <hr className="my-4" />
+
+        <div className="bg-white p-6 rounded-lg shadow-lg py-8" >
+          <h3 className="text-1xl text-red-500 font-bold mb-4">Empresa publicadora de la oferta:</h3>
+          {/* Mensaje de aviso mejorado */}
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+            <div className="flex items-center">
+              <svg
+                className="h-5 w-5 text-yellow-500 mr-2"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                />
+              </svg>
+              <h1 className="text-xs font-semibold">
+                (Si la oferta es publicada por la misma "Proasetel" no seleccionar la opción. Si se llenan estos campos los datos que apareceran para esta oferta serna los de esta empresa)
+              </h1>
+            </div>
+          </div>
+
+          <div className="flex items-center">
+            <input
+              className="mr-2 leading-tight"
+              type="checkbox"
+              id="showEmpresa"
+              checked={showEmpresa}
+              onChange={() => setEmpresa(!showEmpresa)}
+            />
+            <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="showEmpresa">
+              ¿La oferta pertenece a otra empresa?
+            </label>
+          </div>
+          {showEmpresa && (
+            <>
+              <hr className="my-4" />
+              <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                <label className="block text-sm font-bold mb-2" htmlFor="empresa">Nombre de la empresa ofertante</label>
+                <input
+                  className="w-full p-2 border rounded"
+                  type="text"
+                  id="empresa"
+                  placeholder="Escriba el nombre de la empresa se solicita el cargo "
+                  {...register('empresa', {
+                    required: showEmpresa ? 'Nombre es requerido' : false // Solo requerido si showEmpresa es true
+                  })}
+                />
+                {errors.empresa && <p className="text-red-500">{String(errors.empresa.message)}</p>}
+                <hr className="my-4" />
+                <label className="block text-sm font-bold mb-2" htmlFor="sec">Sector de la empresa ofertante</label>
+                <input
+                  className="w-full p-2 border rounded"
+                  type="text"
+                  id="sec"
+                  placeholder="Escriba el sector de la empresa se solicita el cargo "
+                  {...register('sec', {
+                    required: showEmpresa ? 'Sector es requerido' : false // Solo requerido si showEmpresa es true
+                  })}
+                />
+                {errors.sec && <p className="text-red-500">{String(errors.sec.message)}</p>}
+                <hr className="my-4" />
+                <label className="block text-sm font-bold mb-2" htmlFor="div">Division de la empresa ofertante</label>
+                <input
+                  className="w-full p-2 border rounded"
+                  type="text"
+                  id="div"
+                  placeholder="Escriba la division de la empresa se solicita el cargo "
+                  {...register('div')}
+                />
+                <hr className="my-4" />
+                <label className="block text-sm font-bold mb-2" htmlFor="info">Info adicional de la empresa ofertante</label>
+                <textarea
+                  className="w-full p-2 border rounded"
+                  rows={10}
+                  id="info"
+                  placeholder="Alguna informacion esencial que se deba saber de la empresa, si no se requiere dejar en blanco "
+                  {...register('info')}
+                />
+              </div>
+
+
+              <hr className="my-4" />
+            </>
+          )}
+        </div>
         <hr className="my-4" />
         <h3 className="text-1xl text-red-500 font-bold mb-4">Datos de la oferta:</h3>
         <form onSubmit={onSubmit} onKeyDown={handleKeyDown}>
@@ -655,19 +863,50 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
             {showExperiencia && (
               <>
                 <div id="experienciaContainer" className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
-                  <label className="block text-sm font-bold mb-2" htmlFor="experiencia">
-                    Años de Experiencia requerida
+                  <label className="block text-sm font-bold mb-2">
+                    Selecciona si la experiencia requerida es en meses o años:
                   </label>
+
+                  <div className="flex mb-4">
+                    <label className="mr-4">
+                      <input
+                        type="radio"
+                        value="años"
+                        {...register('experienciaTipo')}
+                        defaultChecked
+                      />
+                      <span className="ml-2">Años</span>
+                    </label>
+
+                    <label>
+                      <input
+                        type="radio"
+                        value="meses"
+                        {...register('experienciaTipo')}
+                      />
+                      <span className="ml-2">Meses</span>
+                    </label>
+                  </div>
+
+                  <label className="block text-sm font-bold mb-2" htmlFor="experiencia">
+                    {watch('experienciaTipo') === 'meses'
+                      ? 'Meses de Experiencia requerida'
+                      : 'Años de Experiencia requerida'}
+                  </label>
+
                   <input
                     className="w-full p-2 border rounded"
                     type="number"
                     id="experiencia"
-                    placeholder="Número de  años de experiencia en puestos similares"
+                    placeholder={watch('experienciaTipo') === 'meses'
+                      ? 'Número de meses de experiencia en puestos similares'
+                      : 'Número de años de experiencia en puestos similares'}
                     {...register('experiencia', {
                       required: 'Experiencia es requerida',
                       validate: validateNoNegative,
                     })}
                   />
+
                   {errors.experiencia && (
                     <p className="text-red-500">{String(errors.experiencia.message)}</p>
                   )}
@@ -688,9 +927,11 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
               className="w-full p-2 border rounded"
               id="objetivo_cargo"
               placeholder="Describa en breves palabras el objetivo del puesto de trabajo"
-              {...register('objetivo_cargo', { required: 'Objetivo del Cargo es requerido' , validate: {
-                maxLength: value => value.length <= 500 || 'Se permiten hasta 500 caracteres.',
-              },})}
+              {...register('objetivo_cargo', {
+                required: 'Objetivo del Cargo es requerido', validate: {
+                  maxLength: value => value.length <= 500 || 'Se permiten hasta 500 caracteres.',
+                },
+              })}
             />
             {errors.objetivo_cargo && <p className="text-red-500">{String(errors.objetivo_cargo.message)}</p>}
           </div>
@@ -1305,6 +1546,77 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
               </>)}
 
           </div>
+          <hr className="my-4" />
+
+          <div className="bg-white p-6 rounded-lg shadow-lg py-8" >
+            <h3 className="text-1xl text-red-500 font-bold mb-4">Ubicación de la oferta:</h3>
+            {/* Mensaje de aviso mejorado */}
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+              <div className="flex items-center">
+                <svg
+                  className="h-5 w-5 text-yellow-500 mr-2"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                  />
+                </svg>
+                <h1 className="text-xs font-semibold">
+                  (Si la oferta sigue la misma ubicación de la empresa no seleccionar la opción)
+                </h1>
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <input
+                className="mr-2 leading-tight"
+                type="checkbox"
+                id="showCiudad"
+                checked={showCiudad}
+                onChange={() => setShowCiudad(!showCiudad)}
+              />
+              <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="showCiudad">
+                ¿La oferta de trabajo sera para una ciudad en específico?
+              </label>
+            </div>
+            {showCiudad && (
+              <>
+                <hr className="my-4" />
+                <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                  <label className="block text-sm font-bold mb-2" htmlFor="ciudad">Ciudad destinada de la oferta</label>
+                  <input
+                    className="w-full p-2 border rounded"
+                    type="text"
+                    id="ciudad"
+                    placeholder="Escriba la ciudad en la que se solicita el cargo "
+                    {...register('ciudad')}
+                  />
+                </div>
+                <hr className="my-4" />
+              </>
+            )}
+          </div>
+          <hr className="my-4" />
+          <div className="flex justify-center">
+            <input
+              type="checkbox"
+              id="checkboxId"
+              checked={isChecked}
+              onChange={handleCheckboxChangeD}
+              // Deshabilitar el checkbox si ha alcanzado el límite
+              className="mr-2"
+            />
+
+            <label htmlFor="checkboxId" className="text-sm text-gray-700">
+              ¿Publicar como destacada?
+            </label>
+          </div>
           <div className="flex justify-center">
             <button
               onClick={() => navigate('/inicioG')}
@@ -1319,6 +1631,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
             >
               Publicar Oferta
             </button>
+
           </div>
 
         </form>

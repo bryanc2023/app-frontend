@@ -12,7 +12,7 @@ import { ProfileData } from '../../types/PostulanteType';
 
 interface CoursesTabProps {
   handleDeleteCurso: (id: number) => void;  // Añadir esta línea
-  openEditCursoModal: (curso: Curso | null |undefined) => void;
+  openEditCursoModal: (curso: Curso | null | undefined) => void;
   cursos: Curso[];
 }
 
@@ -29,7 +29,7 @@ const CoursesTab: React.FC<CoursesTabProps> = () => {
   const [isConfirmationModalOpen, setIsConfirmationModalOpen] = useState<boolean>(false);
   const [cursoToDelete, setCursoToDelete] = useState<Curso | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false);
-  const [cursoToEdit, setCursoToEdit] = useState<Curso | null|undefined>(null);
+  const [cursoToEdit, setCursoToEdit] = useState<Curso | null | undefined>(null);
   const [profileData, setProfileData] = useState<ProfileData | null>(null);
 
   const fetchProfileData = async () => {
@@ -55,7 +55,7 @@ const CoursesTab: React.FC<CoursesTabProps> = () => {
         titulo: certificado.titulo,
         certificado: certificado.certificado
       }));
-      
+
       setCursos(certificados);
     } catch (error) {
       console.error('Error fetching cursos:', error);
@@ -160,7 +160,16 @@ const CoursesTab: React.FC<CoursesTabProps> = () => {
               </button>
             </div>
             <p><strong className='text-orange-500'>Título:</strong> {curso.titulo}</p>
-            <p><strong className='text-orange-500' >Certificado:</strong> <a href={curso.certificado} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">Ver certificado</a></p>
+            <p>
+            <strong className='text-orange-500'>Certificado:</strong>
+              {curso.certificado ? (
+                <a href={curso.certificado} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                  Ver certificado
+                </a>
+              ) : (
+                <span className="text-gray-600">No adjuntado</span>
+              )}
+            </p>
           </div>
         ))
       ) : (

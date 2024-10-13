@@ -1,0 +1,25 @@
+@keyframes glow-gold {
+    0% {
+        color: #7897ed; /* Color inicial (azul) */
+        transform: scale(1); /* Tamaño inicial */
+    }
+    50% {
+        color: #1c4379; /* Color dorado */
+        transform: scale(1.1); /* Aumentar tamaño */
+    }
+    100% {
+        color: #86a3f5; /* Regresar al color azul */
+        transform: scale(1); /* Regresar al tamaño inicial */
+    }
+}
+
+.animate-glow-gold {
+    animation: glow-gold 6s ease-in-out infinite; /* Duración de 2.5 segundos para un efecto más lento */
+}
+
+
+.bg-gradient-silver {
+    background: linear-gradient(135deg, #fffdc0, #ffffff, #f7e8b8); /* Degradado plateado */
+    border: 2px solid #FFD700; /* Borde dorado */
+    border-radius: 8px; /* Redondear las esquinas *//* Borde para un efecto más metálico */
+}

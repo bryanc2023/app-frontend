@@ -7,6 +7,7 @@ import { FiUser, FiEye, FiMapPin } from 'react-icons/fi';
 import Modal from '../../components/Postulante/PostulacionModal';
 import { useNavigate } from "react-router-dom";
 import { logout } from "../../store/authSlice";
+import './styles.css'
 
 interface Oferta {
     id_oferta: number;
@@ -24,6 +25,10 @@ interface Oferta {
         ubicacion: {
             provincia: string;
             canton: string;
+        };
+        sector: {
+            sector: string;
+            division: string;
         };
     };
     fecha_max_pos: string;
@@ -56,6 +61,11 @@ interface Oferta {
     comentariosComisiones: string | null;
     comentariosHorasExtras: string | null;
     comentariosViaticos: string | null;
+    exp_m: boolean;
+    dest: boolean;
+    ciudad: string | null;
+    empre_p: string | null;
+    sector_p: string | null;
 }
 
 interface Pregunta {
@@ -82,7 +92,7 @@ interface Canton {
 const VerOfertasAll = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const { user,token,isLogged,role } = useSelector((state: RootState) => state.auth);
+    const { user, token, isLogged, role } = useSelector((state: RootState) => state.auth);
     const [ofertas, setOfertas] = useState<Oferta[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchEmpresa, setSearchEmpresa] = useState('');
@@ -101,24 +111,26 @@ const VerOfertasAll = () => {
     const [loading, setLoading] = useState(true);
     const ofertasPerPage = 5;
 
+
+
     const formatFechaMaxPos = (fecha: string) => {
         const date = new Date(fecha);
-        date.setDate(date.getDate() + 1);
+        date.setDate(date.getDate());
         const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
         return date.toLocaleDateString('es-ES', options);
     };
 
     useEffect(() => {
-        const userInfo= async () => {
-          if(!user|| !token || !isLogged || !role){
-             // Cerrar sesión y redirigir al login
-             dispatch(logout());
-             window.localStorage.removeItem("token");
-             window.localStorage.removeItem('role');
-             window.localStorage.removeItem('role');
-             navigate("/login");
-             return;
-          }
+        const userInfo = async () => {
+            if (!user || !token || !isLogged || !role) {
+                // Cerrar sesión y redirigir al login
+                dispatch(logout());
+                window.localStorage.removeItem("token");
+                window.localStorage.removeItem('role');
+                window.localStorage.removeItem('role');
+                navigate("/login");
+                return;
+            }
         };
         const getFirstLoginDate = async () => {
             try {
@@ -395,44 +407,77 @@ const VerOfertasAll = () => {
                         <hr className="my-4" />
                         <h1 className="text-2xl font-bold mb-4">OFERTAS PUBLICADAS:</h1>
                         <div className="relative overflow-x-auto">
-                            <div className="flex flex-col gap-4">
-                                {currentOfertas.map((oferta) => (
-                                    <div key={oferta.id_oferta} className="w-full relative bg-white rounded-lg shadow-md overflow-hidden border border-gray-200 p-4 flex flex-col lg:flex-row items-center">
-                                        <div className="relative w-full lg:w-80 lg:h-52 flex items-center justify-center overflow-hidden mt-4 lg:mt-0 order-2 lg:order-1">
-                                            <img
-                                                src={oferta.n_mostrar_empresa === 1 ? '/images/anonima.png' : oferta.empresa.logo}
-                                                alt="Logo"
-                                                className="w-3/4 h-auto md:w-full md:h-full object-contain max-w-xs max-h-60"
-                                            />
-                                        </div>
-                                        <div className="flex-1 pr-4 order-1 lg:order-2 mt-8 lg:mt-8">
-                                            <div className="text-center mb-2 flex items-center justify-center lg:justify-start">
-                                                <FiUser className="text-blue-800 mr-2" size={24} />
-                                                <h2 className="text-xl font-bold text-blue-800 lg:ml-4">{oferta.cargo}</h2>
+                            <div className="relative overflow-x-auto">
+                                <div className="flex flex-col gap-4">
+                                    {currentOfertas.map((oferta) => (
+                                        <div
+                                            key={oferta.id_oferta}
+                                            className={`w-full relative rounded-lg shadow-md overflow-hidden border border-gray-200 p-4 flex flex-col lg:flex-row items-center transition-transform duration-500 ${oferta.dest ? 'bg-gradient-silver ' : 'bg-white'
+                                                }`}
+                                        >
+                                            <div className="relative w-full lg:w-80 lg:h-52 flex items-center justify-center overflow-hidden mt-4 lg:mt-0 order-2 lg:order-1">
+                                                <img
+                                                    src={oferta.n_mostrar_empresa === 1 ? '/images/anonima.png' : oferta.empresa.logo}
+                                                    alt="Logo"
+                                                    className="w-3/4 h-auto md:w-full md:h-full object-contain max-w-xs max-h-60"
+                                                />
+                                            </div>
+                                            <div className="flex-1 pr-4 order-1 lg:order-2 mt-8 lg:mt-8">
+                                                <div className="text-center mb-2 flex items-center justify-center lg:justify-start">
+                                                    <FiUser className={`text-blue-800 mr-2 ${oferta.dest ? 'animate-glow-gold' : ''}`} size={24} />
+                                                    <h2 className={`text-xl font-bold lg:ml-4 ${oferta.dest ? 'animate-glow-gold' : 'text-blue-800'}`}>
+                                                        {oferta.cargo}
+                                                    </h2>
+                                                </div>
+
+                                                <p className="text-gray-700 mb-1">
+                                                    <strong>Empresa publicadora:</strong>
+                                                    {oferta.n_mostrar_empresa === 1
+                                                        ? 'Confidencial'
+                                                        : oferta.empre_p
+                                                            ? oferta.empre_p.includes('/')
+                                                                ? oferta.empre_p.split('/')[0] // Muestra la parte antes de la barra
+                                                                : oferta.empre_p
+                                                            : oferta.empresa.nombre_comercial}
+                                                </p>
+                                            
+                                                <p className="text-gray-700 mb-1 flex items-center flex-wrap">
+                                                    <strong>Sector de la empresa: </strong>
+                                                    {oferta.n_mostrar_empresa === 1 ?
+                                                        'Confidencial' :
+                                                        oferta.sector_p? 
+                                                                oferta.sector_p.includes('/')
+                                                                ? oferta.sector_p.split('/')[0]+' En '+oferta.sector_p.split('/')[1] // Muestra la parte antes de la barra
+                                                                : oferta.sector_p
+                                                            : 
+                                                        `${oferta.empresa.sector.division} EN ${oferta.empresa.sector.sector}`
+                                                    }
+                                                </p>
+                                                {oferta.ciudad && (
+                                                    <p className="text-gray-700 mb-1"><strong>Ciudad en la que se solicita el cargo: </strong>{oferta.ciudad}</p>
+                                                )}
+                                                <p className="text-gray-700 mb-1"><strong>Área:</strong> {oferta.areas.nombre_area.charAt(0).toUpperCase() + oferta.areas.nombre_area.slice(1).toLowerCase()}</p>
+                                                <p className="text-gray-700 mb-1"><strong>Carga Horaria:</strong> {oferta.carga_horaria}</p>
+                                                <p className="text-gray-700 mb-1"><strong>Fecha Máxima De Postulación:</strong> {formatFechaMaxPos(oferta.fecha_max_pos)}</p>
+
+                                                <center>
+                                                    <button
+                                                        onClick={() => setSelectedOferta(oferta)}
+                                                        className="flex items-center justify-center bg-green-500 text-white p-2 rounded-lg mt-4"
+                                                    >
+                                                        Ver Oferta <FiEye className="ml-2" />
+                                                    </button>
+                                                </center>
                                             </div>
 
-                                            <p className="text-gray-700 mb-1"><strong>Empresa:</strong> {oferta.n_mostrar_empresa === 1 ? 'Anónima' : oferta.empresa.nombre_comercial}</p>
-                                            <p className="text-gray-700 mb-1"><strong>Área:</strong> {oferta.areas.nombre_area.charAt(0).toUpperCase() + oferta.areas.nombre_area.slice(1).toLowerCase()}</p>
-                                            <p className="text-gray-700 mb-1"><strong>Carga Horaria:</strong> {oferta.carga_horaria}</p>
-                                            <p className="text-gray-700 mb-1"><strong>Fecha Máxima De Postulación:</strong> {formatFechaMaxPos(oferta.fecha_max_pos)}</p>
-
-                                            <center>
-                                                <button
-                                                    onClick={() => setSelectedOferta(oferta)}
-                                                    className="flex items-center justify-center bg-green-500 text-white p-2 rounded-lg mt-4"
-                                                >
-                                                    Ver Oferta <FiEye className="ml-2" />
-                                                </button>
-                                            </center>
+                                            {/* Ubicación de la empresa */}
+                                            <div className="absolute top-2 right-2 flex items-center text-gray-700">
+                                                <FiMapPin className="text-blue-800 mr-1" />
+                                                <span>{oferta.empresa.ubicacion.provincia}, {oferta.empresa.ubicacion.canton}</span>
+                                            </div>
                                         </div>
-
-                                        {/* Ubicación de la empresa */}
-                                        <div className="absolute top-2 right-2 flex items-center text-gray-700">
-                                            <FiMapPin className="text-blue-800 mr-1" />
-                                            <span>{oferta.empresa.ubicacion.provincia}, {oferta.empresa.ubicacion.canton}</span>
-                                        </div>
-                                    </div>
-                                ))}
+                                    ))}
+                                </div>
                             </div>
                         </div>
 

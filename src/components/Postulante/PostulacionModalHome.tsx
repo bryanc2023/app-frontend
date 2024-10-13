@@ -81,30 +81,15 @@ interface Criterio {
 interface ModalProps {
     oferta: Oferta | null;
     onClose: () => void;
-    userId: number | undefined;
 }
 
-interface CheckCvResponse {
-    hasCv: boolean;
-    message: string;
-}
 
-const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
+
+const Modal: React.FC<ModalProps> = ({ oferta, onClose}) => {
     const [sueldoDeseado, setSueldoDeseado] = useState<number | null>(null);
-    const [checkCvResponse, setCheckCvResponse] = useState<CheckCvResponse | null>(null);
     const [loading, setLoading] = useState(false);
-    const fetchCvStatus = async () => {
-        try {
-            const response = await axios.get(`check-cv/${userId}`);
-            setCheckCvResponse(response.data);
-        } catch (error) {
-            console.error('Error checking CV status:', error);
-        }
-    };
+   
 
-    useEffect(() => {
-        fetchCvStatus();
-    }, []);
 
     const navigate = useNavigate();
 
@@ -119,89 +104,8 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
 
     const handlePostular = async () => {
 
-        if (oferta.soli_sueldo === 1 && (sueldoDeseado === null || sueldoDeseado === undefined)) {
-            Swal.fire({
-                title: '¡Error!',
-                text: 'El campo de sueldo es obligatorio.',
-                icon: 'error',
-                confirmButtonText: 'Ok'
-            });
-            return;
-        }
-
-        // Recopilar las respuestas de las preguntas si existen
-        let respuestas = [];
-        if (oferta.preguntas.length > 0) {
-            let respuestasCompletas = true;
-            oferta.preguntas.forEach((pregunta, index) => {
-                const respuestaElement = document.getElementById(`respuesta-${index}`) as HTMLTextAreaElement;
-                const respuesta = respuestaElement.value.trim();
-                if (respuesta === '') {
-                    respuestasCompletas = false;
-                }
-                respuestas.push({
-                    id_pregunta: pregunta.id,
-                    pregunta: pregunta.pregunta,
-                    id_oferta: oferta.id_oferta,
-                    respuesta: respuesta
-                });
-            });
-
-            if (!respuestasCompletas) {
-                Swal.fire({
-                    title: '¡Error!',
-                    text: 'Debes completar todas las respuestas antes de postular.',
-                    icon: 'error',
-                    confirmButtonText: 'Ok'
-                });
-                return;
-            }
-        }
-        setLoading(true); // Activar el estado de carga
-        try {
-            await fetchCvStatus();
-
-            if (!checkCvResponse?.hasCv) {
-                Swal.fire({
-                    title: '¡Error!',
-                    text: "Parece que no has generado tu cv. Ve a la pestaña CV y generalo antes de postular",
-                    icon: 'error',
-                    confirmButtonText: 'Ok'
-                });
-                return;
-            }
-
-            const postData = {
-                id_postulante: userId,
-                id_oferta: oferta.id_oferta,
-                sueldo: sueldoDeseado,
-                respuestas: respuestas.length > 0 ? respuestas : undefined
-            };
-
-            await axios.post('postular', postData);
-
-            setLoading(false); // Desactivar la carga
-            Swal.fire({
-                title: '¡Hecho!',
-                text: 'Te has postulado a la oferta seleccionado, verifica el estado de tu postulación en los resultados',
-                icon: 'success',
-                confirmButtonText: 'Ok'
-            }).then(() => {
-
-                navigate("/verOfertasAll");
-            });
-        } catch (error) {
-            console.error('Error postulando:', error);
-            setLoading(false); // Desactivar la carga
-            Swal.fire({
-                title: '¡Ha ocurrido un error!',
-                text: 'Ya has postulado para esta oferta, consulta su estado en la pestaña de "Consultar postulación".',
-                icon: 'error',
-                confirmButtonText: 'Ok'
-            }).then(() => {
-                navigate("/verOfertasAll");
-            });
-        }
+        navigate('/login');
+        
     };
 
     const renderFunciones = () => {
@@ -329,8 +233,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                             <p className="text-gray-700 mb-1 flex items-center flex-wrap">
                                 <FontAwesomeIcon icon={faIndustry} className="mr-2" />
                                 <strong>Sector de la empresa: </strong>
-                                {
-                                    oferta.sector_p ?
+                                {oferta.sector_p ?
                                         oferta.sector_p.includes('/')
                                             ? oferta.sector_p.split('/')[0] + ' En ' + oferta.sector_p.split('/')[1] // Muestra la parte antes de la barra
                                             : oferta.sector_p
@@ -339,11 +242,12 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                                 }
                             </p>
                             {!(oferta.empre_p && oferta.sector_p) && (
-                            <p className="text-gray-700 mb-1 flex items-center">
-                                <FiMapPin className="text-gray-700 mr-2" />
-                                <strong>Ubicación empresa: </strong> {oferta.empresa.ubicacion.provincia}, {oferta.empresa.ubicacion.canton}
-                            </p>
+                                <p className="text-gray-700 mb-1 flex items-center">
+                                    <FiMapPin className="text-gray-700 mr-2" />
+                                    <strong>Ubicación empresa: </strong> {oferta.empresa.ubicacion.provincia}, {oferta.empresa.ubicacion.canton}
+                                </p>
                             )}
+
                             {oferta.ciudad && (
                                 <p className="text-gray-700 mb-1 flex items-center">
                                     <FaMapMarkerAlt className="text-gray-700 mr-2" />

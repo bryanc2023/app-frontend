@@ -40,6 +40,12 @@ interface Oferta {
     comentariosComisiones: string | null;
     comentariosHorasExtras: string | null;
     comentariosViaticos: string | null;
+    exp_m: boolean;
+    dest: boolean;
+    ciudad: string | null;
+    empre_p: string | null;
+    sector_p: string | null;
+    personal_id: number | null;
 }
 
 interface Pregunta {
@@ -86,7 +92,7 @@ function VerOfertasPPage() {
     const [selectedArea, setSelectedArea] = useState<string>(''); // Estado para almacenar el área seleccionada
     const [selectedCargaHoraria, setSelectedCargaHoraria] = useState<string>(''); // Estado para almacenar la carga horaria seleccionada
     const [selectedCargo, setSelectedCargo] = useState<string>(''); // Estado para almacenar el estado seleccionado
-    const { user } = useSelector((state: RootState) => state.auth);
+    const { user,role } = useSelector((state: RootState) => state.auth);
     const [currentPage, setCurrentPage] = useState(1);
     const [ofertasPerPage] = useState(5);
     const [loading, setLoading] = useState(true);
@@ -113,7 +119,7 @@ function VerOfertasPPage() {
     const formatDate = (dateString: string) => {
         if (!dateString) return '';
         const date = new Date(dateString);
-        date.setDate(date.getDate() + 1); // Sumar un día para corregir el desfase
+        date.setDate(date.getDate()); // Sumar un día para corregir el desfase
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0'); // Los meses empiezan desde 0
         const year = date.getFullYear();
@@ -127,8 +133,25 @@ function VerOfertasPPage() {
             try {
                 setLoading(true);
                 const response2 = await axios.get('areas');
-                const response = await axios.get(`empresa/${user.id}/ofertas`); // Reemplaza con tu URL y ID de empresa
-                setOfertas(response.data.ofertas);
+                if (role === 'p_empresa_g') {
+                    try {
+                        // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+                        const responseId = await axios.get(`/idGestora`);
+                        const empresaId = responseId.data.id; // Accede solo al id
+                        
+                        // Ahora obtén los datos de la empresa utilizando el ID obtenido
+                        const response = await axios.get(`empresa/${empresaId}/ofertas`);
+                        setOfertas(response.data.ofertas);
+                    
+                    } catch (error) {
+                        console.error("Error al obtener los datos de la empresa:", error);
+                        // Manejo adicional del error si es necesario
+                    } // Reemplaza con tu URL y ID de empresa
+                }else{
+                    const response = await axios.get(`empresa/${user.id}/ofertas`);
+                    setOfertas(response.data.ofertas);
+                }
+               
                 setAreas(response2.data.areas);
             } catch (error) {
                 console.error('Error fetching ofertas:', error);
@@ -159,6 +182,24 @@ function VerOfertasPPage() {
                 setLoading(false);
                 return;
             }
+
+            if (role === 'p_empresa_g') {
+                      // Si el rol del usuario es 'p_empresa_g', obtén el ID de la empresa con role_id 4
+                    const responseId = await axios.get(`/idGestora`);
+                    const empresaId = responseId.data.id; // Accede solo al id
+                    const response = await axios.get(`empresa/${empresaId}/ofertas`, {
+                        params: {
+                            ...(selectedCargo && { cargo: selectedCargo }),
+                            ...(selectedFechaInicio && { fecha_inicio: selectedFechaInicio }),
+                            ...(selectedFechaFin && { fecha_fin: selectedFechaFin }),
+                            ...(selectedEstado && { estado: selectedEstado }),
+                            ...(selectedArea && { area: selectedArea }),
+                            ...(selectedCargaHoraria && { carga_horaria: selectedCargaHoraria }),
+                        },
+                    });
+                    setOfertas(response.data.ofertas);
+                } else{
+                   
             const response = await axios.get(`empresa/${user?.id}/ofertas`, {
                 params: {
                     ...(selectedCargo && { cargo: selectedCargo }),
@@ -169,8 +210,10 @@ function VerOfertasPPage() {
                     ...(selectedCargaHoraria && { carga_horaria: selectedCargaHoraria }),
                 },
             });
-
             setOfertas(response.data.ofertas);
+        }
+
+           
         } catch (error) {
             console.error('Error filtering ofertas:', error);
         } finally {
@@ -442,10 +485,21 @@ function VerOfertasPPage() {
 
             {selectedOferta && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-                    <div className="bg-white p-4 rounded-lg shadow-lg max-w-5xl w-full mx-4 overflow-auto" style={{ maxHeight: '80vh' }}>
+                    <div className={`bg-gradient-to-b from-gray-200 to-white p-4 rounded-lg shadow-lg max-w-5xl w-full mx-4 overflow-auto ${selectedOferta.dest ? 'bg-gradient-to-b from-white to-orange-200 border border-b-0 shadow-xl' : ''}`} style={{ maxHeight: '80vh', position: 'relative' }}>
+                        {selectedOferta.dest ? ( // Solo muestra el elemento si es 'dest'
+                            <div className="absolute top-2 right-2 text-gold text-xl font-semibold">
+                                ⭐ DESTACADA
+                            </div>
+                        ) : null}
+                       
                         <h2 className="text-xl mb-4 text-center text-blue-500">
                             <strong>CARGO:</strong> {selectedOferta.cargo}
                         </h2>
+                        {selectedOferta.personal_id ? ( // Solo muestra el elemento si es 'dest'
+                           <h2 className="text-sm mb-1 text-center text-cyan-600">
+                                <strong>OFERTA PUBLICADA/EDITADA POR EL USUARIO CON CÓDIGO:  </strong>{selectedOferta.personal_id}
+                                </h2>
+                        ) : null}
                         <div className="text-center mb-4 text-sm text-gray-500">
                             <p>
                                 <FaCalendarAlt className="inline-block mr-1" />
@@ -462,7 +516,17 @@ function VerOfertasPPage() {
                                     <p><strong>Estado:</strong> {selectedOferta.estado}</p>
                                     <p><strong>Área: </strong>{selectedOferta.areas.nombre_area}</p>
                                     <p><strong>Carga Horaria: </strong>{selectedOferta.carga_horaria}</p>
-                                    <p><strong>Experiencia Mínima: </strong>{selectedOferta.experiencia === 0 ? 'Ninguna' : `${selectedOferta.experiencia} año/s`}</p>
+                                    {selectedOferta.ciudad && (
+                                        <p><strong>Ciudad específica para la oferta: </strong>{selectedOferta.ciudad}</p>
+                                    )}
+                                    <p><strong>Experiencia Mínima: </strong>
+                                        {selectedOferta.experiencia === 0
+                                            ? 'Ninguna'
+                                            : `${selectedOferta.experiencia} ${selectedOferta.exp_m
+                                                ? (selectedOferta.experiencia > 1 ? 'meses' : 'mes')
+                                                : (selectedOferta.experiencia > 1 ? 'años' : 'año')}`
+                                        }
+                                    </p>
                                     <p><strong>Sueldo: </strong>{selectedOferta.sueldo === 0 ? 'No especificado' : `${selectedOferta.sueldo} $ ofrecidos`}</p>
                                 </div>
 
@@ -481,6 +545,8 @@ function VerOfertasPPage() {
                                     </>
                                 )}
                             </div>
+                            {/* Validación y división de 'empre_p' */}
+
 
                             <div className="p-4 bg-gray-100 rounded shadow">
                                 <p><strong>Funciones: </strong></p>
@@ -518,6 +584,33 @@ function VerOfertasPPage() {
                                 </ul>
                             </div>
                         </div>
+
+                        {selectedOferta.empre_p && (
+                            <div className="p-4 bg-gray-100 rounded shadow">
+                                {/* Validación si 'empre_p' contiene '/' */}
+                                {selectedOferta.empre_p.includes('/') ? (
+                                    <>
+                                        <p><strong>Nombre de empresa del cargo: </strong>{selectedOferta.empre_p.split('/')[0]}</p>
+                                        <p><strong>Descripción extra de la empresa: </strong>{selectedOferta.empre_p.split('/')[1]}</p>
+                                    </>
+                                ) : (
+                                    <p><strong>Nombre de empresa del cargo: </strong>{selectedOferta.empre_p}</p>
+                                )}
+
+                                {/* Validación para 'sector_p' */}
+                                {selectedOferta.sector_p && (
+                                    selectedOferta.sector_p.includes('/') ? (
+                                        <>
+                                            <p><strong>Sector de la empresa: </strong>{selectedOferta.sector_p.split('/')[0]}</p>
+                                            <p><strong>División de la empresa: </strong>{selectedOferta.sector_p.split('/')[1]}</p>
+                                        </>
+                                    ) : (
+                                        <p><strong>Sector de la empresa: </strong>{selectedOferta.sector_p}</p>
+                                    )
+                                )}
+                            </div>
+                        )}
+
                         {(selectedOferta.comisiones || selectedOferta.comentariosComisiones) && (
                             <>
                                 <div className="mt-4 p-4 bg-gray-100 rounded shadow">
@@ -690,7 +783,13 @@ function VerOfertasPPage() {
                                                 <td className="py-4 px-6">{formatDate(oferta.fecha_publi)}</td>
                                                 <td className="py-4 px-6">{oferta.areas.nombre_area}</td>
                                                 <td className="py-4 px-6">{oferta.carga_horaria}</td>
-                                                <td className="py-4 px-6">{oferta.experiencia === 0 ? 'No requerida' : `${oferta.experiencia} año/s`}</td>
+                                                <td className="py-4 px-6">
+                                                    {oferta.experiencia === 0
+                                                        ? 'No requerida'
+                                                        : `${oferta.experiencia} ${oferta.exp_m
+                                                            ? (oferta.experiencia > 1 ? 'meses' : 'mes')
+                                                            : (oferta.experiencia > 1 ? 'años' : 'año')}`}
+                                                </td>
                                                 <td className="py-4 px-6">
                                                     <button onClick={() => handleVerDetalles(oferta)} className="flex items-center text-blue-600 hover:text-blue-900">
                                                         <FiEye className="w-4 h-4 mr-1" /> Ver

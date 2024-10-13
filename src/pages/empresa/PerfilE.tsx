@@ -3,9 +3,9 @@ import axios from '../../services/axios';
 import { useSelector } from 'react-redux';
 import Modal from 'react-modal';
 import { RootState } from '../../store';
-import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaGlobe, FaXing, FaXTwitter, FaUserTie, FaBriefcase, FaTrash } from 'react-icons/fa6'; 
-import AddRedModal from '../../components/Empresa/AddRedEModal'; 
-import EditLogoModal from '../../components/Empresa/EditProfilePicEModal'; 
+import { FaLinkedin, FaFacebook, FaTwitter, FaInstagram, FaGlobe, FaXing, FaXTwitter, FaUserTie, FaBriefcase, FaTrash } from 'react-icons/fa6';
+import AddRedModal from '../../components/Empresa/AddRedEModal';
+import EditLogoModal from '../../components/Empresa/EditProfilePicEModal';
 import PlanModal from '../../components/Empresa/PlanModal';
 import Swal from 'sweetalert2';
 import { FaInfoCircle } from 'react-icons/fa';
@@ -15,10 +15,12 @@ interface Empresa {
     nombre_comercial: string;
     logo: string;
     ubicacion: {
+        id: string;
         provincia: string;
         canton: string;
     };
     sector: {
+        id: string;
         sector: string;
         division: string;
     };
@@ -46,7 +48,7 @@ const EmpresaDetails: React.FC = () => {
     const { user } = useSelector((state: RootState) => state.auth);
 
     const [provinces, setProvinces] = useState<string[]>([]);
-    const [cantons, setCantons] = useState<string[]>([]);
+    const [cantons, setCantons] = useState<{ id: number; canton: string }[]>([]);
     const [selectedProvince, setSelectedProvince] = useState('');
     const [selectedCanton, setSelectedCanton] = useState('');
     const [sectores, setSectores] = useState<string[]>([]);
@@ -59,44 +61,61 @@ const EmpresaDetails: React.FC = () => {
     const [redes, setRedes] = useState<Red[]>([]);
     const [isConfirmDeleteModalOpen, setIsConfirmDeleteModalOpen] = useState(false);
     const [redToDelete, setRedToDelete] = useState<Red | null>(null);
+    const [errorDescripcion, setErrorDescripcion] = useState('');
+    const [customDivision, setCustomDivision] = useState('');
+    const [isCustomSector, setIsCustomSector] = useState(false);
+    const [isDivisionEnabled2, setIsDivisionEnabled2] = useState(true);
+        
+        const handleCheckboxChange = () => {
+            setIsCustomSector(!isCustomSector);
+            if (!isCustomSector) {
+                setSelectedSector('Otro'); // Cambia el valor del sector a "Otro"
+                setIsDivisionEnabled2(false); // Deshabilita el select de división
+                setSelectedDivision(''); // Limpia la selección de división
+            } else {
+                setSelectedSector(''); // Resetea el sector si se desmarca
+                setIsDivisionEnabled2(true); // Habilita el select de división
+            }
+        };
 
-  const fetchRedes = async (empresaId: number) => {
-    try {
-        const response = await axios.get(`/empresa-red/${empresaId}`);
-        if (response.data && Array.isArray(response.data)) {
-            setEmpresa((prevState) => ({
-                ...prevState!,
-                red: response.data,
-                // Preservar el plan original si ya existe en el estado de la empresa
-                plan: 'Estándar', // Preserva el plan actual
-            }));
-        } else {
+    const fetchRedes = async (empresaId: number) => {
+        
+        try {
+            const response = await axios.get(`/empresa-red/${empresaId}`);
+            if (response.data && Array.isArray(response.data)) {
+                setEmpresa((prevState) => ({
+                    ...prevState!,
+                    red: response.data,
+                    // Preservar el plan original si ya existe en el estado de la empresa
+                    plan: 'Estándar', // Preserva el plan actual
+                }));
+            } else {
+                setEmpresa((prevState) => ({
+                    ...prevState!,
+                    red: [],
+                    plan: 'Estándar', // Preserva el plan actual
+                }));
+            }
+        } catch (error) {
+            console.error('Error fetching redes:', error);
             setEmpresa((prevState) => ({
                 ...prevState!,
                 red: [],
                 plan: 'Estándar', // Preserva el plan actual
             }));
         }
-    } catch (error) {
-        console.error('Error fetching redes:', error);
-        setEmpresa((prevState) => ({
-            ...prevState!,
-            red: [],
-            plan: 'Estándar', // Preserva el plan actual
-        }));
-    }
-};
+    };
 
 
     const openConfirmDeleteModal = (red: Red) => {
         setRedToDelete(red);
         setIsConfirmDeleteModalOpen(true);
-      };
-      
-      const closeConfirmDeleteModal = () => {
+    };
+
+    const closeConfirmDeleteModal = () => {
         setIsConfirmDeleteModalOpen(false);
         setRedToDelete(null);
-      };
+    };
 
     useEffect(() => {
         const fetchProfileData = async () => {
@@ -170,13 +189,13 @@ const EmpresaDetails: React.FC = () => {
     const handleDeleteRed = async (id: number) => {
         try {
             await axios.delete(`/empresa-red/${id}`);
-            
+
             // Actualiza el estado eliminando la red del arreglo local
             setEmpresa((prevState) => ({
                 ...prevState!,
                 red: prevState!.red.filter((red) => red.id_empresa_red !== id),
             }));
-    
+
             // Mostrar mensaje de éxito
             Swal.fire({
                 toast: true,
@@ -187,12 +206,12 @@ const EmpresaDetails: React.FC = () => {
                 timer: 3000,
                 timerProgressBar: true,
             });
-    
+
             // Refrescar la lista de redes desde el servidor
             if (empresa?.id) {
                 await fetchRedes(empresa.id);
             }
-    
+
         } catch (error) {
             console.error('Error eliminando la red:', error);
             Swal.fire({
@@ -209,13 +228,13 @@ const EmpresaDetails: React.FC = () => {
             closeConfirmDeleteModal();
         }
     };
-    
-      
+
+
     useEffect(() => {
         const fetchCantons = async () => {
             if (selectedProvince) {
                 try {
-                    const response = await axios.get(`ubicaciones/cantones/${selectedProvince}`);
+                    const response = await axios.get(`ubicaciones/cantonesID/${selectedProvince}`);
                     setCantons(response.data || []);
                 } catch (error) {
                     console.error('Error fetching cantons:', error);
@@ -242,13 +261,44 @@ const EmpresaDetails: React.FC = () => {
         fetchDivisiones();
     }, [selectedSector]);
 
-    const openModal = () => {
-        setEditedEmpresa(empresa);
-        setModalIsOpen(true);
+    const openModal = async () => {
+        if (empresa) {
+            // Setea la empresa seleccionada en el modal
+            setEditedEmpresa(empresa);
+
+            // Accede a las propiedades directamente desde 'empresa' y agrega validaciones
+            const cantonId = empresa.ubicacion && empresa.ubicacion.id ? empresa.ubicacion.id : '2';
+            const divisionId = empresa.sector && empresa.sector.id ? empresa.sector.id : '2';
+
+            // Setear valores validados
+            setSelectedCanton(cantonId);
+            setSelectedDivision(divisionId);
+            setCustomDivision(null);
+            setIsCustomSector(false);
+            setIsDivisionEnabled2(true);
+
+            // Abrir el modal
+            setModalIsOpen(true);
+        }
     };
 
     const closeModal = () => {
         setModalIsOpen(false);
+        const fetchData = async () => {
+            try {
+                const [ubicacionesResponse, sectoresResponse] = await Promise.all([
+                    axios.get('ubicaciones'),
+                    axios.get('sectores'),
+                ]);
+
+                setProvinces(ubicacionesResponse.data.provinces || []);
+                setSectores(sectoresResponse.data.sectores || []);
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        };
+
+        fetchData();
     };
 
     const openAddRedModal = () => {
@@ -266,6 +316,15 @@ const EmpresaDetails: React.FC = () => {
         if (editedEmpresa) {
             const { name, value } = e.target;
             const [mainKey, subKey] = name.split('.');
+            // Validación específica para el campo "descripcion"
+            if (name === 'descripcion') {
+                if (value.length > 1000) {
+                    setErrorDescripcion('La descripción no puede tener más de 1000 caracteres.');
+                    return; // Evita que se actualice el valor si excede los 1000 caracteres
+                } else {
+                    setErrorDescripcion(''); // Limpia el error si está dentro del límite
+                }
+            }
             if (subKey) {
                 setEditedEmpresa({
                     ...editedEmpresa,
@@ -303,7 +362,14 @@ const EmpresaDetails: React.FC = () => {
     const handleSave = async () => {
         if (editedEmpresa && user) {
             try {
-                await axios.put(`/updateEmpresaById/${user.id}`, editedEmpresa);
+                const empresaToSave = {
+                    ...editedEmpresa,
+                    division: isCustomSector ? null : selectedDivision, // Enviar null si es un sector personalizado
+                    customDivision: isCustomSector ? customDivision : '', 
+                    canton: selectedCanton,
+                }
+                
+                await axios.put(`/updateEmpresaById/${user.id}`, empresaToSave);
                 setSuccessMessage("Datos guardados con éxito!");
                 setTimeout(() => {
                     setSuccessMessage(null);
@@ -320,27 +386,27 @@ const EmpresaDetails: React.FC = () => {
         }
     };
 
-   const renderIcon = (nombreRed: string | null | undefined) => {
-    // Proporcionar un valor predeterminado si nombreRed es null o undefined
-    const nombre = nombreRed ? nombreRed.toLowerCase() : '';
+    const renderIcon = (nombreRed: string | null | undefined) => {
+        // Proporcionar un valor predeterminado si nombreRed es null o undefined
+        const nombre = nombreRed ? nombreRed.toLowerCase() : '';
 
-    switch (nombre) {
-        case 'linkedin':
-            return <FaLinkedin className="text-blue-700" />;
-        case 'facebook':
-            return <FaFacebook className="text-blue-600" />;
-        case 'twitter':
-            return <FaTwitter className="text-blue-400" />;
-        case 'instagram':
-            return <FaInstagram className="text-pink-600" />;
-        case 'xing':
-            return <FaXing className="text-green-600" />;
-        case 'x':
-            return <FaXTwitter className="text-blue-400" />;
-        default:
-            return <FaGlobe className="text-gray-400" />;
-    }
-};
+        switch (nombre) {
+            case 'linkedin':
+                return <FaLinkedin className="text-blue-700" />;
+            case 'facebook':
+                return <FaFacebook className="text-blue-600" />;
+            case 'twitter':
+                return <FaTwitter className="text-blue-400" />;
+            case 'instagram':
+                return <FaInstagram className="text-pink-600" />;
+            case 'xing':
+                return <FaXing className="text-green-600" />;
+            case 'x':
+                return <FaXTwitter className="text-blue-400" />;
+            default:
+                return <FaGlobe className="text-gray-400" />;
+        }
+    };
 
     const getPlanIcon = (plan: string) => {
         switch (plan) {
@@ -383,10 +449,10 @@ const EmpresaDetails: React.FC = () => {
             <div className="flex flex-col sm:flex-row items-center sm:items-start">
                 <div className="flex flex-col items-center sm:items-start text-center sm:text-left mr-0 sm:mr-8">
                     <h1 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-center text-black">{empresa?.nombre_comercial}</h1>
-                    <img 
-                        src={empresa?.logo} 
-                        alt="Logo" 
-                        className="w-32 h-32 object-cover border-2 border-black rounded-full mb-4 sm:mb-0 mx-auto cursor-pointer" 
+                    <img
+                        src={empresa?.logo}
+                        alt="Logo"
+                        className="w-32 h-32 object-cover border-2 border-black rounded-full mb-4 sm:mb-0 mx-auto cursor-pointer"
                         onClick={openEditLogoModal}
                     />
                     <button onClick={openModal} className="bg-blue-500 text-white px-4 py-2 rounded mb-4 mt-4 self-center">Editar Datos</button>
@@ -408,57 +474,57 @@ const EmpresaDetails: React.FC = () => {
                         <p className="text-black">{empresa?.descripcion || 'N/A'}</p>
                     </div>
                     <div className="bg-gray-100 p-4 rounded-lg">
-            <div className="flex justify-between items-center">
-                <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-black">
-                    Redes Sociales
-                </h2>
+                        <div className="flex justify-between items-center">
+                            <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-black">
+                                Redes Sociales
+                            </h2>
 
-                {/* Ícono de información con tooltip */}
-                <div className="relative group">
-                    <FaInfoCircle className="text-black text-lg cursor-pointer" />
+                            {/* Ícono de información con tooltip */}
+                            <div className="relative group">
+                                <FaInfoCircle className="text-black text-lg cursor-pointer" />
 
-                    {/* Tooltip */}
-                    <span className="absolute left-1/2 -translate-x-1/2 bottom-8 w-max bg-white text-gray-800 text-sm rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        Si necesita cambiar una red social, elimine la existente y agregue la nueva red social.
-                    </span>
-                </div>
+                                {/* Tooltip */}
+                                <span className="absolute left-1/2 -translate-x-1/2 bottom-8 w-max bg-white text-gray-800 text-sm rounded-md px-2 py-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                    Si necesita cambiar una red social, elimine la existente y agregue la nueva red social.
+                                </span>
+                            </div>
 
-                <button onClick={openAddRedModal} className="text-orange-400 hover:underline">
-                    + Agregar red
-                </button>
-            </div>
-
-            {/* Renderizado condicional de redes */}
-            {empresa?.red && empresa.red.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
-                    {empresa.red.map((red) => (
-                        <div key={red.id_empresa_red} className="flex items-center space-x-2">
-                            <span>{red.nombre_red}</span>
-                            <a
-                                href={red.enlace}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-2xl hover:underline"
-                            >
-                                {renderIcon(red.nombre_red)}
-                            </a>
-
-                            {/* Botón para eliminar red con confirmación */}
-                            <button
-                                onClick={() => openConfirmDeleteModal(red)}
-                                className="text-red-500 hover:text-red-700"
-                            >
-                                <FaTrash className="text-sm" />
+                            <button onClick={openAddRedModal} className="text-orange-400 hover:underline">
+                                + Agregar red
                             </button>
                         </div>
-                    ))}
-                </div>
-            ) : (
-                <div className="flex items-center justify-center mt-4 p-4 bg-gray-300 rounded-lg border border-gray-400 text-gray-600">
-                    <span>No hay redes sociales agregadas.</span>
-                </div>
-            )}
-        </div>
+
+                        {/* Renderizado condicional de redes */}
+                        {empresa?.red && empresa.red.length > 0 ? (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pb-6">
+                                {empresa.red.map((red) => (
+                                    <div key={red.id_empresa_red} className="flex items-center space-x-2">
+                                        <span>{red.nombre_red}</span>
+                                        <a
+                                            href={red.enlace}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-2xl hover:underline"
+                                        >
+                                            {renderIcon(red.nombre_red)}
+                                        </a>
+
+                                        {/* Botón para eliminar red con confirmación */}
+                                        <button
+                                            onClick={() => openConfirmDeleteModal(red)}
+                                            className="text-red-500 hover:text-red-700"
+                                        >
+                                            <FaTrash className="text-sm" />
+                                        </button>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="flex items-center justify-center mt-4 p-4 bg-gray-300 rounded-lg border border-gray-400 text-gray-600">
+                                <span>No hay redes sociales agregadas.</span>
+                            </div>
+                        )}
+                    </div>
 
                     <div className="bg-gray-100 p-4 rounded-lg mt-6">
                         <h2 className="text-xl font-semibold mb-4 border-b-2 border-blue-500 inline-block pb-2 w-40 text-black">Plan Contratado</h2>
@@ -522,7 +588,11 @@ const EmpresaDetails: React.FC = () => {
                                                 value={editedEmpresa.descripcion}
                                                 onChange={handleInputChange}
                                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                                rows={10}
                                             />
+                                            {errorDescripcion && (
+                                                <p className="text-red-500 text-sm mt-2">{errorDescripcion}</p>
+                                            )}
                                         </div>
                                         <div className="mb-4">
                                             <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="provincia">
@@ -561,58 +631,80 @@ const EmpresaDetails: React.FC = () => {
                                                 className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                             >
                                                 <option value="">Seleccione</option>
-                                                {cantons.map((canton, index) => (
-                                                    <option key={index} value={canton}>
-                                                        {canton}
+                                                {cantons.map((canton) => (
+                                                    <option key={canton.id} value={canton.id}>
+                                                        {canton.canton}
                                                     </option>
                                                 ))}
                                             </select>
                                         </div>
                                         <div className="mb-4">
-                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="sector">
-                                                Sector
-                                            </label>
-                                            <select
-                                                id="sector"
-                                                name="sector.sector"
-                                                value={selectedSector}
-                                                onChange={(e) => {
-                                                    handleInputChange(e);
-                                                    setSelectedSector(e.target.value);
-                                                }}
-                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                            >
-                                                <option value="">Seleccione</option>
-                                                {sectores.map((sector, index) => (
-                                                    <option key={index} value={sector}>
-                                                        {sector}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="division">
-                                                División
-                                            </label>
-                                            <select
-                                                id="division"
-                                                name="sector.division"
-                                                value={selectedDivision}
-                                                onChange={(e) => {
-                                                    handleInputChange(e);
-                                                    setSelectedDivision(e.target.value);
-                                                }}
-                                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                                                disabled={!isDivisionEnabled}
-                                            >
-                                                <option value="">Seleccione</option>
-                                                {divisiones.map((division) => (
-                                                    <option key={division.id} value={division.division}>
-                                                        {division.division}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="sector">
+                    Sector
+                </label>
+                <select
+                    id="sector"
+                    name="sector.sector"
+                    value={selectedSector}
+                    onChange={(e) => {
+                        handleInputChange(e);
+                        setSelectedSector(e.target.value);
+                    }}
+                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                >
+                    <option value="">Seleccione</option>
+                    {sectores.map((sector, index) => (
+                        <option key={index} value={sector}>
+                            {sector}
+                        </option>
+                    ))}
+                    {isCustomSector && <option value="Otro">Otro</option>}
+                </select>
+            </div>
+            <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="division">
+                    División
+                </label>
+                {isDivisionEnabled2 ? (
+                    <select
+                        id="division"
+                        name="sector.division"
+                        value={selectedDivision}
+                        onChange={(e) => {
+                            handleInputChange(e);
+                            setSelectedDivision(e.target.value);
+                        }}
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    >
+                        <option value="">Seleccione</option>
+                        {divisiones.map((division) => (
+                            <option key={division.id} value={division.id}>
+                                {division.division}
+                            </option>
+                        ))}
+                    </select>
+                ) : (
+                    <input
+                        type="text"
+                        value={customDivision}
+                        onChange={(e) => setCustomDivision(e.target.value)}
+                        placeholder="Escriba la división a la que pertenece su empresa"
+                        className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                    />
+                )}
+            </div>
+            <div className="mb-4">
+                <label className="flex items-center">
+                    <input
+                        type="checkbox"
+                        checked={isCustomSector}
+                        onChange={handleCheckboxChange}
+                        className="mr-2"
+                    />
+                    Introducir nuevo sector/división
+                </label>
+            </div>
+      
                                     </div>
                                     <div className="flex items-center justify-center mt-4">
                                         <button onClick={handleSave} className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-700">
@@ -621,7 +713,7 @@ const EmpresaDetails: React.FC = () => {
                                         <button onClick={closeModal} className="px-4 py-2 text-red-500 border border-red-500 rounded-md hover:bg-red-500 hover:text-white ml-4">
                                             Cancelar
                                         </button>
-                                    </div>    
+                                    </div>
                                 </div>
                             )}
                         </div>
@@ -645,46 +737,46 @@ const EmpresaDetails: React.FC = () => {
                         return prevData;
                     });
                 }}
-                initialImage={empresa?.logo }
+                initialImage={empresa?.logo}
                 empresaId={empresa?.id || 0}
             />
 
             <Modal
-            isOpen={isConfirmDeleteModalOpen}
-            onRequestClose={closeConfirmDeleteModal}
-            contentLabel="Confirmar eliminación"
-            className="bg-gray-800 p-6 rounded-lg shadow-lg text-white w-full max-w-lg mx-auto my-20 relative"
-            overlayClassName="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+                isOpen={isConfirmDeleteModalOpen}
+                onRequestClose={closeConfirmDeleteModal}
+                contentLabel="Confirmar eliminación"
+                className="bg-gray-800 p-6 rounded-lg shadow-lg text-white w-full max-w-lg mx-auto my-20 relative"
+                overlayClassName="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
             >
-            <h2 className="text-lg font-semibold mb-4">Confirmar Eliminación</h2>
-            <p className="mb-4">¿Estás seguro de que deseas eliminar la red social <strong>{redToDelete?.nombre_red}</strong>?</p>
-            <div className="flex justify-end space-x-2 mt-4">
-                <button
-                onClick={closeConfirmDeleteModal}
-                className="px-4 py-2 bg-gray-500 rounded-md hover:bg-gray-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-300"
-                >
-                Cancelar
-                </button>
-                <button
-                onClick={() => {
-                    if (redToDelete) {
-                    handleDeleteRed(redToDelete.id_empresa_red);
-                    }
-                    closeConfirmDeleteModal();
-                }}
-                className="px-4 py-2 bg-red-500 rounded-md hover:bg-red-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-red-300"
-                >
-                Eliminar
-                </button>
-            </div>
+                <h2 className="text-lg font-semibold mb-4">Confirmar Eliminación</h2>
+                <p className="mb-4">¿Estás seguro de que deseas eliminar la red social <strong>{redToDelete?.nombre_red}</strong>?</p>
+                <div className="flex justify-end space-x-2 mt-4">
+                    <button
+                        onClick={closeConfirmDeleteModal}
+                        className="px-4 py-2 bg-gray-500 rounded-md hover:bg-gray-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={() => {
+                            if (redToDelete) {
+                                handleDeleteRed(redToDelete.id_empresa_red);
+                            }
+                            closeConfirmDeleteModal();
+                        }}
+                        className="px-4 py-2 bg-red-500 rounded-md hover:bg-red-700 transition duration-300 focus:outline-none focus:ring-2 focus:ring-red-300"
+                    >
+                        Eliminar
+                    </button>
+                </div>
             </Modal>
-            <PlanModal 
-                isOpen={isPlanModalOpen} 
-                onRequestClose={closePlanModal} 
-                currentPlan={'Estándar'} 
+            <PlanModal
+                isOpen={isPlanModalOpen}
+                onRequestClose={closePlanModal}
+                currentPlan={'Estándar'}
             />
         </div>
-        
+
     );
 };
 

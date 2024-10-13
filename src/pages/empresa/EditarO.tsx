@@ -4,7 +4,8 @@ import Swal from 'sweetalert2';
 import axios from '../../services/axios';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FiEdit } from 'react-icons/fi';
-
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 interface Experiencia {
   id: number;
@@ -13,7 +14,7 @@ interface Experiencia {
   titulo: string;
   pivot: {
     titulo_per2: string | null;
-};
+  };
 }
 
 
@@ -35,9 +36,9 @@ interface Criterio {
 interface CriterioS {
   id_criterio: number;
   criterio: string;
-  pivot:{
-    valor:string;
-    prioridad:number;
+  pivot: {
+    valor: string;
+    prioridad: number;
   };
 }
 
@@ -67,13 +68,32 @@ interface Pregunta {
   id_oferta: number;
   pregunta: string;
 }
+interface Configuracion {
+  id?: number;
+  dias_max_edicion: number;
+  dias_max_eliminacion: number;
+  valor_prioridad_alta: number;
+  valor_prioridad_media: number;
+  valor_prioridad_baja: number;
+  vigencia: boolean;
+  created_at: string;
+  terminos_condiciones?: string; 
+  gratis_ofer: number;
+  gratis_d: number;
+  estandar_ofer: number;
+  estandar_d: number;
+  premium_ofer: number;
+  premiun_d: number;
+  u_ofer: number;
+  u_d: number;
+}
 
 
 
 function EditarO() {
   const { id } = useParams<{ id: string }>(); // Obtener el ID de la oferta de los parámetros de la URL
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors }, setValue } = useForm();
+  const { register, handleSubmit, watch, formState: { errors }, setValue } = useForm();
   const [niveles, setNiveles] = useState([]);
   const [areas, setAreas] = useState<Area[]>([]);
   const [campos, setCampos] = useState([]);
@@ -99,6 +119,7 @@ function EditarO() {
   const [selectedCanton, setSelectedCanton] = useState('');
   const [defaultAreaId, setDefaultAreaId] = useState('');
   const [defaultArea, setDefaultArea] = useState('');
+  const { user } = useSelector((state: RootState) => state.auth);
   const [loading, setLoading] = useState(true);
   const [requirePregunta, setRequirePregunta] = useState(false);
   const [preguntas, setPreguntas] = useState<Pregunta[]>([]);
@@ -108,31 +129,120 @@ function EditarO() {
   const [showCheckbox, setShowCheckbox] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [hasAdditionalComponents, setHasAdditionalComponents] = useState(false);
+  const [showCiudad, setShowCiudad] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
+  const [configuracion, setConfiguracion] = useState<Configuracion | null>(null); 
+  const [cantidadDest, setCantidadDest] = useState(0);
+  const [maximo, setMaximo] = useState(2);
+  const [plan, setPlan] = useState(2);
+
+  useEffect(() => {
+    // Función para obtener cantidad_dest y plan
+    const fetchCantidadDest = async () => {
+      try {
+        if (user) {
+          const usuario = user.id;
+          const response = await axios.get(`/empresa/cantidaddest/${usuario}`);
+          setCantidadDest(response.data.cantidad_dest);
+          setPlan(response.data.plan);
+        }
+      } catch (error) {
+        console.error('Error al obtener cantidad_dest:', error);
+      }
+    };
+
+    // Función para obtener configuraciones
+    const fetchConfiguraciones = async () => {
+      try {
+        const response = await axios.get('/configuracion/activa');
+        setConfiguracion(response.data);
+      } catch (error) {
+        console.error('Error fetching configuraciones:', error);
+      }
+    };
+
+    // Llama a las funciones de obtención de datos
+    fetchCantidadDest();
+    fetchConfiguraciones();
+  }, []); // Dependencia de user para que se ejecute cuando cambie
+
+  useEffect(() => {
+    if (configuracion) {
+      switch (plan) {
+        case 1:
+          setMaximo(configuracion.gratis_d);
+          break;
+        case 2:
+          setMaximo(configuracion.estandar_d);
+          break;
+        case 3:
+          setMaximo(configuracion.premiun_d);
+          break;
+        case 4:
+          setMaximo(configuracion.u_d);
+          break;
+        default:
+          setMaximo(0); // O un valor predeterminado
+          break;
+      }
+    }
+  }, [plan, configuracion]); // Dependencias de plan y configuracion
+
+
+
+  const handleCheckboxChangeD = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.checked;
+  
+    // Si está marcando el checkbox (checked) y ha alcanzado el límite
+    if (newValue && cantidadDest >= maximo) {
+      Swal.fire({
+        title: 'Límite alcanzado',
+        text: "Ha alcanzado el número máximo de destacadas de su plan.",
+        icon: 'warning',
+        confirmButtonText: 'Aceptar',
+      });
+      return; // No cambiar el estado si ya ha alcanzado el límite
+    }
+  
+    // Cambia el estado del checkbox
+    setIsChecked(newValue);
+  
+    // Mostrar SweetAlert si el checkbox es marcado
+    if (newValue) {
+      Swal.fire({
+        title: 'Información',
+        text: "Al publicar como destacada, se tendrá mayor visibilidad. Esto solo podrá realizarse cierta cantidad de veces dependiendo de su plan contratado.",
+        icon: 'info',
+        confirmButtonText: 'Aceptar',
+      });
+    }
+  };
+  
   const handleTextArea = (e) => {
     if (e.key === 'Enter') {
-        e.preventDefault(); // Previene el salto al siguiente input
-        
-        const currentValue = e.target.value; // Obtiene el valor actual del textarea
-        // Añade un punto final y un salto de línea
-        e.target.value = currentValue.trim() + '.' + '\n'; 
-    }
-};
+      e.preventDefault(); // Previene el salto al siguiente input
 
-const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
+      const currentValue = e.target.value; // Obtiene el valor actual del textarea
+      // Añade un punto final y un salto de línea
+      e.target.value = currentValue.trim() + '.' + '\n';
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     // Verifica si el elemento activo es un textarea
     const target = e.target as HTMLElement;
     if (target.tagName === 'TEXTAREA') {
-        return; // No hace nada si está en un textarea
+      return; // No hace nada si está en un textarea
     }
 
     if (e.key === 'Enter') {
-        e.preventDefault(); // Evita el comportamiento por defecto del formulario
-        const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
-        if (boton) {
-            boton.click(); // Ejecuta el clic en el botón
-        }
+      e.preventDefault(); // Evita el comportamiento por defecto del formulario
+      const boton = document.getElementById('btnPublicarOferta') as HTMLButtonElement;
+      if (boton) {
+        boton.click(); // Ejecuta el clic en el botón
+      }
     }
-};
+  };
 
   // Toggle custom title input
   const handleToggleCustomInput = () => {
@@ -149,7 +259,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     setShowAdd(event.target.checked);
   };
 
-  
+
   useEffect(() => {
     const fetchOferta = async () => {
       try {
@@ -158,11 +268,17 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
 
         // Rellenar los valores del formulario con los datos de la oferta
         setValue('cargo', oferta.cargo);
-        setValue('id_area',oferta.id_area);
+        setValue('id_area', oferta.id_area);
         setDefaultAreaId(oferta.areas.id);
         setDefaultArea(oferta.areas.nombre_area);
         if (oferta.experiencia > 0) {
           setShowExperiencia(true);
+          // Aquí se carga el valor de exp_m para los radios
+          if (oferta.exp_m) { // Si exp_m es true, se seleccionan meses
+            setValue('experienciaTipo', 'meses');
+          } else { // Si exp_m es false, se seleccionan años
+            setValue('experienciaTipo', 'años');
+          }
           setValue('experiencia', oferta.experiencia);
         } else {
           setShowExperiencia(false);
@@ -179,71 +295,79 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
         if (oferta.correo_contacto) {
           setValue('correo_contacto', oferta.correo_contacto);
         }
+
+        if (oferta.dest) {
+          setIsChecked(true);
+        }
         setShowNumeroContacto(!!oferta.numero_contacto);
+        if (oferta.ciudad) {
+          setValue('ciudad', oferta.ciudad);
+        }
+        setShowCiudad(!!oferta.ciudad);
         if (oferta.numero_contacto) {
           setValue('numero_contacto', oferta.numero_contacto);
         }
-  // Manejar la educación requerida y los títulos
-  // Cargar preguntas
- // Cargar preguntas
- if (oferta.preguntas.length > 0) {
-  setRequirePregunta(true);
-  setPreguntas(oferta.preguntas);
-}
+        // Manejar la educación requerida y los títulos
+        // Cargar preguntas
+        // Cargar preguntas
+        if (oferta.preguntas.length > 0) {
+          setRequirePregunta(true);
+          setPreguntas(oferta.preguntas);
+        }
 
 
-      // Manejar la educación requerida y los títulos
-      if (oferta.expe.length > 0) {
-        setRequireEducation(true);
-        const titles: Titulo[] = oferta.expe.map((expe: Experiencia) => ({
-          id: expe.id,
-          titulo: expe.titulo,
-          customTitulo: expe.pivot.titulo_per2
-        }));
-        setSelectedTitles(titles);
-      } else {
-        setRequireEducation(false);
-        setSelectedTitles([]);
-      }
+        // Manejar la educación requerida y los títulos
+        if (oferta.expe.length > 0) {
+          setRequireEducation(true);
+          const titles: Titulo[] = oferta.expe.map((expe: Experiencia) => ({
+            id: expe.id,
+            titulo: expe.titulo,
+            customTitulo: expe.pivot.titulo_per2
+          }));
+          setSelectedTitles(titles);
+        } else {
+          setRequireEducation(false);
+          setSelectedTitles([]);
+        }
 
-       // Manejar la educación requerida y los títulos
- 
-      if (oferta.criterios.length > 0){
-        setRequireCriterio(true);
-        setSelectedCriterios(oferta.criterios.map((criterio:CriterioS) => ({
-          id_criterio: criterio.id_criterio,
-          criterio: criterio.criterio,
-          valor: criterio.pivot.valor,
-          prioridad: criterio.pivot.prioridad,
-        })));
-      }else{
-        setRequireCriterio(false);
-        setSelectedCriterios([]);
-      }
+        // Manejar la educación requerida y los títulos
 
-   
-      setValue('mostrar_sueldo', oferta.n_mostrar_sueldo ? true : false);
-      setValue('mostrar_empresa', oferta.n_mostrar_empresa ? true : false);
-      setValue('solicitar_sueldo', oferta.solicitar_sueldo ? true : false);
-      if (oferta.comisiones || oferta.horasExtra || oferta.viaticos|| oferta.comentariosComisiones|| oferta.comentariosHorasExtras||oferta.comentariosViaticos) {
-        setShowAdd(true);
-        setValue('comisiones', oferta.comisiones && oferta.comisiones !== 0 ? oferta.comisiones : '');
-        setValue('horasExtras', oferta.horasExtras && oferta.horasExtras !== 0 ? oferta.horasExtras : '');
-        setValue('viaticos', oferta.viaticos && oferta.viaticos !== 0 ? oferta.viaticos : '');
-        setValue('comentariosComisiones', oferta.comentariosComisiones|| '');
-        setValue('comentariosHorasExtras', oferta.comentariosHorasExtras|| '');
-        setValue('comentariosViaticos', oferta.comentariosViaticos|| '');
-        setHasAdditionalComponents(true);
-      } else {
-        setShowAdd(false);
-        setValue('comisiones', '');
-        setValue('horasExtras',  '');
-        setValue('viaticos',  '');
-        setValue('comentariosComisiones',  '');
-        setValue('comentariosHorasExtras',  '');
-        setValue('comentariosViaticos', '');
-        setHasAdditionalComponents(false);
-      }
+        if (oferta.criterios.length > 0) {
+          setRequireCriterio(true);
+          setSelectedCriterios(oferta.criterios.map((criterio: CriterioS) => ({
+            id_criterio: criterio.id_criterio,
+            criterio: criterio.criterio,
+            valor: criterio.pivot.valor,
+            prioridad: criterio.pivot.prioridad,
+          })));
+        } else {
+          setRequireCriterio(false);
+          setSelectedCriterios([]);
+        }
+
+
+        setValue('mostrar_sueldo', oferta.n_mostrar_sueldo ? true : false);
+        setValue('mostrar_empresa', oferta.n_mostrar_empresa ? true : false);
+        setValue('solicitar_sueldo', oferta.solicitar_sueldo ? true : false);
+        if (oferta.comisiones || oferta.horasExtra || oferta.viaticos || oferta.comentariosComisiones || oferta.comentariosHorasExtras || oferta.comentariosViaticos) {
+          setShowAdd(true);
+          setValue('comisiones', oferta.comisiones && oferta.comisiones !== 0 ? oferta.comisiones : '');
+          setValue('horasExtras', oferta.horasExtras && oferta.horasExtras !== 0 ? oferta.horasExtras : '');
+          setValue('viaticos', oferta.viaticos && oferta.viaticos !== 0 ? oferta.viaticos : '');
+          setValue('comentariosComisiones', oferta.comentariosComisiones || '');
+          setValue('comentariosHorasExtras', oferta.comentariosHorasExtras || '');
+          setValue('comentariosViaticos', oferta.comentariosViaticos || '');
+          setHasAdditionalComponents(true);
+        } else {
+          setShowAdd(false);
+          setValue('comisiones', '');
+          setValue('horasExtras', '');
+          setValue('viaticos', '');
+          setValue('comentariosComisiones', '');
+          setValue('comentariosHorasExtras', '');
+          setValue('comentariosViaticos', '');
+          setHasAdditionalComponents(false);
+        }
       } catch (error) {
         console.error('Error fetching oferta:', error);
       }
@@ -309,7 +433,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
         setCriterios(response3.data.criterios);
       } catch (error) {
         console.error('Error fetching data:', error);
-      }finally {
+      } finally {
         setLoading(false);
       }
     };
@@ -390,7 +514,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
     const id = parseInt(event.target.value);
     setSelectedCriterioId(id);
     setValorCriterio('');
-   
+
   };
 
   const handleAgregarCriterio = () => {
@@ -428,7 +552,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
   const handleEliminarCriterio = (id: number) => {
     const updatedCriterios = selectedCriterios.filter(c => c.id_criterio !== id);
     setSelectedCriterios(updatedCriterios);
- 
+
   };
 
   const handleTituloChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -491,7 +615,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
           setCustomTitulo('');
         }
 
-        
+
       }
     }
   };
@@ -518,27 +642,36 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
   };
 
   const onSubmit = handleSubmit(async (values) => {
-    try {
-       // Aquí transformamos el array de preguntas a un array de strings
-    const preguntasSoloTexto = preguntas.map(preguntaObj => preguntaObj.pregunta);
+    if (user) {
+      try {
+      const usuarioid = user.id;
+      const preguntasSoloTexto = preguntas.map(preguntaObj => preguntaObj.pregunta);
       const criteriosValidos = selectedCriterios.filter(criterio => criterio.id_criterio > 0 && criterio.prioridad !== null);
+      const experienciaEnMeses = values.experienciaTipo === 'meses';
       const dataToSend = {
         ...values,
+        usuario: usuarioid,
         experiencia: showExperiencia ? values.experiencia : 0,
+        experienciaEnMeses: showExperiencia ? experienciaEnMeses : 0,
         correo_contacto: showCorreo ? values.correo_contacto : null,
         numero_contacto: showNumeroContacto ? values.numero_contacto : null,
         mostrar_sueldo: values.mostrar_sueldo ? 1 : 0,
         titulos: selectedTitles,
         criterios: criteriosValidos,
-        preguntas: preguntasSoloTexto, 
+        preguntas: preguntasSoloTexto,
         comisiones: values.comisiones !== '' ? parseFloat(values.comisiones) : null,
         horasExtras: values.horasExtras !== '' ? parseFloat(values.horasExtras) : null,
         viaticos: values.viaticos !== '' ? parseFloat(values.viaticos) : null,
         comentariosComisiones: values.comentariosComisiones || null,
         comentariosHorasExtras: values.comentariosHorasExtras || null,
         comentariosViaticos: values.comentariosViaticos || null,
+        destacada: isChecked, 
+        ciudad: showCiudad ? values.ciudad : null,
+        empresa_p: null,
+        sector_p: null,
+        gestoraId: null, 
       };
-  
+
       // SweetAlert para confirmar la publicación
       const result = await Swal.fire({
         title: 'Confirmación',
@@ -547,31 +680,33 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
         showCancelButton: true,
         confirmButtonText: 'Sí, publicar',
         cancelButtonText: 'Cancelar'
-    });
+      });
 
-    // Si el usuario confirma, se procede con el envío
-    if (result.isConfirmed) {
-  
-      await axios.put(`update-oferta/${id}`, dataToSend, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-  
-      Swal.fire({
-        title: '¡Actualizada!',
-        text: 'La oferta ha sido actualizada exitosamente',
-        icon: 'success',
-        confirmButtonText: 'Ok'
-      }).then(() => {
-        navigate("/verOfertasE");
-      });
-    }
+      // Si el usuario confirma, se procede con el envío
+      if (result.isConfirmed) {
+
+        await axios.put(`update-oferta/${id}`, dataToSend, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        Swal.fire({
+          title: '¡Actualizada!',
+          text: 'La oferta ha sido actualizada exitosamente',
+          icon: 'success',
+          confirmButtonText: 'Ok'
+        }).then(() => {
+          navigate("/verOfertasE");
+        });
+      }
+    
     } catch (error) {
       console.log(error);
     }
+  }
   });
-  
+
 
 
   const criterioDescripcion = criterios.find(c => c.id_criterio === selectedCriterioId)?.descripcion || '';
@@ -585,7 +720,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
       </div>
     );
   }
-  
+
 
   return (
     <>
@@ -729,7 +864,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
                     <ul className="list-disc pl-4">
                       {selectedTitles.map((titulo, index) => (
                         <li key={index} className="flex items-center">
-                         <span>{titulo.customTitulo ? titulo.customTitulo : titulo.titulo}</span>
+                          <span>{titulo.customTitulo ? titulo.customTitulo : titulo.titulo}</span>
                           <button
                             type="button"
                             className="ml-2 text-red-600"
@@ -753,13 +888,13 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
               <span className="text-gray-600 text-sm ml-2">(Campo obligatorio)</span>
             </label>
             <select className="w-full p-2 border rounded" id="id_area" {...register('id_area', { required: 'Área es requerida' })} defaultValue={defaultAreaId}>
-  <option value={defaultAreaId}>{defaultArea}</option>
-  {areas.map(area => (
-    <option key={area.id} value={area.id}>
-      {area.nombre_area}
-    </option>
-  ))}
-</select>
+              <option value={defaultAreaId}>{defaultArea}</option>
+              {areas.map(area => (
+                <option key={area.id} value={area.id}>
+                  {area.nombre_area}
+                </option>
+              ))}
+            </select>
             {errors.id_area && <p className="text-red-500">{String(errors.id_area.message)}</p>}
           </div>
 
@@ -778,27 +913,61 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
             {showExperiencia && (
               <>
                 <div id="experienciaContainer" className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
-                  <label className="block text-sm font-bold mb-2" htmlFor="experiencia">
-                    Años de Experiencia requerida
+                  <label className="block text-sm font-bold mb-2">
+                    Selecciona si la experiencia requerida es en meses o años:
                   </label>
+
+                  <div className="flex mb-4">
+                    <label className="mr-4">
+                      <input
+                        type="radio"
+                        value="años"
+                        {...register('experienciaTipo')}
+                        checked={watch('experienciaTipo') === 'años'} // Verifica el valor actual
+                        onChange={() => setValue('experienciaTipo', 'años')} // Actualiza el estado
+                      />
+                      <span className="ml-2">Años</span>
+                    </label>
+
+                    <label>
+                      <input
+                        type="radio"
+                        value="meses"
+                        {...register('experienciaTipo')}
+                        checked={watch('experienciaTipo') === 'meses'} // Verifica el valor actual
+                        onChange={() => setValue('experienciaTipo', 'meses')} // Actualiza el estado
+                      />
+                      <span className="ml-2">Meses</span>
+                    </label>
+                  </div>
+
+                  <label className="block text-sm font-bold mb-2" htmlFor="experiencia">
+                    {watch('experienciaTipo') === 'meses'
+                      ? 'Meses de Experiencia requerida'
+                      : 'Años de Experiencia requerida'}
+                  </label>
+
                   <input
                     className="w-full p-2 border rounded"
                     type="number"
                     id="experiencia"
-                    placeholder="Número de  años de experiencia en puestos similares"
+                    placeholder={watch('experienciaTipo') === 'meses'
+                      ? 'Número de meses de experiencia en puestos similares'
+                      : 'Número de años de experiencia en puestos similares'}
                     {...register('experiencia', {
                       required: 'Experiencia es requerida',
                       validate: validateNoNegative,
                     })}
                   />
+
                   {errors.experiencia && (
                     <p className="text-red-500">{String(errors.experiencia.message)}</p>
                   )}
                 </div>
                 <hr className="my-4" />
               </>
-
             )}
+
           </div>
 
 
@@ -811,9 +980,11 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
               className="w-full p-2 border rounded"
               id="objetivo_cargo"
               placeholder="Describa en breves palabras el objetivo del puesto de trabajo"
-              {...register('objetivo_cargo', { required: 'Objetivo del Cargo es requerido' , validate: {
-                maxLength: value => value.length <= 500 || 'Se permiten hasta 500 caracteres.',
-              },})}
+              {...register('objetivo_cargo', {
+                required: 'Objetivo del Cargo es requerido', validate: {
+                  maxLength: value => value.length <= 500 || 'Se permiten hasta 500 caracteres.',
+                },
+              })}
             />
             {errors.objetivo_cargo && <p className="text-red-500">{String(errors.objetivo_cargo.message)}</p>}
           </div>
@@ -943,12 +1114,12 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
               </>
             )}
           </div>
-         
+
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2" htmlFor="funciones">• Funciones del puesto:
               <span className="text-red-500 ml-1">*</span>
               <span className="text-gray-600 text-sm ml-2">(Campo obligatorio, Agregue puntos para separar cada función)</span>
-              </label>
+            </label>
             <textarea
               className="w-full p-2 border rounded"
               id="funciones"
@@ -1022,8 +1193,8 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
           <hr className="my-4" />
           <div className="bg-white p-6 rounded-lg shadow-lg py-8" >
             <h3 className="text-1xl text-red-500 font-bold mb-4">Datos de contacto extra:</h3>
-              {/* Mensaje de aviso mejorado */}
-              <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+            {/* Mensaje de aviso mejorado */}
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
               <div className="flex items-center">
                 <svg
                   className="h-5 w-5 text-yellow-500 mr-2"
@@ -1158,7 +1329,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
                   <label className="block text-sm font-bold mb-2" htmlFor="id_criterio">Criterio</label>
                   <div className="flex flex-col md:flex-row">
                     <select
-                     className="w-full md:w-2/3 p-2 border rounded"
+                      className="w-full md:w-2/3 p-2 border rounded"
                       id="criterio"
                       onChange={handleCriterioChange}
                       value={selectedCriterioId || ''}>
@@ -1173,111 +1344,111 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
                       <>
                         {selectedCriterioId === 4 ? (
                           <>
-                             
-                          <select
-                           className="w-full md:w-full p-2 border rounded"
-                            id="valor g"
-                            value={valorCriterio}
-                            onChange={(e) => setValorCriterio(e.target.value)}
-                          >
-                            <option value="">Seleccione un género...</option>
-                            <option value="Masculino">Masculino</option>
-                            <option value="Femenino">Femenino</option>
-                            <option value="Otro">Otro</option>
-                          </select>
-                          <select
+
+                            <select
                               className="w-full md:w-full p-2 border rounded"
-                               id="prioridad"
-                               value={prioridadCriterio || ''}
-                               onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                               <option value="">Seleccione una prioridad...</option>
-                               <option value="1">Alta</option>
-                               <option value="2">Media</option>
-                               <option value="3">Baja</option>
-                             </select>
-                      
+                              id="valor g"
+                              value={valorCriterio}
+                              onChange={(e) => setValorCriterio(e.target.value)}
+                            >
+                              <option value="">Seleccione un género...</option>
+                              <option value="Masculino">Masculino</option>
+                              <option value="Femenino">Femenino</option>
+                              <option value="Otro">Otro</option>
+                            </select>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
+
                           </>
                         ) : selectedCriterioId === 5 ? (
                           <>
-                          <select
-                           className="w-full md:w-2/3 p-2 border rounded"
-                            id="valor e"
-                            value={valorCriterio}
-                            onChange={(e) => setValorCriterio(e.target.value)}
-                          >
-                            <option value="">Seleccione un estado civil...</option>
-                            <option value="Casado">Casado/a</option>
-                            <option value="Soltero">Soltero/a</option>
-                            <option value="Viudo">Viudo/a</option>
-                          </select>
-                          <select
-                               className="w-full md:w-2/3 p-2 border rounded"
-                               id="prioridad"
-                               value={prioridadCriterio || ''}
-                               onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                               <option value="">Seleccione una prioridad...</option>
-                               <option value="1">Alta</option>
-                               <option value="2">Media</option>
-                               <option value="3">Baja</option>
-                             </select>
+                            <select
+                              className="w-full md:w-2/3 p-2 border rounded"
+                              id="valor e"
+                              value={valorCriterio}
+                              onChange={(e) => setValorCriterio(e.target.value)}
+                            >
+                              <option value="">Seleccione un estado civil...</option>
+                              <option value="Casado">Casado/a</option>
+                              <option value="Soltero">Soltero/a</option>
+                              <option value="Viudo">Viudo/a</option>
+                            </select>
+                            <select
+                              className="w-full md:w-2/3 p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
                           </>
                         ) : selectedCriterioId === 6 ? (
                           <>
-                          <select
-                          className="w-full md:w-full p-2 border rounded"
-                            id="valor e"
-                            value={valorCriterio}
-                            onChange={(e) => setValorCriterio(e.target.value)}
-                          >
-                            <option value="">Seleccione un idioma...</option>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="valor e"
+                              value={valorCriterio}
+                              onChange={(e) => setValorCriterio(e.target.value)}
+                            >
+                              <option value="">Seleccione un idioma...</option>
 
-                            {languages.map((language: idioma) => (
-                              <option key={language.id} value={language.id + ',' + language.nombre}>
-                                {language.nombre}
-                              </option>
-                            ))}
-                          </select>
-                               <select
-                               className="w-full md:w-full p-2 border rounded"
-                               id="prioridad"
-                               value={prioridadCriterio || ''}
-                               onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                               <option value="">Seleccione una prioridad...</option>
-                               <option value="1">Alta</option>
-                               <option value="2">Media</option>
-                               <option value="3">Baja</option>
-                             </select>
-                             </>
+                              {languages.map((language: idioma) => (
+                                <option key={language.id} value={language.id + ',' + language.nombre}>
+                                  {language.nombre}
+                                </option>
+                              ))}
+                            </select>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
+                          </>
                         ) : selectedCriterioId === 7 ? (
                           <>
-                          <select
-                           className="w-full md:w-full p-2 border rounded"
-                            id="valor e"
-                            value={valorCriterio}
-                            onChange={(e) => setValorCriterio(e.target.value)}
-                          >
-                            <option value="">Rango de edad...</option>
-                            <option value="Joven,(18-25 años)">18 - 25 años</option>
-                            <option value="Adulto,(26-35 años)">26 - 35 años</option>
-                            <option value="Mayor,(Más de 36 años)">36 años en adelante</option>
-                          </select>
-                                <select
-                                className="w-full md:w-full p-2 border rounded"
-                                id="prioridad"
-                                value={prioridadCriterio || ''}
-                                onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                                <option value="">Seleccione una prioridad...</option>
-                                <option value="1">Alta</option>
-                                <option value="2">Media</option>
-                                <option value="3">Baja</option>
-                              </select>
-                              </>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="valor e"
+                              value={valorCriterio}
+                              onChange={(e) => setValorCriterio(e.target.value)}
+                            >
+                              <option value="">Rango de edad...</option>
+                              <option value="Joven,(18-25 años)">18 - 25 años</option>
+                              <option value="Adulto,(26-35 años)">26 - 35 años</option>
+                              <option value="Mayor,(Más de 36 años)">36 años en adelante</option>
+                            </select>
+                            <select
+                              className="w-full md:w-full p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
+                          </>
 
                         ) : selectedCriterioId === 8 ? (
 
                           <>
 
-                            <select id="province"className="w-full md:w-full p-2 border rounded" onChange={handleProvinceChange}
+                            <select id="province" className="w-full md:w-full p-2 border rounded" onChange={handleProvinceChange}
                               value={selectedProvince}>
                               <option value="">Provincia..</option>
                               {provinces.map((province, index) => (
@@ -1287,7 +1458,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
                               ))}
                             </select>
                             <select
-                             className="w-full md:w-full p-2 border rounded"
+                              className="w-full md:w-full p-2 border rounded"
                               id="valor e"
                               value={selectedCanton}
                               onChange={handleCantonChange}
@@ -1302,31 +1473,31 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
 
                             </select>
                             <select
-                      className="w-full md:w-full p-2 border rounded"
-                      id="prioridad"
-                      value={prioridadCriterio || ''}
-                      onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                      <option value="">Seleccione una prioridad...</option>
-                      <option value="1">Alta</option>
-                      <option value="2">Media</option>
-                      <option value="3">Baja</option>
-                    </select>
+                              className="w-full md:w-full p-2 border rounded"
+                              id="prioridad"
+                              value={prioridadCriterio || ''}
+                              onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                              <option value="">Seleccione una prioridad...</option>
+                              <option value="1">Alta</option>
+                              <option value="2">Media</option>
+                              <option value="3">Baja</option>
+                            </select>
                           </>
                         ) : (
                           <select
-                          className="w-full md:w-full p-2 border rounded"
-                          id="prioridad"
-                          value={prioridadCriterio || ''}
-                          onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
-                          <option value="">Seleccione una prioridad...</option>
-                          <option value="1">Alta</option>
-                          <option value="2">Media</option>
-                          <option value="3">Baja</option>
-                        </select>
+                            className="w-full md:w-full p-2 border rounded"
+                            id="prioridad"
+                            value={prioridadCriterio || ''}
+                            onChange={(e) => setPrioridadCriterio(parseInt(e.target.value))}>
+                            <option value="">Seleccione una prioridad...</option>
+                            <option value="1">Alta</option>
+                            <option value="2">Media</option>
+                            <option value="3">Baja</option>
+                          </select>
                         )}
                       </>
                     )}
-              
+
                   </div>
                   {criterioDescripcion && (
                     <p className="mt-2 text-gray-600"><strong>¿Qué se evalua?</strong> {criterioDescripcion}</p>
@@ -1360,73 +1531,142 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
                 </div>
                 <hr className="my-4" />
               </>)}
-       {/* Sección de preguntas */}
-       <hr className="my-4" />
-          <div className="bg-white p-6 rounded-lg shadow-lg py-8" style={{ marginTop: '20px' }}>
-            <h3 className="text-1xl text-red-500 font-bold mb-4">Preguntas de evaluación:</h3>
-            <span>Puede realizar 5 preguntas como máximo para los postulantes de esta oferta. Este apartado no es obligatorio</span>
-            <div className="mb-4">
+            {/* Sección de preguntas */}
+            <hr className="my-4" />
+            <div className="bg-white p-6 rounded-lg shadow-lg py-8" style={{ marginTop: '20px' }}>
+              <h3 className="text-1xl text-red-500 font-bold mb-4">Preguntas de evaluación:</h3>
+              <span>Puede realizar 5 preguntas como máximo para los postulantes de esta oferta. Este apartado no es obligatorio</span>
+              <div className="mb-4">
+                <div className="flex items-center">
+                  <input
+                    className="mr-2 leading-tight"
+                    type="checkbox"
+                    id="requirePregunta"
+                    checked={requirePregunta}
+                    onChange={() => setRequirePregunta(!requirePregunta)}
+                  />
+                  <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="requirePregunta">
+                    ¿Realizar preguntas específicas a los postulantes?
+                  </label>
+                </div>
+              </div>
+
+              {requirePregunta && (
+                <>
+                  <hr className="my-4" />
+                  <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                    <label className="block text-sm font-bold mb-2" htmlFor="nuevaPregunta">Nueva Pregunta</label>
+                    <div className="flex flex-col md:flex-row">
+                      <input
+                        className="w-full md:w-2/3 p-2 border rounded mb-4"
+                        id="nuevaPregunta"
+                        type="text"
+                        value={nuevaPregunta}
+                        onChange={(e) => setNuevaPregunta(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                        onClick={handleAgregarPregunta}
+                      >
+                        Agregar Pregunta
+                      </button>
+                    </div>
+
+                    {preguntas.length > 0 && (
+                      <div className="mt-4">
+                        <h4 className="font-semibold">Preguntas Añadidas:</h4>
+                        <ul>
+                          {preguntas.map((pregunta, index) => (
+                            <li key={pregunta.id} className="flex items-center justify-between mb-2">
+                              <span>{pregunta.pregunta}</span>
+                              <button
+                                type="button"
+                                className="text-red-500"
+                                onClick={() => handleEliminarPregunta(index)}
+                              >
+                                x
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                  <hr className="my-4" />
+                </>
+              )}
+            </div>
+            <hr className="my-4" />
+
+            <div className="bg-white p-6 rounded-lg shadow-lg py-8" >
+              <h3 className="text-1xl text-red-500 font-bold mb-4">Ubicación de la oferta:</h3>
+              {/* Mensaje de aviso mejorado */}
+              <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+                <div className="flex items-center">
+                  <svg
+                    className="h-5 w-5 text-yellow-500 mr-2"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                    />
+                  </svg>
+                  <h1 className="text-xs font-semibold">
+                    (Si la oferta sigue la misma ubicación de la empresa no seleccionar la opción)
+                  </h1>
+                </div>
+              </div>
+
               <div className="flex items-center">
                 <input
                   className="mr-2 leading-tight"
                   type="checkbox"
-                  id="requirePregunta"
-                  checked={requirePregunta}
-                  onChange={() => setRequirePregunta(!requirePregunta)}
+                  id="showCiudad"
+                  checked={showCiudad}
+                  onChange={() => setShowCiudad(!showCiudad)}
                 />
-                <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="requirePregunta">
-                  ¿Realizar preguntas específicas a los postulantes?
+                <label className="block text-sm font-bold mb-2 text-blue-500" htmlFor="showCiudad">
+                  ¿La oferta de trabajo sera para una ciudad en específico?
                 </label>
               </div>
-            </div>
-
-            {requirePregunta && (
-              <>
-                <hr className="my-4" />
-                <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
-                  <label className="block text-sm font-bold mb-2" htmlFor="nuevaPregunta">Nueva Pregunta</label>
-                  <div className="flex flex-col md:flex-row">
+              {showCiudad && (
+                <>
+                  <hr className="my-4" />
+                  <div className="flex-col bg-gray-200 rounded-lg shadow-md items-center p-10">
+                    <label className="block text-sm font-bold mb-2" htmlFor="ciudad">Ciudad destinada de la oferta</label>
                     <input
-                      className="w-full md:w-2/3 p-2 border rounded mb-4"
-                      id="nuevaPregunta"
+                      className="w-full p-2 border rounded"
                       type="text"
-                      value={nuevaPregunta}
-                      onChange={(e) => setNuevaPregunta(e.target.value)}
+                      id="ciudad"
+                      placeholder="Escriba la ciudad en la que se solicita el cargo "
+                      {...register('ciudad')}
                     />
-                    <button
-                      type="button"
-                      className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                      onClick={handleAgregarPregunta}
-                    >
-                      Agregar Pregunta
-                    </button>
                   </div>
-
-                  {preguntas.length > 0 && (
-                    <div className="mt-4">
-                      <h4 className="font-semibold">Preguntas Añadidas:</h4>
-                      <ul>
-                        {preguntas.map((pregunta, index) => (
-                          <li key={pregunta.id} className="flex items-center justify-between mb-2">
-                            <span>{pregunta.pregunta}</span>
-                            <button
-                              type="button"
-                              className="text-red-500"
-                              onClick={() => handleEliminarPregunta(index)}
-                            >
-                              x
-                            </button>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-                <hr className="my-4" />
-              </>
-            )}
+                  <hr className="my-4" />
+                </>
+              )}
+            </div>
           </div>
-
+          <div className="flex justify-center">
+            <input
+              type="checkbox"
+              id="checkboxId"
+              checked={isChecked}
+              onChange={handleCheckboxChangeD}
+            // Deshabilitar el checkbox si ha alcanzado el límite
+              className="mr-2"
+            />
+              
+            <label htmlFor="checkboxId" className="text-sm text-gray-700">
+              ¿Publicar como destacada?
+            </label>
           </div>
           <div className="flex justify-center">
             <button
@@ -1438,7 +1678,7 @@ const handleKeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
             <button
               type="submit"
               className="bg-blue-500 text-white p-2 rounded-lg mt-4"
-               id="btnPublicarOferta"
+              id="btnPublicarOferta"
             >
               Actualizar Oferta
             </button>

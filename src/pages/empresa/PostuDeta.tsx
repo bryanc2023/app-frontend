@@ -4,29 +4,28 @@ import Swal from 'sweetalert2';
 import { useNavigate } from 'react-router-dom';
 import { useAppDispatch, RootState } from '../../store';
 import { useSelector } from 'react-redux';
+import { FaEye, FaCheck, FaThumbsUp } from 'react-icons/fa'; // Import the Eye icon from react-icons
 
+interface Respuesta {
+    id_pregunta: number;
+    pregunta: string;
+    id_oferta: number;
+    respuesta: string;
+}
 
 interface Postulante {
     id_postulante: number;
     nombres: string;
     apellidos: string;
-    fecha_nac: string;
     edad: number;
     estado_civil: string;
-    cedula: string;
     genero: string;
     informacion_extra: string;
     foto: string;
     cv: string | null;
     total_evaluacion: number;
-    fecha: string;
     estado_postulacion: string;
-    respuestas: {
-        id_pregunta:number;
-        pregunta:string;
-        id_oferta:number;
-        respuesta:string;
-       }[];
+    respuestas: Respuesta[];
 }
 
 interface PostulanteDetailProps {
@@ -41,7 +40,7 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
     const [comentario, setComentario] = useState('');
     const [hayAprobado, setHayAprobado] = useState(false);
     const navigate = useNavigate();
-    const { role} = useSelector((state: RootState) => state.auth);
+    const { role } = useSelector((state: RootState) => state.auth);
 
     useEffect(() => {
         const verificarPostulacionAprobada = async (idOferta: number) => {
@@ -50,13 +49,11 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
                 setHayAprobado(response.data.existe_aprobado);
             } catch (error) {
                 console.error('Error al verificar postulación aprobada:', error);
-                setHayAprobado(false); // Manejo del error según tu lógica de frontend
+                setHayAprobado(false);
             }
         };
-
         verificarPostulacionAprobada(idOferta);
     }, [idOferta]);
-    
 
     const handleOpenComentarioModal = () => {
         setShowComentarioModal(true);
@@ -80,10 +77,10 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
                 id_oferta: idOferta,
             };
 
-            const response = await axios.post(`actualizar-postulaciones`, comentarioData);
+            const response = await axios.post('actualizar-postulaciones', comentarioData);
 
             if (response.status === 200) {
-              
+
                 // Mostrar SweetAlert
                 Swal.fire({
                     icon: 'success',
@@ -91,12 +88,14 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
                     text: 'Se le ha notificado al postulante y a los demás enlistados la decisión.',
                     confirmButtonText: 'OK',
                 }).then(() => {
-                     if (role === 'empresa_oferente') {
+                    if (role === 'empresa_oferente') {
                         navigate('/verOfertasE');
                     } else if (role === 'empresa_gestora') {
                         navigate('/inicioG');
+                    }else if (role === 'p_empresa_g') {
+                        navigate('/inicioG');
                     }
-                  
+
                 });
             } else {
                 console.error('Error al enviar comentario:', response.status);
@@ -141,150 +140,149 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
         setShowRespuestasModal(false);
     };
 
+
+
+
     return (
         <div className="p-4 bg-white text-gray-900 rounded-lg relative">
-            <h1 className="text-2xl font-bold mb-4 text-gray-900">Detalles del Postulante</h1>
-            <div className="flex items-center justify-center mb-4">
-                <img src={postulante.foto} alt="Foto del postulante" className="w-32 h-32 object-cover rounded-full" />
-            </div>
-            <div className="mb-4">
-                <p className="text-gray-900 mb-2"><span className="font-bold">Nombre:</span> {postulante.nombres} {postulante.apellidos}</p>
-                <p className="text-gray-900 mb-2"><span className="font-bold">Edad:</span> {postulante.edad}</p>
-                <p className="text-gray-900 mb-2"><span className="font-bold">Estado civil:</span> {postulante.estado_civil}</p>
-                <p className="text-gray-900 mb-2"><span className="font-bold">Género:</span> {postulante.genero}</p>
-                <p className="text-gray-900 mb-2"><span className="font-bold">Presentación:</span> {postulante.informacion_extra}</p>
-            </div>
-            {postulante.cv && (
-                <div className="mb-4">
-                    <p className="text-gray-900 mb-2">
-                        <span className="font-bold">Hoja de vida:</span>
-                        <a href={postulante.cv} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline ml-2">Ver hoja de vida completa</a>
-                    </p>
-                </div>
-            )}
-            {/* Botón para ver respuestas, solo si existen */}
-            {postulante.respuestas && postulante.respuestas.length > 0 && (
-                <div className="mb-4">
-                    <button
-                        onClick={handleOpenRespuestasModal}
-                        className="bg-slate-400 text-white py-2 px-4 rounded hover:bg-blue-600"
-                    >
-                        Ver respuestas del postulante a las preguntas de evaluación
-                    </button>
-                </div>
-            )}
-            <div className="flex justify-end mt-4">
-                {postulante.estado_postulacion !== 'A' && (
-                    <button
-                        onClick={handleAprobarPostulante}
-                        className={`py-2 px-4 rounded mr-4 ${hayAprobado ? 'bg-purple-500 text-white hover:bg-purple-600' : 'bg-green-500 text-white hover:bg-green-600'
-                            }`}
-                    >
-                        {hayAprobado ? 'Aprobar nuevo postulante' : 'Aceptar Postulante'}
-                    </button>
+            {/* Postulante Details */}
+            <div>
+                <h2 className="text-2xl font-semibold text-orange-600">{postulante.nombres} {postulante.apellidos}</h2>
+                <center>
+                    <img src={postulante.foto} alt="Postulante" className="h-32 w-32 rounded-full" />
+                </center>
+                <p><strong className='text-cyan-700'>Edad: </strong>{postulante.edad}</p>
+                <p><strong className='text-cyan-700'>Estado civil: </strong> {postulante.estado_civil}</p>
+                <p><strong className='text-cyan-700'>Género: </strong> {postulante.genero}</p>
+                {/* Condición para mostrar la Presentación si no es nulo */}
+                {postulante.informacion_extra && (
+                    <div className="mt-4"> {/* Espacio adicional si es necesario */}
+                        <p>
+                            <strong className='text-cyan-700'>Presentación: </strong>
+                            <hr />
+                            {postulante.informacion_extra}
+                        </p>
+                        <hr />
+                    </div>
                 )}
-                <button
-                    onClick={onClose}
-                    className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-                >
-                    Cerrar
-                </button>
+
+
+                {postulante.respuestas && postulante.respuestas.length > 0 && (
+                    <center>
+                        <div className="mt-6"> {/* Added margin-top for spacing */}
+                            <button
+                                onClick={handleOpenRespuestasModal}
+                                className="bg-cyan-500 text-white py-2 px-4 rounded hover:bg-cyan-950 flex items-center justify-center"
+                            >
+                                <FaEye className="mr-2" /> {/* Add an icon to the button */}
+                                Ver respuestas del postulante a las preguntas de evaluación
+                            </button>
+                        </div>
+                    </center>
+                )}
+
+                {postulante.estado_postulacion !== 'A' && (
+                    <center>
+                        <div className="mt-6">
+                            <button
+                                onClick={handleAprobarPostulante}
+                                className={`py-2 px-4 rounded mr-4 ${hayAprobado ? 'bg-purple-500 text-white hover:bg-purple-600' : 'bg-green-500 text-white hover:bg-green-600'} flex items-center justify-center`} // Añadir flex para centrar el icono y el texto
+                            >
+                                {hayAprobado ? <FaCheck className="mr-2" /> : <FaThumbsUp className="mr-2" />} {/* Cambiar el ícono según el estado */}
+                                {hayAprobado ? 'Aprobar nuevo postulante' : 'Aceptar Postulante'}
+                            </button>
+                        </div>
+                    </center>
+                )}
+
+
             </div>
 
             {/* Modal de Comentario */}
             {showComentarioModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none">
-                    <div className="relative w-auto max-w-md mx-auto my-6">
-                        <div className="relative flex flex-col w-full bg-white border-0 rounded-lg shadow-lg outline-none focus:outline-none">
-                            <div className="flex items-start justify-between p-5 border-b border-solid rounded-t border-blueGray-200">
-                                <h3 className="text-2xl font-semibold">
-                                    <center>  ¿Deseas Aceptar Este Postulante Para La Oferta?</center>
-                                </h3>
-                                <button
-                                    className="p-1 ml-auto  border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none"
-                                    onClick={handleCloseComentarioModal}
-                                >
-                                    <span className=" text-black opacity-5 h-6 w-6 text-2xl block outline-none focus:outline-none">×</span>
-                                </button>
-                            </div>
-                            <div className="relative p-6 flex-auto">
-                                <p>Para aceptar al postulante ingresa la información como el contacto que deseas que se comunique el postulante, o un comentario:</p>
-                                <textarea
-                                    className="border rounded-lg w-full h-32 p-2 mb-4"
-                                    placeholder="Escribe un comentario y un medio de contacto para el postulante (email,telefono)"
-                                    value={comentario}
-                                    onChange={(e) => setComentario(e.target.value)}
-                                ></textarea>
-                                <div className="flex justify-center">
-                                    <button
-                                        onClick={handleCancelComentario}
-                                        className="bg-red-500 text-white active:bg-red-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none mr-4"
-                                        type="button"
-                                        style={{ transition: "all .15s ease" }}
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"> {/* No overflow */}
+                    <div className="relative w-auto max-w-md mx-auto bg-white rounded-lg shadow-lg">
+                        <div className="p-6">
+                            <h3 className="text-2xl font-semibold text-center mb-4">¿Deseas Aceptar Este Postulante Para La Oferta?</h3>
+                            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+                                <div className="flex items-center">
+                                    <svg
+                                        className="h-5 w-5 text-yellow-500 mr-2"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
                                     >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        onClick={handleSubmitComentario}
-                                        className="bg-green-500 text-white active:bg-green-600 font-bold uppercase text-sm px-6 py-3 rounded shadow hover:shadow-lg outline-none focus:outline-none"
-                                        type="button"
-                                        style={{ transition: "all .15s ease" }}
-                                    >
-                                        Aceptar
-                                    </button>
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                                        />
+                                    </svg>
+                                    <h1 className="text-xs font-semibold">
+                                        (Aqui puede ingresar información específica al postulante acerca de la aceptación, si no es necesario le llegará un "Aceptado" al postulante)
+                                    </h1>
                                 </div>
+                            </div>
+                            <textarea
+                                className="border rounded-lg w-full h-32 p-2 mb-4"
+                                placeholder="Escribe un comentario y un medio de contacto para el postulante (email, telefono)"
+                                value={comentario}
+                                onChange={(e) => setComentario(e.target.value)}
+                            ></textarea>
+                            <div className="flex justify-center space-x-4">
+                                <button
+                                    onClick={handleCancelComentario}
+                                    className="bg-red-500 text-white px-4 py-2 rounded"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={handleSubmitComentario}
+                                    className="bg-green-500 text-white px-4 py-2 rounded"
+                                >
+                                    Aceptar
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
-            {showComentarioModal && <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>}
-             {/* Modal de Respuestas */}
-             {showRespuestasModal && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overflow-x-hidden overflow-y-auto outline-none focus:outline-none">
-        <div className="relative w-full max-w-4xl mx-auto my-6 md:my-8">
-            <div className="relative flex flex-col w-full bg-white border-0 rounded-lg shadow-lg outline-none focus:outline-none">
-                <div className="flex items-start justify-between p-5 border-b border-solid rounded-t border-blueGray-200">
-                    <h3 className="text-lg md:text-xl font-semibold text-orange-600">
-                        RESPUESTAS DEL POSTULANTE
-                    </h3>
-                    <button
-                        className="p-1 ml-auto bg-transparent border-0 text-black float-right text-2xl leading-none font-semibold outline-none focus:outline-none"
-                        onClick={handleCloseRespuestasModal}
-                    >
-                        <span className="text-black h-6 w-6 text-2xl block outline-none focus:outline-none">×</span>
-                    </button>
-                </div>
-                <div className="relative p-6 flex-auto overflow-y-auto max-h-96 md:max-h-[75vh]">
-                    {postulante.respuestas.map((respuesta, index) => (
-                        <div key={index} className="mb-4">
-                            <p className="font-bold">Pregunta {index + 1}:</p>
-                            <p className="text-gray-700">{respuesta.pregunta}</p>
-                            <p className="font-bold mt-2">Respuesta:</p>
-                            <p className="text-gray-700">{respuesta.respuesta}</p>
-                            <hr className="my-4" />
-                        </div>
-                    ))}
-                </div>
-                <div className="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
-                    <button
-                        className="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1"
-                        type="button"
-                        style={{ transition: "all .15s ease" }}
-                        onClick={handleCloseRespuestasModal}
-                    >
-                        Cerrar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-)}
 
-            {showRespuestasModal && <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>}
+            {/* Modal de Respuestas */}
+            {showRespuestasModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"> {/* Overflow en el modal */}
+                    <div className="relative w-full max-w-4xl bg-white rounded-lg shadow-lg max-h-screen overflow-y-auto"> {/* Se agrega overflow al modal */}
+                        <div className="p-6">
+                            <div className="flex justify-between items-center mb-4">
+                                <h3 className="text-lg font-semibold text-orange-600">RESPUESTAS DEL POSTULANTE</h3>
+                                <button
+                                    className="text-black text-2xl"
+                                    onClick={handleCloseRespuestasModal}
+                                >
+                                    ×
+                                </button>
+                            </div>
+                            <div className="overflow-y-auto max-h-96"> {/* Limita la altura del contenido */}
+                                {postulante.respuestas.map((respuesta, index) => (
+                                    <div key={index} className="mb-4">
+                                        <p className="font-bold">Pregunta {index + 1}:</p>
+                                        <p className="text-gray-700">{respuesta.pregunta}</p>
+                                        <p className="font-bold mt-2">Respuesta:</p>
+                                        <p className="text-gray-700">{respuesta.respuesta}</p>
+                                        <hr className="my-4" />
+                                    </div>
+                                ))}
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
-};
 
+};
 export default PostulanteDetail;
 
