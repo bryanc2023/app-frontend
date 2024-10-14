@@ -35,8 +35,18 @@ export interface Formacion {
       canton: string;
     };
     cursos: Curso[]; 
+    areas: Area[]; 
   }
-  
+  export interface Area {
+    id_postulante: number;
+    id_area: number;
+    fecha_creacion: string;
+       area: {
+           id: number;
+           nombre_area: string,
+          
+         }
+ }
   export interface Curso {
    id_certificado: number;
   titulo: string;
