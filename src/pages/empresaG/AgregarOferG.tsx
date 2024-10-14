@@ -108,6 +108,8 @@ function AgregarO() {
   const [showEmpresa, setEmpresa] = useState(false);
   // Observamos el valor del campo 'experienciaTipo'
   const experienciaTipo = watch('experienciaTipo', 'años'); // 'años' es el valor por defecto
+  const [loading, setLoading] = useState(false);
+  
   useEffect(() => {
     // Función para obtener cantidad_dest y plan
     const fetchCantidadDest = async () => {
@@ -504,6 +506,7 @@ function AgregarO() {
 
   const onSubmit = handleSubmit(async (values) => {
     if (user) {
+      setLoading(true);
       try {
         const usuario = user.id;
         const experienciaEnMeses = values.experienciaTipo === 'meses';
@@ -587,6 +590,8 @@ function AgregarO() {
         }
       } catch (error) {
         console.log(error);
+      }finally {
+        setLoading(false);
       }
     }
   });
@@ -1621,11 +1626,11 @@ function AgregarO() {
             <button
               type="submit"
               id="btnPublicarOferta"
-              className="bg-blue-500 text-white p-2 rounded-lg mt-4"
+              disabled={loading} // Deshabilitar el botón si loading es true
+              className={`bg-blue-500 text-white p-2 rounded-lg mt-4 ${loading ? 'opacity-50' : ''}`} // Opcionalmente, puedes agregar una clase para cambiar la apariencia cuando está deshabilitado
             >
-              Publicar Oferta
+              {loading ? 'Publicando...' : 'Publicar Oferta'} {/* Cambiar el texto según el estado de loading */}
             </button>
-
           </div>
 
         </form>
