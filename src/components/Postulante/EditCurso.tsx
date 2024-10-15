@@ -7,14 +7,12 @@ import { RootState } from '../../store';
 import Swal from 'sweetalert2';
 import { isAxiosError } from 'axios';
 import { ProfileData } from '../../types/PostulanteType';
-import { storage } from '../../config/firebaseConfig';
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { FieldError } from 'react-hook-form';
+
 
 interface EditCursoProps {
   isOpen: boolean;
   closeModal: () => void;
-  curso?: Curso | null ;
+  curso?: Curso | null;
   reloadCursos: () => void;
 }
 
@@ -57,7 +55,18 @@ const EditCurso: React.FC<EditCursoProps> = ({ isOpen, closeModal, reloadCursos,
   const [certificado, setCertificado] = useState(curso ? curso.certificado : '');
 
 
-
+  useEffect(() => {
+    if (curso) {
+      setNombre(curso.titulo);  // Establecer el nombre desde cursoToEdit
+      setCertificado(curso.certificado); // Establecer la URL del certificado desde cursoToEdit
+      setIsPhysicalCertificate(false); // Puedes ajustar esto según tus necesidades
+    } else {
+      // Si no hay cursoToEdit, restablecer valores
+      setNombre('');
+      setCertificado('');
+      setIsPhysicalCertificate(false);
+    }
+  }, [curso]); 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -66,38 +75,43 @@ const EditCurso: React.FC<EditCursoProps> = ({ isOpen, closeModal, reloadCursos,
       return;
     }
 
-    let certificadoUrl = certificado; // Mantiene la URL del certificado existente
-
-    // Solo subir el PDF si es un certificado físico
-    if (isPhysicalCertificate && pdfFile) {
-      if (pdfFile.size > 5 * 1024 * 1024) { // Verifica que el archivo no exceda 5 MB
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'El archivo debe ser menor de 5 MB.',
-        });
-        return;
-      }
+    const formData = new FormData();
+    formData.append('id_postulante', profileData.postulante.id_postulante.toString());
     
-    
-
-      const storageRef = ref(storage, `certificados/${pdfFile.name}`);
-      await uploadBytes(storageRef, pdfFile);
-      certificadoUrl = await getDownloadURL(storageRef); // Obtiene la URL del archivo subido
-    } else if (isPhysicalCertificate) {
-      certificadoUrl = ''; // Si es físico pero no hay archivo, vacía el campo
+    // Agregar el título del curso al FormData
+    if (nombre) {
+        formData.append('titulo', nombre);
     }
 
-    const updatedCurso = {
-      id_postulante: profileData.postulante.id_postulante,
-      titulo: nombre,
-      certificado: certificadoUrl, // Actualiza con la URL del certificado
-    };
+    // Solo agregar el archivo PDF si se trata de un certificado físico
+    if (isPhysicalCertificate && pdfFile) {
+        if (pdfFile.size > 5 * 1024 * 1024) { // Verifica que el archivo no exceda 5 MB
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'El archivo debe ser menor de 5 MB.',
+            });
+            return;
+        }
+        formData.append('certificado', pdfFile); // Agregar el archivo PDF
+    } else if (!isPhysicalCertificate && certificado) {
+        formData.append('certificadoUrl', certificado); // Asegúrate de que la URL no esté vacía
+    }
 
+    // Mostrar el contenido del FormData en la consola para depuración
+    for (let pair of formData.entries()) {
+        console.log(`${pair[0]}: ${pair[1]}`);
+    }
+  
 
     try {
       if (curso && curso.id_certificado) {
-        await axios.put(`/certificadoU/${curso.id_certificado}`, updatedCurso);
+       
+        await axios.post(`/certificadoU/${curso.id_certificado}`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
         Swal.fire({
           toast: true,
           position: 'top-end',
@@ -106,9 +120,13 @@ const EditCurso: React.FC<EditCursoProps> = ({ isOpen, closeModal, reloadCursos,
           showConfirmButton: false,
           timer: 3000,
           timerProgressBar: true,
-      });
+        });
       } else {
-        await axios.post('/certificadoC', updatedCurso);
+        await axios.post('/certificadoC', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
         Swal.fire({
           toast: true,
           position: 'top-end',
@@ -117,21 +135,21 @@ const EditCurso: React.FC<EditCursoProps> = ({ isOpen, closeModal, reloadCursos,
           showConfirmButton: false,
           timer: 3000,
           timerProgressBar: true,
-      });
+        });
       }
       reloadCursos(); // Llama a fetchCursos después de agregar o editar
       closeModal();
     } catch (error) {
       if (isAxiosError(error) && error.response) {
-          Swal.fire({
-              toast: true,
-              position: 'top-end',
-              icon: 'error',
-              title: 'Error al guardar el curso',
-              showConfirmButton: false,
-              timer: 3000,
-              timerProgressBar: true,
-          });
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'error',
+          title: 'Error al guardar el curso',
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+        });
       }
     }
   };
@@ -168,8 +186,8 @@ const EditCurso: React.FC<EditCursoProps> = ({ isOpen, closeModal, reloadCursos,
             <label className="text-gray-700">¿Es certificado físico?</label>
           </div>
 
-{/* Campo de carga del PDF, visible solo si es físico */}
-{isPhysicalCertificate && (
+          {/* Campo de carga del PDF, visible solo si es físico */}
+          {isPhysicalCertificate && (
             <div className="mb-4">
               <label className="block text-gray-700">Puede subir su certificado escaneado y que sea menos de 2MB y formato PDF (Opcional):</label>
               <input
