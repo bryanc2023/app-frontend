@@ -2,12 +2,13 @@ import '../components/css/Footer.css';
 import  { useEffect} from 'react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserPlus, faUserTie, faBriefcase, faBuilding } from '@fortawesome/free-solid-svg-icons';
+import { faUserTie, faBriefcase} from '@fortawesome/free-solid-svg-icons';
 import Navbar from "../components/layout/Navbar";
 import axios from "../services/axios";
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import {RootState} from '../store';
+import { Link } from 'react-router-dom';
 
 const Acerca: React.FC = () => {
 
@@ -105,13 +106,13 @@ checkRegistrationStatus();
           <FontAwesomeIcon icon={faUserTie} size="3x" className="text-indigo-600 mb-4" />
           <h3 className="text-2xl mb-4">Iniciar Sesión como Postulante</h3>
           <p className="text-lg text-gray-700 mb-5">Accede a tu cuenta para postularte a las mejores ofertas laborales.</p>
-          <a href="/login" className="bg-orange-600 text-white py-3 px-6 rounded-full hover:bg-orange-500 transition duration-300">Iniciar Sesión</a>
+          <Link to="/login" className="bg-orange-600 text-white py-3 px-6 rounded-full hover:bg-orange-500 transition duration-300">Iniciar Sesión</Link>
         </div>
         <div className="bg-white rounded-lg shadow-md p-10 flex-1 max-w-md text-center flex flex-col justify-center">
           <FontAwesomeIcon icon={faBriefcase} size="3x" className="text-indigo-600 mb-4" />
           <h3 className="text-2xl mb-4">Iniciar Sesión como Empresa</h3>
           <p  className="text-lg text-gray-700 mb-5">Publica tus ofertas de trabajo y encuentra al candidato ideal.</p>
-          <a href="/login" className="bg-blue-600 text-white py-3 px-6 rounded-full hover:bg-blue-500 transition duration-300">Iniciar Sesión</a>
+          <Link to="/login" className="bg-blue-600 text-white py-3 px-6 rounded-full hover:bg-blue-500 transition duration-300">Iniciar Sesión </Link>
 
         </div>
       </section>
