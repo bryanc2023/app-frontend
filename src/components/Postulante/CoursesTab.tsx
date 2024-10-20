@@ -129,6 +129,60 @@ const CoursesTab: React.FC<CoursesTabProps> = () => {
     return <p className="text-gray-400">Cargando...</p>;
   }
 
+  const handleCertificadoClick = (certificadoUrl) => {
+    // Verifica si el URL pertenece a tu servidor
+
+    const isLocalPdf = certificadoUrl.includes('storage/certificados/'); // Cambia 'tudominio.com' por tu dominio real
+
+    if (isLocalPdf) {
+      // Si es un PDF local, descárgalo
+      downloadCertificado(certificadoUrl);
+    } else {
+      // Si es un URL externo, abre en una nueva pestaña
+      window.open(certificadoUrl, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const downloadCertificado = async (certificado) => {
+    try {
+
+      const parts = certificado.split('/');
+      const titulo = parts[parts.length - 1].split('.')[0];
+console.log(titulo)
+      const response = await axios.post('/certificados/descargar', {
+        titulo: titulo, // Envía el título del certificado
+      }, {
+        responseType: 'blob', // Esto es importante para manejar la respuesta como archivo
+      });
+
+      // Crear una URL para el archivo que se ha descargado
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${titulo}.pdf`); // Nombre del archivo
+      document.body.appendChild(link);
+      link.click(); // Simula el clic para descargar el archivo
+      link.remove(); // Elimina el enlace después de hacer clic
+
+      // Muestra el mensaje de éxito con Swal
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Certificado descargado con éxito',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    } catch (error) {
+      console.error('Error al descargar el certificado:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Hubo un error al intentar descargar el certificado',
+      });
+    }
+  };
   return (
     <div className="mt-6 bg-gray-800 p-4 rounded-lg shadow-inner text-gray-200">
       <div className="flex justify-between items-center">
@@ -161,9 +215,13 @@ const CoursesTab: React.FC<CoursesTabProps> = () => {
             </div>
             <p><strong className='text-orange-500'>Título:</strong> {curso.titulo}</p>
             <p>
-            <strong className='text-orange-500'>Certificado:</strong>
+              <strong className='text-orange-500'>Certificado:</strong>
               {curso.certificado ? (
-                <a href={curso.certificado} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">
+                <a
+                  href="#"
+                  onClick={() => handleCertificadoClick(curso.certificado)} // Pasamos el URL del certificado a la función
+                  className="text-blue-400 hover:underline"
+                >
                   Ver certificado
                 </a>
               ) : (

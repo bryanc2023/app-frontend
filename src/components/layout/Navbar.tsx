@@ -14,7 +14,7 @@ function Navbar() {
 
   return (
     <>
-      <header className="bg-gray-800 p-4 flex justify-between items-center fixed w-full z-10">
+      <header className="bg-gray-800 p-4 flex justify-between items-center fixed w-full z-50">
         <h1 className="text-white text-2xl font-bold">
           <Link to='/'>Postula</Link>
         </h1>
