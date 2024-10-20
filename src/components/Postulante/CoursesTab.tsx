@@ -143,12 +143,11 @@ const CoursesTab: React.FC<CoursesTabProps> = () => {
     }
   };
 
-  const downloadCertificado = async (certificado) => {
+  const downloadCertificado = async (certificado:string) => {
     try {
 
       const parts = certificado.split('/');
       const titulo = parts[parts.length - 1].split('.')[0];
-console.log(titulo)
       const response = await axios.post('/certificados/descargar', {
         titulo: titulo, // Envía el título del certificado
       }, {

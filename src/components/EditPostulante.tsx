@@ -3,7 +3,8 @@ import Modal from 'react-modal';
 import axios from '../services/axios';
 import Swal from 'sweetalert2';
 import { isAxiosError } from 'axios';
-import { ProfileData,Postulante } from '../types/PostulanteType';
+import { ProfileData, Postulante } from '../types/PostulanteType';
+import Profile from '../pages/postulante/PerfilP';
 
 interface EditPostulanteModalProps {
   isOpen: boolean;
@@ -44,7 +45,7 @@ const EditPostulanteModal: React.FC<EditPostulanteModalProps> = ({ isOpen, close
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [provinces, setProvinces] = useState<string[]>([]);
-  const [cantons, setCantons] = useState<string[]>([]);
+  const [cantons, setCantons] = useState<{ id: number; canton: string }[]>([]);
   const [selectedProvince, setSelectedProvince] = useState(postulante.provincia || '');
   const [selectedCanton, setSelectedCanton] = useState(postulante.canton || '');
 
@@ -65,7 +66,7 @@ const EditPostulanteModal: React.FC<EditPostulanteModalProps> = ({ isOpen, close
     const fetchCantons = async () => {
       if (selectedProvince) {
         try {
-          const response = await axios.get(`ubicaciones/cantones/${selectedProvince}`);
+          const response = await axios.get(`ubicaciones/cantonesID/${selectedProvince}`);
           setCantons(response.data || []);
         } catch (error) {
           console.error('Error fetching cantons:', error);
@@ -89,6 +90,7 @@ const EditPostulanteModal: React.FC<EditPostulanteModalProps> = ({ isOpen, close
       setInformacionExtra(postulante.informacion_extra);
       setSelectedProvince(postulante.provincia);
       setSelectedCanton(postulante.canton);
+
     }
   }, [isOpen, postulante]);
 
@@ -112,7 +114,7 @@ const EditPostulanteModal: React.FC<EditPostulanteModalProps> = ({ isOpen, close
           genero,
           cedula,
           informacion_extra,
-          provincia: selectedProvince,
+          provincia: selectedCanton,
           canton: selectedCanton,
         };
         const response = await axios.put(`/updatePostulanteById/${postulante.id_usuario}`, updatedProfile);
@@ -124,7 +126,7 @@ const EditPostulanteModal: React.FC<EditPostulanteModalProps> = ({ isOpen, close
           showConfirmButton: false,
           timer: 3000,
           timerProgressBar: true,
-      });
+        });
         setTimeout(() => {
           setSuccessMessage(null);
           closeModal();
@@ -132,15 +134,15 @@ const EditPostulanteModal: React.FC<EditPostulanteModalProps> = ({ isOpen, close
         }, 3000);
       } catch (error) {
         if (isAxiosError(error) && error.response) {
-            Swal.fire({
-                toast: true,
-                position: 'top-end',
-                icon: 'error',
-                title: error.response.data.message,
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true,
-            });
+          Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'error',
+            title: error.response.data.message,
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true,
+          });
         }
       }
     } else {
@@ -309,13 +311,15 @@ const EditPostulanteModal: React.FC<EditPostulanteModalProps> = ({ isOpen, close
               id="canton"
               name="canton"
               value={selectedCanton}
-              onChange={handleInputChange}
+              onChange={(e) => {
+                setSelectedCanton(e.target.value);
+              }}
               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             >
               <option value="">Seleccione</option>
-              {cantons.map((canton, index) => (
-                <option key={index} value={canton}>
-                  {canton}
+              {cantons.map((canton) => (
+                <option key={canton.id} value={canton.id}>
+                  {canton.canton}
                 </option>
               ))}
             </select>
