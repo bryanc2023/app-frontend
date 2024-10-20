@@ -738,10 +738,44 @@ const CurriTab: React.FC = () => {
     }
   };
 
-  const handleDownloadCV = async (url:string) => {
-    // Abrir el CV en una nueva pestaña
-    const newWindow = window.open(url, '_blank');
-    if (newWindow) newWindow.opener = null; // 
+  const handleDownloadCV = async (urls:string) => {
+    try {
+
+      const parts = urls.split('/');
+      const titulo = parts[parts.length - 1].split('.')[0];
+      const response = await axios.post('/cv/descargar', {
+        titulo: titulo, // Envía el título del certificado
+      }, {
+        responseType: 'blob', // Esto es importante para manejar la respuesta como archivo
+      });
+
+      // Crear una URL para el archivo que se ha descargado
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${titulo}.pdf`); // Nombre del archivo
+      document.body.appendChild(link);
+      link.click(); // Simula el clic para descargar el archivo
+      link.remove(); // Elimina el enlace después de hacer clic
+
+      // Muestra el mensaje de éxito con Swal
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Hoja de vida descargada con éxito',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    } catch (error) {
+      console.error('Error al descargar la hoja de vida:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Hubo un error al intentar descargar la hoja de vida',
+      });
+    }
 };
 
   const handleAgreementAccept = () => {
