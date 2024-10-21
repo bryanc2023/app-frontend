@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from "../../services/axios";
 import Modal from '../../components/Admin/CargaModal';
 import Swal from 'sweetalert2';
+import jsPDF from 'jspdf';
+
 
 interface User {
     id?: number;
@@ -12,8 +14,66 @@ interface User {
         name: string;
     } | null;
     created_at: string;
-    is_active: boolean; // Agrega este campo para manejar el estado activo/inactivo
+    is_active: boolean; // Campo para manejar el estado activo/inactivo
+    empresa?: {
+        nombre_comercial: string;
+        red: { id_empresa_red: number; nombre_red: string; enlace: string }[];
+        sector?: { sector: string; division: string };
+        ubicacion?: { provincia: string; canton: string }; // Detalles de la ubicación de la empresa
+    };
+    postulante?: {
+        postulante: {
+            id_postulante: number;
+            id_ubicacion: number;
+            id_usuario: number;
+            nombres: string;
+            apellidos: string;
+            fecha_nac: string;
+            edad: number;
+            estado_civil: string;
+            cedula: string;
+            telefono: string;
+            genero: string;
+            informacion_extra: string;
+            foto: string;
+            cv: string | null;
+            vigencia: boolean;
+        };
+        ubicacion: {
+            id: number;
+            provincia: string;
+            canton: string;
+            created_at: string;
+            updated_at: string;
+        };
+        formaciones: {
+            id_postulante: number;
+            id_titulo: number;
+            institucion: string;
+            estado: string;
+            fecha_ini: string;
+            fecha_fin: string | null;
+            titulo_acreditado: string;
+        }[];
+        titulos: {
+            id: number;
+            nivel_educacion: string;
+            campo_amplio: string;
+            titulo: string;
+            created_at: string;
+            updated_at: string;
+        }[];
+        idiomas: {
+            id_postulante: number;
+            id_idioma: number;
+            nivel_oral: string;
+            nivel_escrito: string;
+            idioma_nombre: string;
+        }[];
+        // Añadir otros campos que necesites
+    };
 }
+
 
 interface Role {
     id: number;
@@ -28,6 +88,10 @@ const GestionUsuarios = () => {
 
     const [modalOpen, setModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState({ title: '', message: '', success: false });
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [loadingUser, setLoadingUser] = useState(false);
+    const [modalUserOpen, setModalUserOpen] = useState(false);
+
 
     useEffect(() => {
         fetchUsers();
@@ -82,6 +146,158 @@ const GestionUsuarios = () => {
         setModalOpen(false);
     };
 
+    const handleDownloadPDF = () => {
+        const doc = new jsPDF();
+    
+        let currentY = 10; // Inicializa la posición vertical
+    
+        // Detalles del postulante
+        if (selectedUser && selectedUser.postulante) {
+            const { postulante, ubicacion, formaciones, titulos, idiomas } = selectedUser.postulante;
+    
+            doc.setFontSize(18);
+            doc.text("Detalles del Postulante", 10, currentY);
+            currentY += 10; // Aumenta la posición
+    
+            doc.setFontSize(12);
+            doc.setFont("bold"); // Establece la fuente en negrita
+            doc.text("Nombre:", 10, currentY);
+            doc.setFont("normal"); // Vuelve a la fuente normal
+            doc.text(`${postulante.nombres} ${postulante.apellidos}`, 40, currentY); // Mueve el texto del nombre a la derecha
+            currentY += 10;
+            
+            doc.setFont("bold");
+            doc.text("Fecha de Nacimiento:", 10, currentY);
+            doc.setFont("normal");
+            doc.text(postulante.fecha_nac, 60, currentY);
+            currentY += 10;
+    
+            doc.setFont("bold");
+            doc.text("Edad:", 10, currentY);
+            doc.setFont("normal");
+            doc.text(postulante.edad.toString(), 40, currentY);
+            currentY += 10;
+    
+            doc.setFont("bold");
+            doc.text("Estado Civil:", 10, currentY);
+            doc.setFont("normal");
+            doc.text(postulante.estado_civil, 40, currentY);
+            currentY += 10;
+    
+            doc.setFont("bold");
+            doc.text("Cédula:", 10, currentY);
+            doc.setFont("normal");
+            doc.text(postulante.cedula, 40, currentY);
+            currentY += 10;
+    
+            doc.setFont("bold");
+            doc.text("Teléfono:", 10, currentY);
+            doc.setFont("normal");
+            doc.text(postulante.telefono, 40, currentY);
+            currentY += 10;
+    
+            doc.setFont("bold");
+            doc.text("Género:", 10, currentY);
+            doc.setFont("normal");
+            doc.text(postulante.genero, 40, currentY);
+            currentY += 10;
+    
+            doc.setFont("bold");
+            doc.text("Información Extra:", 10, currentY);
+            doc.setFont("normal");
+            doc.text(postulante.informacion_extra, 60, currentY);
+            currentY += 10;
+    
+            doc.setFont("bold");
+            doc.text("Ubicación:", 10, currentY);
+            doc.setFont("normal");
+            doc.text(`${ubicacion.provincia}, ${ubicacion.canton}`, 40, currentY);
+            currentY += 10;
+    
+            // Formaciones
+            doc.setFont("bold");
+            doc.text("Formaciones:", 10, currentY);
+            currentY += 10;
+            doc.setFont("normal");
+            formaciones.forEach((formacion) => {
+                const line = ` - ${formacion.titulo_acreditado} en ${formacion.institucion} (${formacion.estado})`;
+                doc.text(line, 10, currentY);
+                currentY += 10;
+            });
+    
+            // Títulos
+            doc.setFont("bold");
+            const titulosStartY = currentY;
+            doc.text("Títulos:", 10, titulosStartY);
+            currentY += 10;
+            doc.setFont("normal");
+            titulos.forEach((titulo) => {
+                const line = ` - ${titulo.titulo} (Nivel: ${titulo.nivel_educacion})`;
+                doc.text(line, 10, currentY);
+                currentY += 10;
+            });
+    
+            // Idiomas
+            doc.setFont("bold");
+            doc.text("Idiomas:", 10, currentY);
+            currentY += 10;
+            doc.setFont("normal");
+            idiomas.forEach((idioma) => {
+                const line = ` - ${idioma.idioma_nombre} (Oral: ${idioma.nivel_oral}, Escrito: ${idioma.nivel_escrito})`;
+                doc.text(line, 10, currentY);
+                currentY += 10;
+            });
+        }
+    
+        // Detalles de la empresa
+        if (selectedUser.empresa) {
+            doc.setFontSize(18);
+            doc.text("Detalles de la Empresa", 10, currentY);
+            currentY += 10; // Aumenta la posición
+    
+            doc.setFontSize(12);
+            doc.setFont("bold");
+            doc.text("Nombre Comercial:", 10, currentY);
+            doc.setFont("normal");
+            doc.text(selectedUser.empresa.nombre_comercial, 60, currentY);
+            currentY += 10;
+    
+            doc.setFont("bold");
+            doc.text("Sector:", 10, currentY);
+            doc.setFont("normal");
+            doc.text(selectedUser.empresa.sector ? selectedUser.empresa.sector.sector : 'No disponible', 40, currentY);
+            currentY += 10;
+    
+            doc.setFont("bold");
+            doc.text("División:", 10, currentY);
+            doc.setFont("normal");
+            doc.text(selectedUser.empresa.sector ? selectedUser.empresa.sector.division : 'No disponible', 40, currentY);
+            currentY += 10;
+    
+            doc.setFont("bold");
+            doc.text("Ubicación:", 10, currentY);
+            doc.setFont("normal");
+            doc.text(selectedUser.empresa.ubicacion ? `${selectedUser.empresa.ubicacion.provincia}, ${selectedUser.empresa.ubicacion.canton}` : 'No disponible', 40, currentY);
+        }
+    
+        // Ajustar el tamaño del documento y agregar un margen inferior
+        currentY += 20; // Añade espacio antes del texto de pie de página
+        doc.setFontSize(10);
+    
+        // Generar el nombre del archivo
+        let fileName = "Detalles_";
+        if (selectedUser && selectedUser.postulante) {
+            fileName += `Postulante_${selectedUser.postulante.postulante.nombres}_${selectedUser.postulante.postulante.apellidos}.pdf`;
+        } else if (selectedUser.empresa) {
+            fileName += `Empresa_${selectedUser.empresa.nombre_comercial}.pdf`;
+        }
+    
+        doc.save(fileName); // Guarda el documento con el nombre generado
+    };
+    
+    
+    
+    
     const grantAccessToUser = async (userId: number) => {
         try {
             const response = await axios.put(`/users/${userId}/grant-access`);
@@ -127,6 +343,20 @@ const GestionUsuarios = () => {
             setModalOpen(true);
         }
     };
+
+    const handleGetUserData = async (userId: number) => {
+        setLoadingUser(true);
+        try {
+            const response = await axios.get(`/users/${userId}`);
+            setSelectedUser(response.data);
+            setModalUserOpen(true); // Abre el modal
+        } catch (error) {
+            console.error('Error fetching user details:', error);
+        } finally {
+            setLoadingUser(false);
+        }
+    };
+    
 
     const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const roleId = event.target.value === "null" ? null : parseInt(event.target.value);
@@ -272,6 +502,12 @@ const GestionUsuarios = () => {
                                             </button>
                                         </>
                                     )}
+                                    <button
+                                        className="block w-full px-4 py-2 mt-2 bg-green-500 text-white rounded"
+                                        onClick={() => handleGetUserData(user.id!)}
+                                    >
+                                        Ver Datos
+                                    </button>
 
                                     <button
                                         className={`block w-full px-4 py-2 mt-2 text-white ${user.is_active ? 'bg-red-500' : 'bg-green-500'} rounded`}
@@ -285,6 +521,75 @@ const GestionUsuarios = () => {
                     </tbody>
                 </table>
             </div>
+            <Modal show={modalUserOpen} onClose={() => setModalUserOpen(false)} title="Detalles del Usuario" success={true}>
+    {selectedUser && (
+        <div className="mt-4 p-6 border rounded-lg shadow-lg bg-white max-h-[80vh] overflow-y-auto">
+            {selectedUser.empresa && (
+                <div className="mb-4">
+                    <h3 className="text-lg font-bold text-gray-800 mt-4">Detalles de la Empresa</h3>
+                    <p className="text-gray-700"><strong>Nombre Comercial:</strong> {selectedUser.empresa.nombre_comercial}</p>
+                    <p className="text-gray-700"><strong>Sector:</strong> {selectedUser.empresa.sector ? selectedUser.empresa.sector.sector : 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>División:</strong> {selectedUser.empresa.sector ? selectedUser.empresa.sector.division : 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Ubicación:</strong> {selectedUser.empresa.ubicacion ? `${selectedUser.empresa.ubicacion.provincia}, ${selectedUser.empresa.ubicacion.canton}` : 'No disponible'}</p>
+                </div>
+            )}
+            {selectedUser.postulante && (
+                <div>
+                    <h3 className="text-lg font-bold text-gray-800 mt-4">Detalles del Postulante</h3>
+                    <p className="text-gray-700"><strong>Nombres:</strong> {selectedUser.postulante.postulante.nombres}</p>
+                    <p className="text-gray-700"><strong>Apellidos:</strong> {selectedUser.postulante.postulante.apellidos}</p>
+                    <p className="text-gray-700"><strong>Fecha de Nacimiento:</strong> {selectedUser.postulante.postulante.fecha_nac}</p>
+                    <p className="text-gray-700"><strong>Edad:</strong> {selectedUser.postulante.postulante.edad}</p>
+                    <p className="text-gray-700"><strong>Estado Civil:</strong> {selectedUser.postulante.postulante.estado_civil}</p>
+                    <p className="text-gray-700"><strong>Cédula:</strong> {selectedUser.postulante.postulante.cedula}</p>
+                    <p className="text-gray-700"><strong>Teléfono:</strong> {selectedUser.postulante.postulante.telefono}</p>
+                    <p className="text-gray-700"><strong>Género:</strong> {selectedUser.postulante.postulante.genero}</p>
+                    <p className="text-gray-700"><strong>Información Extra:</strong> {selectedUser.postulante.postulante.informacion_extra}</p>
+                    <p className="text-gray-700"><strong>Vigencia:</strong> {selectedUser.postulante.postulante.vigencia ? 'Vigente' : 'No vigente'}</p>
+                    <p className="text-gray-700"><strong>Ubicación:</strong> {selectedUser.postulante.ubicacion ? `${selectedUser.postulante.ubicacion.provincia}, ${selectedUser.postulante.ubicacion.canton}` : 'No disponible'}</p>
+
+                    {/* Formaciones */}
+                    <h4 className="font-semibold mt-4 text-gray-800">Formaciones:</h4>
+                    {selectedUser.postulante.formaciones.length > 0 ? (
+                        selectedUser.postulante.formaciones.map((formacion, index) => (
+                            <p key={index} className="text-gray-600"> - {formacion.titulo_acreditado} en {formacion.institucion} ({formacion.estado})</p>
+                        ))
+                    ) : (
+                        <p className="text-gray-600">No hay formaciones disponibles.</p>
+                    )}
+
+                    {/* Títulos */}
+                    <h4 className="font-semibold mt-4 text-gray-800">Títulos:</h4>
+                    {selectedUser.postulante.titulos.length > 0 ? (
+                        selectedUser.postulante.titulos.map((titulo, index) => (
+                            <p key={index} className="text-gray-600"> - {titulo.titulo} (Nivel: {titulo.nivel_educacion})</p>
+                        ))
+                    ) : (
+                        <p className="text-gray-600">No hay títulos disponibles.</p>
+                    )}
+
+                    {/* Idiomas */}
+                    <h4 className="font-semibold mt-4 text-gray-800">Idiomas:</h4>
+                    {selectedUser.postulante.idiomas.length > 0 ? (
+                        selectedUser.postulante.idiomas.map((idioma, index) => (
+                            <p key={index} className="text-gray-600"> - {idioma.idioma_nombre} (Oral: {idioma.nivel_oral}, Escrito: {idioma.nivel_escrito})</p>
+                        ))
+                    ) : (
+                        <p className="text-gray-600">No hay idiomas disponibles.</p>
+                    )}
+                </div>
+            )}
+
+            <button onClick={handleDownloadPDF} className="mt-6 px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition duration-200">Descargar PDF</button>
+        </div>
+    )}
+</Modal>
+
+
+
+
+
+
 
             <hr className="my-4" />
 
