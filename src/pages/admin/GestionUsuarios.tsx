@@ -152,18 +152,17 @@ const GestionUsuarios = () => {
 
     const handleDownloadPDF = () => {
         const doc = new jsPDF();
-    
         let currentY = 10; // Inicializa la posición vertical
+        const margin = 10; // Margen inferior
+        const pageHeight = doc.internal.pageSize.getHeight(); // Altura de la página
     
         // Agregar el título "POSTULA" en la esquina izquierda, negrilla y color naranja
         doc.setFontSize(20);
         doc.setFont("Helvetica", "bold");
         doc.setTextColor(255, 165, 0); // Color naranja
-        doc.text("POSTULA", 10, 10);
+        doc.text("POSTULA", 10, currentY);
         
         currentY += 15; // Aumenta el espacio después del título
-    
-        
     
         // Detalles del postulante
         if (selectedUser && selectedUser.postulante) {
@@ -174,73 +173,48 @@ const GestionUsuarios = () => {
             doc.setTextColor(0, 0, 255); // Asegura que los siguientes textos sean en color negro
             doc.text("Detalles del Postulante", 10, currentY);
             currentY += 10; // Aumenta la posición
-
+    
             // Texto introductorio
-        doc.setFontSize(14);
-        doc.setFont("Helvetica", "normal");
-        doc.setTextColor(0, 0, 0); // Vuelve a color negro
-        doc.text("El usuario ha proporcionado los siguientes datos:", 10, currentY);
-        currentY += 10; // Espacio adicional después del texto
-    
-            doc.setFontSize(12);
-            doc.setFont("Helvetica", "bold"); // Establece la fuente en negrita
-            doc.text("Nombre:", 10, currentY);
-            doc.setFont("Helvetica", "normal"); // Vuelve a la fuente normal
-            doc.text(postulante.nombres || 'No se ha proporcionado', 40, currentY); // Mueve el texto del nombre a la derecha
-            currentY += 10;
-            
-            doc.setFont("Helvetica", "bold");
-            doc.text("Fecha de Nacimiento:", 10, currentY);
+            doc.setFontSize(14);
             doc.setFont("Helvetica", "normal");
-            doc.text(postulante.fecha_nac || 'No se ha proporcionado', 60, currentY);
-            currentY += 10;
+            doc.setTextColor(0, 0, 0); // Vuelve a color negro
+            doc.text("El usuario ha proporcionado los siguientes datos:", 10, currentY);
+            currentY += 10; // Espacio adicional después del texto
     
-            doc.setFont("Helvetica", "bold");
-            doc.text("Edad:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-            doc.text(postulante.edad.toString() || 'No se ha proporcionado', 40, currentY);
-            currentY += 10;
+            // Detalles del postulante
+            const details = [
+                { label: "Nombre:", value: postulante.nombres },
+                { label: "Fecha de Nacimiento:", value: postulante.fecha_nac },
+                { label: "Edad:", value: postulante.edad?.toString() },
+                { label: "Estado Civil:", value: postulante.estado_civil },
+                { label: "Cédula:", value: postulante.cedula },
+                { label: "Teléfono:", value: postulante.telefono },
+                { label: "Género:", value: postulante.genero },
+                { label: "Información Extra:", value: postulante.informacion_extra }
+            ];
     
-            doc.setFont("Helvetica", "bold");
-            doc.text("Estado Civil:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-            doc.text(postulante.estado_civil || 'No se ha proporcionado', 40, currentY);
-            currentY += 10;
+            details.forEach(({ label, value }) => {
+                // Verifica si se necesita nueva página
+                if (currentY > pageHeight - margin) {
+                    doc.addPage();
+                    currentY = 10; // Reinicia la posición vertical
+                }
     
-            doc.setFont("Helvetica", "bold");
-            doc.text("Cédula:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-            doc.text(postulante.cedula || 'No se ha proporcionado', 40, currentY);
-            currentY += 10;
-    
-            doc.setFont("Helvetica", "bold");
-            doc.text("Teléfono:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-            doc.text(postulante.telefono || 'No se ha proporcionado', 40, currentY);
-            currentY += 10;
-    
-            doc.setFont("Helvetica", "bold");
-            doc.text("Género:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-            doc.text(postulante.genero || 'No se ha proporcionado', 40, currentY);
-            currentY += 10;
-    
-            doc.setFont("Helvetica", "bold");
-            doc.text("Información Extra:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-
-            // Divide el texto en líneas que quepan en el ancho máximo
-            const lines = doc.splitTextToSize(postulante.informacion_extra || 'No se ha proporcionado', maxWidth);
-
-            // Dibuja cada línea en el PDF
-            lines.forEach((line) => {
-                doc.text(line, 60, currentY);
-                currentY += 10; // Aumenta el espacio vertical para la siguiente línea
+                doc.setFont("Helvetica", "bold");
+                doc.text(label, 10, currentY);
+                doc.setFont("Helvetica", "normal");
+                doc.text(value || 'No se ha proporcionado', 60, currentY);
+                currentY += 10;
             });
-
+    
             // Ajusta el currentY para el siguiente contenido
             currentY += 10;
     
+            // Ubicación
+            if (currentY > pageHeight - margin) {
+                doc.addPage();
+                currentY = 10;
+            }
             doc.setFont("Helvetica", "bold");
             doc.text("Ubicación:", 10, currentY);
             doc.setFont("Helvetica", "normal");
@@ -248,35 +222,58 @@ const GestionUsuarios = () => {
             currentY += 10;
     
             // Formaciones
+            if (currentY > pageHeight - margin) {
+                doc.addPage();
+                currentY = 10;
+            }
             doc.setFont("Helvetica", "bold");
             doc.text("Formaciones:", 10, currentY);
             currentY += 10;
             doc.setFont("Helvetica", "normal");
             formaciones.forEach((formacion) => {
-                const line = ` - ${formacion.titulo_acreditado} en ${formacion.institucion} (${formacion.estado})` || 'No se ha proporcionado';
+                if (currentY > pageHeight - margin) {
+                    doc.addPage();
+                    currentY = 10;
+                }
+                const line = ` - ${formacion.titulo_acreditado} en ${formacion.institucion} (${formacion.estado})`;
                 doc.text(line, 10, currentY);
                 currentY += 10;
             });
     
             // Títulos
+            if (currentY > pageHeight - margin) {
+                doc.addPage();
+                currentY = 10;
+            }
             doc.setFont("Helvetica", "bold");
-            const titulosStartY = currentY;
-            doc.text("Títulos:", 10, titulosStartY);
+            doc.text("Títulos:", 10, currentY);
             currentY += 10;
             doc.setFont("Helvetica", "normal");
             titulos.forEach((titulo) => {
-                const line = ` - ${titulo.titulo} (Nivel: ${titulo.nivel_educacion})` || 'No se ha proporcionado';
+                if (currentY > pageHeight - margin) {
+                    doc.addPage();
+                    currentY = 10;
+                }
+                const line = ` - ${titulo.titulo} (Nivel: ${titulo.nivel_educacion})`;
                 doc.text(line, 10, currentY);
                 currentY += 10;
             });
     
             // Idiomas
+            if (currentY > pageHeight - margin) {
+                doc.addPage();
+                currentY = 10;
+            }
             doc.setFont("Helvetica", "bold");
             doc.text("Idiomas:", 10, currentY);
             currentY += 10;
             doc.setFont("Helvetica", "normal");
             idiomas.forEach((idioma) => {
-                const line = ` - ${idioma.idioma_nombre} (Oral: ${idioma.nivel_oral}, Escrito: ${idioma.nivel_escrito})` || 'No se ha proporcionado';
+                if (currentY > pageHeight - margin) {
+                    doc.addPage();
+                    currentY = 10;
+                }
+                const line = ` - ${idioma.idioma_nombre} (Oral: ${idioma.nivel_oral}, Escrito: ${idioma.nivel_escrito})`;
                 doc.text(line, 10, currentY);
                 currentY += 10;
             });
@@ -284,65 +281,59 @@ const GestionUsuarios = () => {
     
         // Detalles de la empresa
         if (selectedUser.empresa) {
+            if (currentY > pageHeight - margin) {
+                doc.addPage();
+                currentY = 10;
+            }
             doc.setFontSize(18);
             doc.setFont("Helvetica", "bold");
             doc.text("Detalles de la Empresa", 10, currentY);
             currentY += 10; // Aumenta la posición
-
+    
             // Texto introductorio
-        doc.setFontSize(14);
-        doc.setFont("Helvetica", "normal");
-        doc.setTextColor(0, 0, 0); // Vuelve a color negro
-        doc.text("El usuario ha proporcionado los siguientes datos:", 10, currentY);
-        currentY += 10; // Espacio adicional después del texto
-    
-            doc.setFontSize(12);
-            doc.setFont("Helvetica", "bold");
-            doc.text("Nombre Comercial:", 10, currentY);
+            doc.setFontSize(14);
             doc.setFont("Helvetica", "normal");
-            doc.text(selectedUser.empresa.nombre_comercial || 'No se ha proporcionado', 60, currentY);
-            currentY += 10;
+            doc.setTextColor(0, 0, 0); // Vuelve a color negro
+            doc.text("El usuario ha proporcionado los siguientes datos:", 10, currentY);
+            currentY += 10; // Espacio adicional después del texto
     
-            doc.setFont("Helvetica", "bold");
-            doc.text("RUC:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-            doc.text(selectedUser.empresa.ruc || 'No disponible', 40, currentY);
-            currentY += 10;
+            // Detalles de la empresa
+            const companyDetails = [
+                { label: "Nombre Comercial:", value: selectedUser.empresa.nombre_comercial },
+                { label: "RUC:", value: selectedUser.empresa.ruc },
+                { label: "Razón Social:", value: selectedUser.empresa.razon_s },
+                { label: "Sitio Web:", value: selectedUser.empresa.sitio },
+                { label: "Teléfono:", value: selectedUser.empresa.telefono },
+                { label: "Sector:", value: selectedUser.empresa.sector ? selectedUser.empresa.sector.sector : 'No disponible' },
+                { label: "División:", value: selectedUser.empresa.sector ? selectedUser.empresa.sector.division : 'No disponible' },
+                { label: "Ubicación:", value: selectedUser.empresa.ubicacion ? `${selectedUser.empresa.ubicacion.provincia}, ${selectedUser.empresa.ubicacion.canton}` : 'No disponible' }
+            ];
     
-            doc.setFont("Helvetica", "bold");
-            doc.text("Razón Social:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-            doc.text(selectedUser.empresa.razon_s || 'No disponible', 40, currentY);
-            currentY += 10;
+            companyDetails.forEach(({ label, value }) => {
+                // Verifica si se necesita nueva página
+                if (currentY > pageHeight - margin) {
+                    doc.addPage();
+                    currentY = 10; // Reinicia la posición vertical
+                }
     
-            doc.setFont("Helvetica", "bold");
-            doc.text("Sitio Web:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-            doc.text(selectedUser.empresa.sitio || 'No disponible', 40, currentY);
-            currentY += 10;
+                doc.setFont("Helvetica", "bold");
+                doc.text(label, 10, currentY);
+                doc.setFont("Helvetica", "normal");
     
-            doc.setFont("Helvetica", "bold");
-            doc.text("Teléfono:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-            doc.text(selectedUser.empresa.telefono || 'No disponible', 40, currentY);
-            currentY += 10;
-    
-            doc.setFont("Helvetica", "bold");
-            doc.text("Sector:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-            doc.text(selectedUser.empresa.sector ? selectedUser.empresa.sector.sector : 'No disponible', 40, currentY);
-            currentY += 10;
-    
-            doc.setFont("Helvetica", "bold");
-            doc.text("División:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-            doc.text(selectedUser.empresa.sector ? selectedUser.empresa.sector.division : 'No disponible', 40, currentY);
-            currentY += 10;
-    
-            doc.setFont("Helvetica", "bold");
-            doc.text("Ubicación:", 10, currentY);
-            doc.setFont("Helvetica", "normal");
-            doc.text(selectedUser.empresa.ubicacion ? `${selectedUser.empresa.ubicacion.provincia}, ${selectedUser.empresa.ubicacion.canton}` : 'No disponible', 40, currentY);
+                // Ajusta el texto de Razón Social, Sector y División
+                const textValue = value || 'No disponible';
+                if (label === "Razón Social:" || label === "Sector:" || label === "División:") {
+                    const maxWidth = doc.internal.pageSize.getWidth() - 70;
+                    const textLines = doc.splitTextToSize(textValue, maxWidth);
+                    textLines.forEach(line => {
+                        doc.text(line, 60, currentY);
+                        currentY += 10;
+                    });
+                } else {
+                    doc.text(textValue, 60, currentY);
+                    currentY += 10;
+                }
+            });
         }
     
         // Generar el nombre del archivo
@@ -355,6 +346,7 @@ const GestionUsuarios = () => {
     
         doc.save(fileName); // Guarda el documento con el nombre generado
     };
+
     
     
     
