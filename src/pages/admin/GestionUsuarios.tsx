@@ -17,6 +17,10 @@ interface User {
     is_active: boolean; // Campo para manejar el estado activo/inactivo
     empresa?: {
         nombre_comercial: string;
+        ruc: string;
+        razon_s: string;
+        sitio: string;
+        telefono: string;
         red: { id_empresa_red: number; nombre_red: string; enlace: string }[];
         sector?: { sector: string; division: string };
         ubicacion?: { provincia: string; canton: string }; // Detalles de la ubicación de la empresa
@@ -151,74 +155,93 @@ const GestionUsuarios = () => {
     
         let currentY = 10; // Inicializa la posición vertical
     
+        // Agregar el título "POSTULA" en la esquina izquierda, negrilla y color naranja
+        doc.setFontSize(20);
+        doc.setFont("Helvetica", "bold");
+        doc.setTextColor(255, 165, 0); // Color naranja
+        doc.text("POSTULA", 10, 10);
+        
+        currentY += 15; // Aumenta el espacio después del título
+    
+        
+    
         // Detalles del postulante
         if (selectedUser && selectedUser.postulante) {
             const { postulante, ubicacion, formaciones, titulos, idiomas } = selectedUser.postulante;
     
             doc.setFontSize(18);
+            doc.setFont("Helvetica", "bold");
+            doc.setTextColor(0, 0, 255); // Asegura que los siguientes textos sean en color negro
             doc.text("Detalles del Postulante", 10, currentY);
             currentY += 10; // Aumenta la posición
+
+            // Texto introductorio
+        doc.setFontSize(14);
+        doc.setFont("Helvetica", "normal");
+        doc.setTextColor(0, 0, 0); // Vuelve a color negro
+        doc.text("El usuario ha proporcionado los siguientes datos:", 10, currentY);
+        currentY += 10; // Espacio adicional después del texto
     
             doc.setFontSize(12);
-            doc.setFont("bold"); // Establece la fuente en negrita
+            doc.setFont("Helvetica", "bold"); // Establece la fuente en negrita
             doc.text("Nombre:", 10, currentY);
-            doc.setFont("normal"); // Vuelve a la fuente normal
+            doc.setFont("Helvetica", "normal"); // Vuelve a la fuente normal
             doc.text(`${postulante.nombres} ${postulante.apellidos}`, 40, currentY); // Mueve el texto del nombre a la derecha
             currentY += 10;
             
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("Fecha de Nacimiento:", 10, currentY);
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             doc.text(postulante.fecha_nac, 60, currentY);
             currentY += 10;
     
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("Edad:", 10, currentY);
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             doc.text(postulante.edad.toString(), 40, currentY);
             currentY += 10;
     
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("Estado Civil:", 10, currentY);
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             doc.text(postulante.estado_civil, 40, currentY);
             currentY += 10;
     
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("Cédula:", 10, currentY);
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             doc.text(postulante.cedula, 40, currentY);
             currentY += 10;
     
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("Teléfono:", 10, currentY);
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             doc.text(postulante.telefono, 40, currentY);
             currentY += 10;
     
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("Género:", 10, currentY);
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             doc.text(postulante.genero, 40, currentY);
             currentY += 10;
     
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("Información Extra:", 10, currentY);
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             doc.text(postulante.informacion_extra, 60, currentY);
             currentY += 10;
     
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("Ubicación:", 10, currentY);
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             doc.text(`${ubicacion.provincia}, ${ubicacion.canton}`, 40, currentY);
             currentY += 10;
     
             // Formaciones
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("Formaciones:", 10, currentY);
             currentY += 10;
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             formaciones.forEach((formacion) => {
                 const line = ` - ${formacion.titulo_acreditado} en ${formacion.institucion} (${formacion.estado})`;
                 doc.text(line, 10, currentY);
@@ -226,11 +249,11 @@ const GestionUsuarios = () => {
             });
     
             // Títulos
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             const titulosStartY = currentY;
             doc.text("Títulos:", 10, titulosStartY);
             currentY += 10;
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             titulos.forEach((titulo) => {
                 const line = ` - ${titulo.titulo} (Nivel: ${titulo.nivel_educacion})`;
                 doc.text(line, 10, currentY);
@@ -238,10 +261,10 @@ const GestionUsuarios = () => {
             });
     
             // Idiomas
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("Idiomas:", 10, currentY);
             currentY += 10;
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             idiomas.forEach((idioma) => {
                 const line = ` - ${idioma.idioma_nombre} (Oral: ${idioma.nivel_oral}, Escrito: ${idioma.nivel_escrito})`;
                 doc.text(line, 10, currentY);
@@ -252,37 +275,65 @@ const GestionUsuarios = () => {
         // Detalles de la empresa
         if (selectedUser.empresa) {
             doc.setFontSize(18);
+            doc.setFont("Helvetica", "bold");
             doc.text("Detalles de la Empresa", 10, currentY);
             currentY += 10; // Aumenta la posición
+
+            // Texto introductorio
+        doc.setFontSize(14);
+        doc.setFont("Helvetica", "normal");
+        doc.setTextColor(0, 0, 0); // Vuelve a color negro
+        doc.text("El usuario ha proporcionado los siguientes datos:", 10, currentY);
+        currentY += 10; // Espacio adicional después del texto
     
             doc.setFontSize(12);
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("Nombre Comercial:", 10, currentY);
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             doc.text(selectedUser.empresa.nombre_comercial, 60, currentY);
             currentY += 10;
     
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
+            doc.text("RUC:", 10, currentY);
+            doc.setFont("Helvetica", "normal");
+            doc.text(selectedUser.empresa.ruc || 'No disponible', 40, currentY);
+            currentY += 10;
+    
+            doc.setFont("Helvetica", "bold");
+            doc.text("Razón Social:", 10, currentY);
+            doc.setFont("Helvetica", "normal");
+            doc.text(selectedUser.empresa.razon_s || 'No disponible', 40, currentY);
+            currentY += 10;
+    
+            doc.setFont("Helvetica", "bold");
+            doc.text("Sitio Web:", 10, currentY);
+            doc.setFont("Helvetica", "normal");
+            doc.text(selectedUser.empresa.sitio || 'No disponible', 40, currentY);
+            currentY += 10;
+    
+            doc.setFont("Helvetica", "bold");
+            doc.text("Teléfono:", 10, currentY);
+            doc.setFont("Helvetica", "normal");
+            doc.text(selectedUser.empresa.telefono || 'No disponible', 40, currentY);
+            currentY += 10;
+    
+            doc.setFont("Helvetica", "bold");
             doc.text("Sector:", 10, currentY);
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             doc.text(selectedUser.empresa.sector ? selectedUser.empresa.sector.sector : 'No disponible', 40, currentY);
             currentY += 10;
     
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("División:", 10, currentY);
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             doc.text(selectedUser.empresa.sector ? selectedUser.empresa.sector.division : 'No disponible', 40, currentY);
             currentY += 10;
     
-            doc.setFont("bold");
+            doc.setFont("Helvetica", "bold");
             doc.text("Ubicación:", 10, currentY);
-            doc.setFont("normal");
+            doc.setFont("Helvetica", "normal");
             doc.text(selectedUser.empresa.ubicacion ? `${selectedUser.empresa.ubicacion.provincia}, ${selectedUser.empresa.ubicacion.canton}` : 'No disponible', 40, currentY);
         }
-    
-        // Ajustar el tamaño del documento y agregar un margen inferior
-        currentY += 20; // Añade espacio antes del texto de pie de página
-        doc.setFontSize(10);
     
         // Generar el nombre del archivo
         let fileName = "Detalles_";
@@ -294,6 +345,7 @@ const GestionUsuarios = () => {
     
         doc.save(fileName); // Guarda el documento con el nombre generado
     };
+    
     
     
     
@@ -525,13 +577,34 @@ const GestionUsuarios = () => {
     {selectedUser && (
         <div className="mt-4 p-6 border rounded-lg shadow-lg bg-white max-h-[80vh] overflow-y-auto">
             {selectedUser.empresa && (
-                <div className="mb-4">
-                    <h3 className="text-lg font-bold text-gray-800 mt-4">Detalles de la Empresa</h3>
-                    <p className="text-gray-700"><strong>Nombre Comercial:</strong> {selectedUser.empresa.nombre_comercial}</p>
-                    <p className="text-gray-700"><strong>Sector:</strong> {selectedUser.empresa.sector ? selectedUser.empresa.sector.sector : 'No disponible'}</p>
-                    <p className="text-gray-700"><strong>División:</strong> {selectedUser.empresa.sector ? selectedUser.empresa.sector.division : 'No disponible'}</p>
-                    <p className="text-gray-700"><strong>Ubicación:</strong> {selectedUser.empresa.ubicacion ? `${selectedUser.empresa.ubicacion.provincia}, ${selectedUser.empresa.ubicacion.canton}` : 'No disponible'}</p>
-                </div>
+               <div className="mb-4">
+               <h3 className="text-lg font-bold text-gray-800 mt-4">Detalles de la Empresa</h3>
+               <p className="text-gray-700">
+                   <strong>Nombre Comercial:</strong> {selectedUser.empresa.nombre_comercial || 'No disponible'}
+               </p>
+               <p className="text-gray-700">
+                   <strong>RUC:</strong> {selectedUser.empresa.ruc || 'No disponible'}
+               </p>
+               <p className="text-gray-700">
+                   <strong>Razón Social:</strong> {selectedUser.empresa.razon_s || 'No disponible'}
+               </p>
+               <p className="text-gray-700">
+                   <strong>Sitio Web:</strong> {selectedUser.empresa.sitio || 'No disponible'}
+               </p>
+               <p className="text-gray-700">
+                   <strong>Teléfono:</strong> {selectedUser.empresa.telefono || 'No disponible'}
+               </p>
+               <p className="text-gray-700">
+                   <strong>Sector:</strong> {selectedUser.empresa.sector ? selectedUser.empresa.sector.sector : 'No disponible'}
+               </p>
+               <p className="text-gray-700">
+                   <strong>División:</strong> {selectedUser.empresa.sector ? selectedUser.empresa.sector.division : 'No disponible'}
+               </p>
+               <p className="text-gray-700">
+                   <strong>Ubicación:</strong> {selectedUser.empresa.ubicacion ? `${selectedUser.empresa.ubicacion.provincia}, ${selectedUser.empresa.ubicacion.canton}` : 'No disponible'}
+               </p>
+           </div>
+           
             )}
             {selectedUser.postulante && (
                 <div>
