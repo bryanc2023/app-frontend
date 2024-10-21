@@ -911,18 +911,20 @@ const EmpresaDetails: React.FC = () => {
                 idEmpresa={empresa?.id || 0}
             />
             <EditLogoModal
-                isOpen={isEditLogoModalOpen}
-                onRequestClose={closeEditLogoModal}
-                onSave={(newLogoURL) => {
-                    setEmpresa((prevData) => {
-                        if (prevData) {
-                            return { ...prevData, logo: newLogoURL };
-                        }
-                        return prevData;
-                    });
-                }}
-                initialImage={empresa?.logo}
-                empresaId={empresa?.id || 0}
+                  isOpen={isEditLogoModalOpen}
+                  onRequestClose={() => {closeEditLogoModal; window.location.reload(); // Recargar los datos del postulante al cerrar el modal
+                  }}
+                  onSave={(newLogoURL) => {
+                      setEmpresa((prevData) => {
+                          if (prevData) {
+                              return { ...prevData, logo: newLogoURL };
+                          }
+                          return prevData;
+                      });
+                  }}
+                  initialImage={empresa?.logo}
+                  empresaId={empresa?.id || 0}
+                  empreName={empresa.nombre_comercial}
             />
 
             <Modal

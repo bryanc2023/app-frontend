@@ -85,10 +85,10 @@ interface ModalProps {
 
 
 
-const Modal: React.FC<ModalProps> = ({ oferta, onClose}) => {
+const Modal: React.FC<ModalProps> = ({ oferta, onClose }) => {
     const [sueldoDeseado, setSueldoDeseado] = useState<number | null>(null);
     const [loading, setLoading] = useState(false);
-   
+
 
 
     const navigate = useNavigate();
@@ -105,7 +105,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose}) => {
     const handlePostular = async () => {
 
         navigate('/login');
-        
+
     };
 
     const renderFunciones = () => {
@@ -234,11 +234,11 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose}) => {
                                 <FontAwesomeIcon icon={faIndustry} className="mr-2" />
                                 <strong>Sector de la empresa: </strong>
                                 {oferta.sector_p ?
-                                        oferta.sector_p.includes('/')
-                                            ? oferta.sector_p.split('/')[0] + ' En ' + oferta.sector_p.split('/')[1] // Muestra la parte antes de la barra
-                                            : oferta.sector_p
-                                        :
-                                        `${oferta.empresa.sector.division} EN ${oferta.empresa.sector.sector}`
+                                    oferta.sector_p.includes('/')
+                                        ? oferta.sector_p.split('/')[0] + ' En ' + oferta.sector_p.split('/')[1] // Muestra la parte antes de la barra
+                                        : oferta.sector_p
+                                    :
+                                    `${oferta.empresa.sector.division} EN ${oferta.empresa.sector.sector}`
                                 }
                             </p>
                             {!(oferta.empre_p && oferta.sector_p) && (
@@ -438,9 +438,15 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose}) => {
 
 
                 </div>
-                <div className="mt-4 flex justify-center">
-                    <button onClick={handlePostular} className="bg-blue-500 text-white p-2 rounded flex items-center">  <FaPaperPlane className="mr-2" />Postular</button>
-                </div>
+                {oferta.estado !== "Inactiva" && (
+                    <div className="mt-4 flex justify-center">
+                        <button onClick={handlePostular} className="bg-blue-500 text-white p-2 rounded flex items-center">
+                            <FaPaperPlane className="mr-2" />
+                            Postular
+                        </button>
+                    </div>
+                )}
+
                 <div className="absolute top-4 right-4">
                     <button onClick={onClose} className="bg-red-300 text-gray-700 px-4 py-2 rounded-lg shadow-md flex items-center">  <FaTimes className="mr-2" />  Cerrar Detalles</button>
                 </div>

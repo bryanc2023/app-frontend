@@ -45,13 +45,25 @@ const EditProfilePictureModal: React.FC<EditProfilePictureModalProps> = ({
           Swal.showLoading();
         }
       });
+      // Definir la URL base del host
+      const urlHost = `${import.meta.env.VITE_API_URL3}/storage/`;
 
-      const storageRef = ref(storage, `profile_pictures/${croppedImageFile.name}`);
-      await uploadBytes(storageRef, croppedImageFile);
-      const photoURL = await getDownloadURL(storageRef);
+      // Crear un objeto FormData para enviar la imagen
+      const formData = new FormData();
+      formData.append('foto', croppedImageFile);
+      formData.append('image_name', postulanteId.toString()+'.jpeg');  // La imagen recortada
+      formData.append('url', urlHost); // Enviar la URL del host
 
       try {
-        await axios.post(`postulante/${postulanteId}/updateProfilePicture`, { foto: photoURL });
+        // Enviar la imagen al backend usando el ID del postulante
+        await axios.post(`postulante/${postulanteId}/updateProfilePicture`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        // Actualizar la UI con la nueva URL de la imagen
+        const photoURL = urlHost + 'images/postulantes/' + croppedImageFile.name;
         onSave(photoURL);
         onRequestClose();
 

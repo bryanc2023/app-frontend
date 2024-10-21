@@ -92,7 +92,7 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
                         navigate('/verOfertasE');
                     } else if (role === 'empresa_gestora') {
                         navigate('/inicioG');
-                    }else if (role === 'p_empresa_g') {
+                    } else if (role === 'p_empresa_g') {
                         navigate('/inicioG');
                     }
 
@@ -154,6 +154,7 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
                 <p><strong className='text-cyan-700'>Edad: </strong>{postulante.edad}</p>
                 <p><strong className='text-cyan-700'>Estado civil: </strong> {postulante.estado_civil}</p>
                 <p><strong className='text-cyan-700'>Género: </strong> {postulante.genero}</p>
+
                 {/* Condición para mostrar la Presentación si no es nulo */}
                 {postulante.informacion_extra && (
                     <div className="mt-4"> {/* Espacio adicional si es necesario */}
@@ -165,7 +166,10 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
                         <hr />
                     </div>
                 )}
-
+                <strong className='text-cyan-700'>Hoja de vida: </strong>
+                <a href={postulante.cv} target="_blank" rel="noopener noreferrer" className='text-cyan-700'>
+                    Ver hoja de vida
+                </a>
 
                 {postulante.respuestas && postulante.respuestas.length > 0 && (
                     <center>

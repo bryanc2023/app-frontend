@@ -339,10 +339,10 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
                                 }
                             </p>
                             {!(oferta.empre_p && oferta.sector_p) && (
-                            <p className="text-gray-700 mb-1 flex items-center">
-                                <FiMapPin className="text-gray-700 mr-2" />
-                                <strong>Ubicación empresa: </strong> {oferta.empresa.ubicacion.provincia}, {oferta.empresa.ubicacion.canton}
-                            </p>
+                                <p className="text-gray-700 mb-1 flex items-center">
+                                    <FiMapPin className="text-gray-700 mr-2" />
+                                    <strong>Ubicación empresa: </strong> {oferta.empresa.ubicacion.provincia}, {oferta.empresa.ubicacion.canton}
+                                </p>
                             )}
                             {oferta.ciudad && (
                                 <p className="text-gray-700 mb-1 flex items-center">
@@ -534,9 +534,19 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose, userId }) => {
 
 
                 </div>
-                <div className="mt-4 flex justify-center">
-                    <button onClick={handlePostular} className="bg-blue-500 text-white p-2 rounded flex items-center">  <FaPaperPlane className="mr-2" />Postular</button>
-                </div>
+                {oferta.estado === "Inactiva" ? (
+                    <div className="mt-4 flex justify-center">
+                        <span className="text-red-500 font-bold">Esta oferta ha culminado</span>
+                    </div>
+                ) : (
+                    <div className="mt-4 flex justify-center">
+                        <button onClick={handlePostular} className="bg-blue-500 text-white p-2 rounded flex items-center">
+                            <FaPaperPlane className="mr-2" />
+                            Postular
+                        </button>
+                    </div>
+                )}
+
                 <div className="absolute top-4 right-4">
                     <button onClick={onClose} className="bg-red-300 text-gray-700 px-4 py-2 rounded-lg shadow-md flex items-center">  <FaTimes className="mr-2" />  Cerrar Detalles</button>
                 </div>

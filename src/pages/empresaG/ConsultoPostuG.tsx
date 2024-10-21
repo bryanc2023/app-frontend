@@ -9,7 +9,7 @@ import FileSaver from 'file-saver';
 import { getStorage, ref, getDownloadURL } from 'firebase/storage';
 import { FaInfoCircle, FaUserTie, FaFileAlt, FaCheckCircle, FaCommentDots } from 'react-icons/fa';
 import Swal from 'sweetalert2';
-
+import JSZip from 'jszip';
 interface Postulacion {
     id_oferta: number;
     total_evaluacion: number;
@@ -346,43 +346,45 @@ const PostulantesList: React.FC = () => {
 
     const descargarCVs = async () => {
         if (!filteredPostulaciones) return;
-
-        const zip = new jszip();
-        const promises: any[] = [];
-
+    
+        const zip = new JSZip();
+        const promises = [];
+    
+        // Obtén los postulantes y crea las promesas para cada CV
         filteredPostulaciones.oferta.postulantes.slice(0, numCVs).forEach((postulante, index) => {
-            const nombreArchivo = `${index + 1}-${postulante.nombres}-${postulante.apellidos}.pdf`;
-
+            const fileName = `${index + 1}-${postulante.nombres}-${postulante.apellidos}.pdf`;
+    
             if (postulante.cv) {
-                //const storageRef = ref(storage, postulante.cv);
-                // Create a reference to the file we want to download
-                const storage = getStorage();
-                const starsRef = ref(storage, postulante.cv);
+                // Usar la API para obtener el CV en lugar de la URL directa
+                const cvUrl = `${import.meta.env.VITE_API_URL2}/cv/${postulante.cv.split('/').pop()}`; // Extraer solo el nombre del archivo
+    
                 promises.push(
-                    getDownloadURL(starsRef).then(url => {
-
-                        return fetch(url)
-                            .then(response => response.blob())
-                            .then(blob => {
-                                zip.file(nombreArchivo, blob, { binary: true });
-                            })
-                            .catch(error => {
-                                console.error("Error al obtener el archivo:", error);
-                            });
-                    }).catch(error => {
-                        console.error("Error al obtener URL de descarga:", error);
-                    })
+                    fetch(cvUrl)
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error(`Error al obtener el archivo: ${cvUrl}`);
+                            }
+                            return response.blob();
+                        })
+                        .then(blob => {
+                            zip.file(fileName, blob); // Agregar el archivo al ZIP
+                        })
+                        .catch(error => {
+                            console.error("Error al obtener el archivo:", error);
+                        })
                 );
             }
         });
-
+    
+        // Espera a que todas las promesas se resuelvan
         await Promise.all(promises);
-
-        const nombreZip = `CVs_${filteredPostulaciones.oferta.cargo}.zip`;
-
-        zip.generateAsync({ type: 'blob' }).then((content) => {
-            FileSaver.saveAs(content, nombreZip);
+    
+        // Generar el ZIP y guardarlo
+        zip.generateAsync({ type: 'blob' }).then(content => {
+            const zipFileName = `CVs_${filteredPostulaciones.oferta.cargo}.zip`;
+            FileSaver.saveAs(content, zipFileName); // Descarga el ZIP
         });
+    
         setNumCVs(1);
     };
 

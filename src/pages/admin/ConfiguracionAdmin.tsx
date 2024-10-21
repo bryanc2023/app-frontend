@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from "../../services/axios";
-import Modal from '../../components/Admin/CargaModal'; 
+import Modal from '../../components/Admin/CargaModal';
 
 interface Configuracion {
     id?: number;
@@ -11,7 +11,7 @@ interface Configuracion {
     valor_prioridad_baja: number;
     vigencia: boolean;
     created_at: string;
-    terminos_condiciones?: string; 
+    terminos_condiciones?: string;
     gratis_ofer: number;
     gratis_d: number;
     estandar_ofer: number;
@@ -32,15 +32,15 @@ const ConfiguracionComponent = () => {
         valor_prioridad_baja: 1,
         vigencia: true,
         created_at: '',
-        terminos_condiciones: '', 
+        terminos_condiciones: '',
         gratis_ofer: 3,
-        gratis_d:  1,
-        estandar_ofer:  10,
+        gratis_d: 1,
+        estandar_ofer: 10,
         estandar_d: 5,
-        premium_ofer:  50,
-        premiun_d:  0,
-        u_ofer:  0,
-        u_d:  0,
+        premium_ofer: 50,
+        premiun_d: 0,
+        u_ofer: 0,
+        u_d: 0,
     });
     const [modalOpen, setModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState({ title: '', message: '', success: false });
@@ -111,39 +111,42 @@ const ConfiguracionComponent = () => {
         setShowTermsModal(false);
     };
 
+
     return (
         <div className="p-4">
             <center><h1 className="text-2xl font-bold mb-4">Gestión de configuración</h1></center>
             <p> En esta sección se maneja la configuración básica del sistema en las ofertas, la configuración en vigencia es la que se encuentra actualmente operando en el sistema</p>
-            <div className="overflow-x-auto">
-                <hr className="my-4" />
-                <h1 className="text-xl text-orange-400 mb-4">CONFIGURACIÓNES ESTABLECIDAS</h1>
-                 {/* Mensaje de aviso mejorado */}
+            <hr className="my-4" />
+            <h1 className="text-xl text-orange-400 mb-4">CONFIGURACIÓNES ESTABLECIDAS</h1>
+            {/* Mensaje de aviso mejorado */}
             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
-              <div className="flex items-center">
-                <svg
-                  className="h-5 w-5 text-yellow-500 mr-2"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
-                  />
-                </svg>
-                <h1 className="text-xs font-semibold">
-                  (Solo se puede mantener una configuracion activa)
-                </h1>
-              </div>
+                <div className="flex items-center">
+                    <svg
+                        className="h-5 w-5 text-yellow-500 mr-2"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                        />
+                    </svg>
+                    <h1 className="text-xs font-semibold">
+                        (Solo se puede mantener una configuracion activa)
+                    </h1>
+                </div>
             </div>
+            <div className="overflow-x-auto">
+
                 <table className="min-w-full divide-y divide-gray-200 shadow-md rounded-lg overflow-hidden">
+
                     <thead className="bg-gray-50">
                         <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Vigencia
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -196,7 +199,7 @@ const ConfiguracionComponent = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                         {configuraciones.map((config, index) => (
                             <tr key={index} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap">
+                                <td className="px-6 py-4 whitespace-nowrap">
                                     {config.vigencia ? 'Sí' : 'No'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
@@ -260,7 +263,7 @@ const ConfiguracionComponent = () => {
                                         onClick={() => handleShowTerms(config.terminos_condiciones || 'No terms available')}
                                         className="ml-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                                     >
-                                        Mostrar Términos 
+                                        Mostrar Términos
                                     </button>
                                 </td>
                             </tr>
@@ -286,7 +289,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="dias_max_edicion"
                             value={form.dias_max_edicion}
-                             min="1"
+                            min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -297,7 +300,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="dias_max_eliminacion"
                             value={form.dias_max_eliminacion}
-                             min="1"
+                            min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -308,7 +311,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="valor_prioridad_alta"
                             value={form.valor_prioridad_alta}
-                             min="1"
+                            min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -319,7 +322,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="valor_prioridad_media"
                             value={form.valor_prioridad_media}
-                             min="1"
+                            min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -330,13 +333,17 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="valor_prioridad_baja"
                             value={form.valor_prioridad_baja}
-                             min="1"
+                            min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
                     </div>
+
                     <div className="mb-4">
+
+
                         <label className="block text-sm font-medium text-gray-700">Términos y Condiciones:</label>
+
                         <textarea
                             name="terminos_condiciones"
                             value={form.terminos_condiciones}
@@ -345,13 +352,34 @@ const ConfiguracionComponent = () => {
                             rows={10}
                         />
                     </div>
+                    <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded-md mb-4">
+                        <div className="flex items-center">
+                            <svg
+                                className="h-5 w-5 text-yellow-500 mr-2"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M13 16h-1v-4h-1m1-4h.01M12 8v.01M21 12A9 9 0 1112 3a9 9 0 019 9z"
+                                />
+                            </svg>
+                            <h1 className="text-xs font-semibold">
+                                (Al ingresar el valor "0" se entiende como número ilimatado en el caso de planes)
+                            </h1>
+                        </div>
+                    </div>
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700">Plan Gratis máximo ofertas:</label>
                         <input
                             type="number"
                             name="gratis_ofer"
                             value={form.gratis_ofer}
-                             min="1"
+                            min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -362,7 +390,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="gratis_d"
                             value={form.gratis_d}
-                             min="1"
+                            min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -373,7 +401,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="estandar_ofer"
                             value={form.estandar_ofer}
-                             min="1"
+                            min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -384,7 +412,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="estandar_d"
                             value={form.estandar_d}
-                             min="1"
+                            min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -395,7 +423,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="premium_ofer"
                             value={form.premium_ofer}
-                             min="1"
+                            min="1"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -406,7 +434,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="premiun_d"
                             value={form.premiun_d}
-                             min="0"
+                            min="0"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />
@@ -417,7 +445,7 @@ const ConfiguracionComponent = () => {
                             type="number"
                             name="u_ofer"
                             value={form.u_ofer}
-                             min="0"
+                            min="0"
                             onChange={handleChange}
                             className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                         />

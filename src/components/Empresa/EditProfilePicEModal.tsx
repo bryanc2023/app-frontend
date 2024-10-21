@@ -8,6 +8,7 @@ import { RootState } from '../../store';
 import { useSelector } from 'react-redux';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Swal from 'sweetalert2';
+import EmpresaDetails from '../../pages/empresa/PerfilE';
 
 interface EditProfilePicEModalProps {
   isOpen: boolean;
@@ -15,6 +16,7 @@ interface EditProfilePicEModalProps {
   onSave: (croppedImage: string) => void;
   initialImage: string;
   empresaId?: number;
+  empreName:string;
 }
 
 const EditProfilePicEModal: React.FC<EditProfilePicEModalProps> = ({
@@ -23,6 +25,7 @@ const EditProfilePicEModal: React.FC<EditProfilePicEModalProps> = ({
   onSave,
   initialImage,
   empresaId,
+  empreName,
 }) => {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -89,12 +92,24 @@ const EditProfilePicEModal: React.FC<EditProfilePicEModalProps> = ({
         }
       });
 
-      const storageRef = ref(storage, `empresa_logos/${croppedImageFile.name}`);
-      await uploadBytes(storageRef, croppedImageFile);
-      const logoURL = await getDownloadURL(storageRef);
+    
+       // Definir la URL base del host
+       const urlHost = `${import.meta.env.VITE_API_URL3}/storage/`;
+
+       // Crear un objeto FormData para enviar la imagen
+       const formData = new FormData();
+       formData.append('logo', croppedImageFile);
+       formData.append('image_name', empreName+'.jpeg');  // La imagen recortada
+       formData.append('url', urlHost); // Enviar la URL del host
 
       try {
-        await axios.post(`/empresa/${resolvedEmpresaId}/updateLogo`, { logo: logoURL });
+        await axios.post(`/empresa/${resolvedEmpresaId}/updateLogo`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        });
+
+        const logoURL = urlHost + 'images/logos/' + croppedImageFile.name;
         onSave(logoURL);
         onRequestClose();
 

@@ -430,12 +430,16 @@ const [redToDelete, setRedToDelete] = useState<Red | null>(null);
 
       <EditProfilePictureModal
         isOpen={isEditProfilePicModalOpen}
-        onRequestClose={() => setIsEditProfilePicModalOpen(false)}
+        onRequestClose={() => {
+          setIsEditProfilePicModalOpen(false);
+          window.location.reload(); // Recargar los datos del postulante al cerrar el modal
+        }}
         onSave={(newPhotoURL: string) => {
           setProfileData((prevData) => {
             if (prevData) {
               return { ...prevData, postulante: { ...prevData.postulante, foto: newPhotoURL } };
             }
+            console.log(newPhotoURL)
             return prevData;
           });
         }}
