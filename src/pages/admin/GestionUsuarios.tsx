@@ -168,7 +168,7 @@ const GestionUsuarios = () => {
         // Detalles del postulante
         if (selectedUser && selectedUser.postulante) {
             const { postulante, ubicacion, formaciones, titulos, idiomas } = selectedUser.postulante;
-    
+            const maxWidth = doc.internal.pageSize.getWidth() - 70;
             doc.setFontSize(18);
             doc.setFont("Helvetica", "bold");
             doc.setTextColor(0, 0, 255); // Asegura que los siguientes textos sean en color negro
@@ -228,7 +228,17 @@ const GestionUsuarios = () => {
             doc.setFont("Helvetica", "bold");
             doc.text("Información Extra:", 10, currentY);
             doc.setFont("Helvetica", "normal");
-            doc.text(postulante.informacion_extra || 'No se ha proporcionado', 60, currentY);
+
+            // Divide el texto en líneas que quepan en el ancho máximo
+            const lines = doc.splitTextToSize(postulante.informacion_extra || 'No se ha proporcionado', maxWidth);
+
+            // Dibuja cada línea en el PDF
+            lines.forEach((line) => {
+                doc.text(line, 60, currentY);
+                currentY += 10; // Aumenta el espacio vertical para la siguiente línea
+            });
+
+            // Ajusta el currentY para el siguiente contenido
             currentY += 10;
     
             doc.setFont("Helvetica", "bold");
