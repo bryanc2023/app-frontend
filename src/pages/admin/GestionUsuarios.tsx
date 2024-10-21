@@ -155,19 +155,18 @@ const GestionUsuarios = () => {
         let currentY = 10; // Inicializa la posición vertical
         const margin = 10; // Margen inferior
         const pageHeight = doc.internal.pageSize.getHeight(); // Altura de la página
+        const maxWidth = doc.internal.pageSize.getWidth() - 70; // Ancho máximo para los textos
     
         // Agregar el título "POSTULA" en la esquina izquierda, negrilla y color naranja
         doc.setFontSize(20);
         doc.setFont("Helvetica", "bold");
         doc.setTextColor(255, 165, 0); // Color naranja
         doc.text("POSTULA", 10, currentY);
-        
         currentY += 15; // Aumenta el espacio después del título
     
         // Detalles del postulante
         if (selectedUser && selectedUser.postulante) {
             const { postulante, ubicacion, formaciones, titulos, idiomas } = selectedUser.postulante;
-            const maxWidth = doc.internal.pageSize.getWidth() - 70;
             doc.setFontSize(18);
             doc.setFont("Helvetica", "bold");
             doc.setTextColor(0, 0, 255); // Asegura que los siguientes textos sean en color negro
@@ -194,7 +193,7 @@ const GestionUsuarios = () => {
             ];
     
             details.forEach(({ label, value }) => {
-                // Verifica si se necesita nueva página
+                // Verifica si se necesita nueva página antes de agregar el campo
                 if (currentY > pageHeight - margin) {
                     doc.addPage();
                     currentY = 10; // Reinicia la posición vertical
@@ -202,13 +201,23 @@ const GestionUsuarios = () => {
     
                 doc.setFont("Helvetica", "bold");
                 doc.text(label, 10, currentY);
-                doc.setFont("Helvetica", "normal");
-                doc.text(value || 'No se ha proporcionado', 60, currentY);
-                currentY += 10;
-            });
+                currentY += 10; // Espacio para el valor
     
-            // Ajusta el currentY para el siguiente contenido
-            currentY += 10;
+                doc.setFont("Helvetica", "normal");
+                const textValue = value || 'No se ha proporcionado';
+                const textLines = doc.splitTextToSize(textValue, maxWidth);
+                textLines.forEach(line => {
+                    // Verifica si se necesita nueva página antes de agregar cada línea
+                    if (currentY > pageHeight - margin) {
+                        doc.addPage();
+                        currentY = 10; // Reinicia la posición vertical
+                    }
+                    doc.text(line, 60, currentY);
+                    currentY += 10;
+                });
+    
+                currentY += 5; // Espacio adicional después de cada campo
+            });
     
             // Ubicación
             if (currentY > pageHeight - margin) {
@@ -217,8 +226,9 @@ const GestionUsuarios = () => {
             }
             doc.setFont("Helvetica", "bold");
             doc.text("Ubicación:", 10, currentY);
+            currentY += 10;
             doc.setFont("Helvetica", "normal");
-            doc.text(`${ubicacion.provincia}, ${ubicacion.canton}` || 'No se ha proporcionado', 40, currentY);
+            doc.text(`${ubicacion.provincia}, ${ubicacion.canton}` || 'No se ha proporcionado', 60, currentY);
             currentY += 10;
     
             // Formaciones
@@ -231,6 +241,7 @@ const GestionUsuarios = () => {
             currentY += 10;
             doc.setFont("Helvetica", "normal");
             formaciones.forEach((formacion) => {
+                // Verifica si se necesita nueva página
                 if (currentY > pageHeight - margin) {
                     doc.addPage();
                     currentY = 10;
@@ -250,6 +261,7 @@ const GestionUsuarios = () => {
             currentY += 10;
             doc.setFont("Helvetica", "normal");
             titulos.forEach((titulo) => {
+                // Verifica si se necesita nueva página
                 if (currentY > pageHeight - margin) {
                     doc.addPage();
                     currentY = 10;
@@ -269,6 +281,7 @@ const GestionUsuarios = () => {
             currentY += 10;
             doc.setFont("Helvetica", "normal");
             idiomas.forEach((idioma) => {
+                // Verifica si se necesita nueva página
                 if (currentY > pageHeight - margin) {
                     doc.addPage();
                     currentY = 10;
@@ -310,7 +323,7 @@ const GestionUsuarios = () => {
             ];
     
             companyDetails.forEach(({ label, value }) => {
-                // Verifica si se necesita nueva página
+                // Verifica si se necesita nueva página antes de agregar el campo
                 if (currentY > pageHeight - margin) {
                     doc.addPage();
                     currentY = 10; // Reinicia la posición vertical
@@ -318,21 +331,20 @@ const GestionUsuarios = () => {
     
                 doc.setFont("Helvetica", "bold");
                 doc.text(label, 10, currentY);
-                doc.setFont("Helvetica", "normal");
+                currentY += 10; // Espacio para el valor
     
-                // Ajusta el texto de Razón Social, Sector y División
+                doc.setFont("Helvetica", "normal");
                 const textValue = value || 'No disponible';
-                if (label === "Razón Social:" || label === "Sector:" || label === "División:") {
-                    const maxWidth = doc.internal.pageSize.getWidth() - 70;
-                    const textLines = doc.splitTextToSize(textValue, maxWidth);
-                    textLines.forEach(line => {
-                        doc.text(line, 60, currentY);
-                        currentY += 10;
-                    });
-                } else {
-                    doc.text(textValue, 60, currentY);
+                const textLines = doc.splitTextToSize(textValue, maxWidth);
+                textLines.forEach(line => {
+                    // Verifica si se necesita nueva página antes de agregar cada línea
+                    if (currentY > pageHeight - margin) {
+                        doc.addPage();
+                        currentY = 10; // Reinicia la posición vertical
+                    }
+                    doc.text(line, 60, currentY);
                     currentY += 10;
-                }
+                });
             });
         }
     
@@ -346,7 +358,7 @@ const GestionUsuarios = () => {
     
         doc.save(fileName); // Guarda el documento con el nombre generado
     };
-
+    
     
     
     
