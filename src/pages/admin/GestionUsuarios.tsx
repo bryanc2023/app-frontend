@@ -186,55 +186,55 @@ const GestionUsuarios = () => {
             doc.setFont("Helvetica", "bold"); // Establece la fuente en negrita
             doc.text("Nombre:", 10, currentY);
             doc.setFont("Helvetica", "normal"); // Vuelve a la fuente normal
-            doc.text(`${postulante.nombres} ${postulante.apellidos}`, 40, currentY); // Mueve el texto del nombre a la derecha
+            doc.text(postulante.nombres || 'No se ha proporcionado', 40, currentY); // Mueve el texto del nombre a la derecha
             currentY += 10;
             
             doc.setFont("Helvetica", "bold");
             doc.text("Fecha de Nacimiento:", 10, currentY);
             doc.setFont("Helvetica", "normal");
-            doc.text(postulante.fecha_nac, 60, currentY);
+            doc.text(postulante.fecha_nac || 'No se ha proporcionado', 60, currentY);
             currentY += 10;
     
             doc.setFont("Helvetica", "bold");
             doc.text("Edad:", 10, currentY);
             doc.setFont("Helvetica", "normal");
-            doc.text(postulante.edad.toString(), 40, currentY);
+            doc.text(postulante.edad.toString() || 'No se ha proporcionado', 40, currentY);
             currentY += 10;
     
             doc.setFont("Helvetica", "bold");
             doc.text("Estado Civil:", 10, currentY);
             doc.setFont("Helvetica", "normal");
-            doc.text(postulante.estado_civil, 40, currentY);
+            doc.text(postulante.estado_civil || 'No se ha proporcionado', 40, currentY);
             currentY += 10;
     
             doc.setFont("Helvetica", "bold");
             doc.text("Cédula:", 10, currentY);
             doc.setFont("Helvetica", "normal");
-            doc.text(postulante.cedula, 40, currentY);
+            doc.text(postulante.cedula || 'No se ha proporcionado', 40, currentY);
             currentY += 10;
     
             doc.setFont("Helvetica", "bold");
             doc.text("Teléfono:", 10, currentY);
             doc.setFont("Helvetica", "normal");
-            doc.text(postulante.telefono, 40, currentY);
+            doc.text(postulante.telefono || 'No se ha proporcionado', 40, currentY);
             currentY += 10;
     
             doc.setFont("Helvetica", "bold");
             doc.text("Género:", 10, currentY);
             doc.setFont("Helvetica", "normal");
-            doc.text(postulante.genero, 40, currentY);
+            doc.text(postulante.genero || 'No se ha proporcionado', 40, currentY);
             currentY += 10;
     
             doc.setFont("Helvetica", "bold");
             doc.text("Información Extra:", 10, currentY);
             doc.setFont("Helvetica", "normal");
-            doc.text(postulante.informacion_extra, 60, currentY);
+            doc.text(postulante.informacion_extra || 'No se ha proporcionado', 60, currentY);
             currentY += 10;
     
             doc.setFont("Helvetica", "bold");
             doc.text("Ubicación:", 10, currentY);
             doc.setFont("Helvetica", "normal");
-            doc.text(`${ubicacion.provincia}, ${ubicacion.canton}`, 40, currentY);
+            doc.text(`${ubicacion.provincia}, ${ubicacion.canton}` || 'No se ha proporcionado', 40, currentY);
             currentY += 10;
     
             // Formaciones
@@ -243,7 +243,7 @@ const GestionUsuarios = () => {
             currentY += 10;
             doc.setFont("Helvetica", "normal");
             formaciones.forEach((formacion) => {
-                const line = ` - ${formacion.titulo_acreditado} en ${formacion.institucion} (${formacion.estado})`;
+                const line = ` - ${formacion.titulo_acreditado} en ${formacion.institucion} (${formacion.estado})` || 'No se ha proporcionado';
                 doc.text(line, 10, currentY);
                 currentY += 10;
             });
@@ -255,7 +255,7 @@ const GestionUsuarios = () => {
             currentY += 10;
             doc.setFont("Helvetica", "normal");
             titulos.forEach((titulo) => {
-                const line = ` - ${titulo.titulo} (Nivel: ${titulo.nivel_educacion})`;
+                const line = ` - ${titulo.titulo} (Nivel: ${titulo.nivel_educacion})` || 'No se ha proporcionado';
                 doc.text(line, 10, currentY);
                 currentY += 10;
             });
@@ -266,7 +266,7 @@ const GestionUsuarios = () => {
             currentY += 10;
             doc.setFont("Helvetica", "normal");
             idiomas.forEach((idioma) => {
-                const line = ` - ${idioma.idioma_nombre} (Oral: ${idioma.nivel_oral}, Escrito: ${idioma.nivel_escrito})`;
+                const line = ` - ${idioma.idioma_nombre} (Oral: ${idioma.nivel_oral}, Escrito: ${idioma.nivel_escrito})` || 'No se ha proporcionado';
                 doc.text(line, 10, currentY);
                 currentY += 10;
             });
@@ -290,7 +290,7 @@ const GestionUsuarios = () => {
             doc.setFont("Helvetica", "bold");
             doc.text("Nombre Comercial:", 10, currentY);
             doc.setFont("Helvetica", "normal");
-            doc.text(selectedUser.empresa.nombre_comercial, 60, currentY);
+            doc.text(selectedUser.empresa.nombre_comercial || 'No se ha proporcionado', 60, currentY);
             currentY += 10;
     
             doc.setFont("Helvetica", "bold");
@@ -581,18 +581,6 @@ const GestionUsuarios = () => {
                <h3 className="text-lg font-bold text-gray-800 mt-4">Detalles de la Empresa</h3>
                <p className="text-gray-700">
                    <strong>Nombre Comercial:</strong> {selectedUser.empresa.nombre_comercial || 'No disponible'}
-               </p>
-               <p className="text-gray-700">
-                   <strong>RUC:</strong> {selectedUser.empresa.ruc || 'No disponible'}
-               </p>
-               <p className="text-gray-700">
-                   <strong>Razón Social:</strong> {selectedUser.empresa.razon_s || 'No disponible'}
-               </p>
-               <p className="text-gray-700">
-                   <strong>Sitio Web:</strong> {selectedUser.empresa.sitio || 'No disponible'}
-               </p>
-               <p className="text-gray-700">
-                   <strong>Teléfono:</strong> {selectedUser.empresa.telefono || 'No disponible'}
                </p>
                <p className="text-gray-700">
                    <strong>Sector:</strong> {selectedUser.empresa.sector ? selectedUser.empresa.sector.sector : 'No disponible'}
