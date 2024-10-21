@@ -597,15 +597,15 @@ const GestionUsuarios = () => {
             {selectedUser.postulante && (
                 <div>
                     <h3 className="text-lg font-bold text-gray-800 mt-4">Detalles del Postulante</h3>
-                    <p className="text-gray-700"><strong>Nombres:</strong> {selectedUser.postulante.postulante.nombres}</p>
-                    <p className="text-gray-700"><strong>Apellidos:</strong> {selectedUser.postulante.postulante.apellidos}</p>
-                    <p className="text-gray-700"><strong>Fecha de Nacimiento:</strong> {selectedUser.postulante.postulante.fecha_nac}</p>
-                    <p className="text-gray-700"><strong>Edad:</strong> {selectedUser.postulante.postulante.edad}</p>
-                    <p className="text-gray-700"><strong>Estado Civil:</strong> {selectedUser.postulante.postulante.estado_civil}</p>
-                    <p className="text-gray-700"><strong>Cédula:</strong> {selectedUser.postulante.postulante.cedula}</p>
-                    <p className="text-gray-700"><strong>Teléfono:</strong> {selectedUser.postulante.postulante.telefono}</p>
-                    <p className="text-gray-700"><strong>Género:</strong> {selectedUser.postulante.postulante.genero}</p>
-                    <p className="text-gray-700"><strong>Información Extra:</strong> {selectedUser.postulante.postulante.informacion_extra}</p>
+                    <p className="text-gray-700"><strong>Nombres:</strong> {selectedUser.postulante.postulante.nombres || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Apellidos:</strong> {selectedUser.postulante.postulante.apellidos || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Fecha de Nacimiento:</strong> {selectedUser.postulante.postulante.fecha_nac || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Edad:</strong> {selectedUser.postulante.postulante.edad || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Estado Civil:</strong> {selectedUser.postulante.postulante.estado_civil || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Cédula:</strong> {selectedUser.postulante.postulante.cedula || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Teléfono:</strong> {selectedUser.postulante.postulante.telefono || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Género:</strong> {selectedUser.postulante.postulante.genero || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Información Extra:</strong> {selectedUser.postulante.postulante.informacion_extra || 'No disponible'}</p>
                     <p className="text-gray-700"><strong>Vigencia:</strong> {selectedUser.postulante.postulante.vigencia ? 'Vigente' : 'No vigente'}</p>
                     <p className="text-gray-700"><strong>Ubicación:</strong> {selectedUser.postulante.ubicacion ? `${selectedUser.postulante.ubicacion.provincia}, ${selectedUser.postulante.ubicacion.canton}` : 'No disponible'}</p>
 
