@@ -592,6 +592,10 @@ const GestionUsuarios = () => {
                <p className="text-gray-700">
                    <strong>Nombre Comercial:</strong> {selectedUser.empresa.nombre_comercial || 'No disponible'}
                </p>
+               <p className="text-gray-700"><strong>RUC:</strong> {selectedUser.empresa.ruc}</p>
+                <p className="text-gray-700"><strong>Razón Social:</strong> {selectedUser.empresa.razon_s}</p>
+                <p className="text-gray-700"><strong>Sitio Web:</strong> {selectedUser.empresa.sitio}</p>
+                <p className="text-gray-700"><strong>Teléfono:</strong> {selectedUser.empresa.telefono}</p>
                <p className="text-gray-700">
                    <strong>Sector:</strong> {selectedUser.empresa.sector ? selectedUser.empresa.sector.sector : 'No disponible'}
                </p>
