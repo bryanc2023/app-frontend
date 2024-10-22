@@ -204,7 +204,7 @@ const Home: React.FC = () => {
       <section className={`flex flex-col justify-around items-center py-20 px-10 bg-white mx-10 my-10 rounded-lg flex-grow transition-opacity duration-1000 $`}>
         <div className="flex flex-col md:flex-row justify-around items-center gap-8 w-full">
           <div className="bg-gray-50 rounded-lg shadow-md p-16 flex-1 max-w-2xl text-left flex flex-col justify-center">
-            <h2 className="text-3xl mb-5 font-bold text-orange-600">Postula.net</h2>
+            <h2 className="text-3xl mb-5 font-bold text-orange-600">Postula</h2>
             <p className="text-lg text-gray-700">
               En un mundo cada vez más digital, la búsqueda de talento ha evolucionado. Nuestra plataforma te permite conectar con candidatos calificados de manera rápida y eficiente, facilitando el proceso de selección. Aquí, puedes explorar perfiles de profesionales de diversas industrias, acceder a herramientas de filtrado avanzadas y gestionar tus ofertas laborales con facilidad. Con nuestra tecnología, puedes optimizar tu búsqueda, reduciendo el tiempo y los costos asociados al reclutamiento tradicional.
             </p>
