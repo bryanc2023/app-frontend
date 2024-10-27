@@ -39,9 +39,7 @@ const PerfilPModal: React.FC<PerfilPModalProps> = ({ isModalPost, closeModal, da
                                         {`${dataPost.postulante.nombres || ''} ${dataPost.postulante.apellidos || ''}`}
                                     </h1>
                                     <p className="text-gray-600">{dataPost.postulante.genero}</p>
-                                    <a href={dataPost.postulante.cv} target="_blank" rel="noopener noreferrer" className="text-blue-700 underline mt-2 block">
-                                        Ver CV
-                                    </a>
+                                   
                                 </div>
                             </div>
                             <div className="mt-6 bg-gray-200 p-4 rounded-lg shadow-inner text-black">
@@ -67,6 +65,7 @@ const PerfilPModal: React.FC<PerfilPModalProps> = ({ isModalPost, closeModal, da
                                             <p className='text-black font-semibold'>Idioma: <span className='font-normal'>{idioma.idioma_nombre}</span> </p>
                                             <p className='text-black font-semibold'>Nivel escrito: <span className='font-normal'>{idioma.nivel_escrito}</span> </p>
                                             <p className='text-black font-semibold'>Nivel oral: <span className='font-normal'>{idioma.nivel_oral}</span> </p>
+                                        <p>---------------------------</p>
                                         </div>
                                     ))
                                 ) : (
@@ -84,6 +83,7 @@ const PerfilPModal: React.FC<PerfilPModalProps> = ({ isModalPost, closeModal, da
                                             <p className='text-black font-semibold'>Fecha de Inicio: <span className='font-normal'>{new Date(formacion.fecha_ini).toLocaleDateString()}</span> </p>
                                             <p className='text-black font-semibold'>Fecha de Fin: <span className='font-normal'>{new Date(formacion.fecha_fin).toLocaleDateString()}</span> </p>
                                             <p className='text-black font-semibold'>Título: <span className='font-normal'>{formacion.titulo_acreditado}</span> </p>
+                                            <p>---------------------------</p>
                                         </div>
                                     ))
                                 ) : (
@@ -123,6 +123,7 @@ const PerfilPModal: React.FC<PerfilPModalProps> = ({ isModalPost, closeModal, da
                                             <p className='text-black font-semibold'>Descripción: <span className='font-normal'>{formacion.descripcion_responsabilidades}</span> </p>
                                             <p className='text-black font-semibold'>Persona de referencia: <span className='font-normal'>{formacion.persona_referencia}</span> </p>
                                             <p className='text-black font-semibold'>Contacto: <span className='font-normal'>{formacion.contacto}</span> </p>
+                                            <p>---------------------------</p>
                                         </div>
                                     ))
                                 ) : (
@@ -136,9 +137,7 @@ const PerfilPModal: React.FC<PerfilPModalProps> = ({ isModalPost, closeModal, da
                                     dataPost.certificados.map(certificado => (
                                         <div key={certificado.id_certificado} className='mb-4 flex items-center justify-between'>
                                             <p className='text-black font-semibold'>Título: <span className='font-normal'>{certificado.titulo}</span> </p>
-                                            <a href={certificado.certificado} target="_blank" rel="noopener noreferrer" className='text-blue-700 underline ml-2 flex items-center'>
-                                                <FaEye className='mr-1' /> Ver certificado
-                                            </a>
+                                           
                                         </div>
                                     ))
                                 ) : (

@@ -109,6 +109,7 @@ const VerOfertasAll = () => {
     const [selectedProvince, setSelectedProvince] = useState('');
     const [selectedCanton, setSelectedCanton] = useState<number | string>('');
     const [loading, setLoading] = useState(true);
+    
     const ofertasPerPage = 5;
 
 
@@ -257,7 +258,9 @@ const VerOfertasAll = () => {
     };
 
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-
+    const capitalizeFirstLetter = (text) => {
+        return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+    };
     return (
         <div className="w-full p-4 flex justify-center">
             <div className="w-full max-w-4xl">
@@ -439,16 +442,15 @@ const VerOfertasAll = () => {
                                                                 : oferta.empre_p
                                                             : oferta.empresa.nombre_comercial}
                                                 </p>
-                                            
+
                                                 <p className="text-gray-700 mb-1 flex items-center flex-wrap">
                                                     <strong>Sector de la empresa: </strong>
                                                     {
-                                                        oferta.sector_p? 
-                                                                oferta.sector_p.includes('/')
-                                                                ? oferta.sector_p.split('/')[0]+' En '+oferta.sector_p.split('/')[1] // Muestra la parte antes de la barra
+                                                        oferta.sector_p ?
+                                                            oferta.sector_p.includes('/')
+                                                                ? oferta.sector_p.split('/')[0] + ' En ' + oferta.sector_p.split('/')[1] // Muestra la parte antes de la barra
                                                                 : oferta.sector_p
-                                                            : 
-                                                        `${oferta.empresa.sector.division} EN ${oferta.empresa.sector.sector}`
+                                                            : capitalizeFirstLetter(oferta.empresa.sector.division)
                                                     }
                                                 </p>
                                                 {oferta.ciudad && (
