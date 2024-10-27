@@ -94,8 +94,7 @@ const Modal: React.FC<ModalProps> = ({ oferta, onClose }) => {
     const navigate = useNavigate();
 
     const formatFechaMaxPos = (fecha: string) => {
-        const date = new Date(fecha);
-        date.setDate(date.getDate());
+        const date = new Date(`${fecha}T00:00:00`);
         const options: Intl.DateTimeFormatOptions = { day: 'numeric', month: 'long', year: 'numeric' };
         return date.toLocaleDateString('es-ES', options);
     };

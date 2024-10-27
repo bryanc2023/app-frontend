@@ -169,22 +169,28 @@ const Home: React.FC = () => {
       try {
         const destacadasResponse = await axios.get('/destacadas');
         const destacadasOfertas = destacadasResponse.data.ofertas;
-
-        // Si hay menos de 3 ofertas destacadas, buscar más ofertas
+  
+        // Si hay menos de 4 ofertas destacadas, buscar más ofertas
         let ofertasToShow = destacadasOfertas.slice(0, 4);
         if (ofertasToShow.length < 4) {
           const response = await axios.get('ofertaHome');
           const otrasOfertas = response.data.ofertas;
-          // Completar con otras ofertas hasta 3
-          ofertasToShow = [...ofertasToShow, ...otrasOfertas.slice(0, 4 - ofertasToShow.length)];
+  
+          // Combinar ofertas destacadas y otras, asegurando que no haya duplicados
+          const combinedOfertas = [...ofertasToShow, ...otrasOfertas.slice(0, 4 - ofertasToShow.length)];
+  
+          // Filtrar duplicados basándose en `id_oferta`
+          ofertasToShow = combinedOfertas.filter(
+            (oferta, index, self) => self.findIndex(o => o.id_oferta === oferta.id_oferta) === index
+          );
         }
-
+  
         setOfertas(ofertasToShow);
       } catch (error) {
         console.error('Error fetching offers:', error);
       }
     };
-
+  
     fetchOfertas();
   }, []);
 
@@ -288,7 +294,11 @@ const Home: React.FC = () => {
                     </p>
                     <p className="font-semibold mb-1">
                       <strong className="text-cyan-800">Fecha de publicación:</strong>{' '}
-                      {new Date(oferta.fecha_publi).toLocaleDateString()}
+                      {new Date(`${oferta.fecha_publi}T00:00:00`).toLocaleDateString(undefined, {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric'
+                      })}
                     </p>
                     <button
                       onClick={(e) => {
