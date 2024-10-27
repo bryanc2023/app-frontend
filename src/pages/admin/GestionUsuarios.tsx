@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from "../../services/axios";
 import Modal from '../../components/Admin/CargaModal';
 import Swal from 'sweetalert2';
+import jsPDF from 'jspdf';
+
 
 interface User {
     id?: number;
@@ -12,8 +14,70 @@ interface User {
         name: string;
     } | null;
     created_at: string;
-    is_active: boolean; // Agrega este campo para manejar el estado activo/inactivo
+    is_active: boolean; // Campo para manejar el estado activo/inactivo
+    empresa?: {
+        nombre_comercial: string;
+        ruc: string;
+        razon_s: string;
+        sitio: string;
+        telefono: string;
+        red: { id_empresa_red: number; nombre_red: string; enlace: string }[];
+        sector?: { sector: string; division: string };
+        ubicacion?: { provincia: string; canton: string }; // Detalles de la ubicación de la empresa
+    };
+    postulante?: {
+        postulante: {
+            id_postulante: number;
+            id_ubicacion: number;
+            id_usuario: number;
+            nombres: string;
+            apellidos: string;
+            fecha_nac: string;
+            edad: number;
+            estado_civil: string;
+            cedula: string;
+            telefono: string;
+            genero: string;
+            informacion_extra: string;
+            foto: string;
+            cv: string | null;
+            vigencia: boolean;
+        };
+        ubicacion: {
+            id: number;
+            provincia: string;
+            canton: string;
+            created_at: string;
+            updated_at: string;
+        };
+        formaciones: {
+            id_postulante: number;
+            id_titulo: number;
+            institucion: string;
+            estado: string;
+            fecha_ini: string;
+            fecha_fin: string | null;
+            titulo_acreditado: string;
+        }[];
+        titulos: {
+            id: number;
+            nivel_educacion: string;
+            campo_amplio: string;
+            titulo: string;
+            created_at: string;
+            updated_at: string;
+        }[];
+        idiomas: {
+            id_postulante: number;
+            id_idioma: number;
+            nivel_oral: string;
+            nivel_escrito: string;
+            idioma_nombre: string;
+        }[];
+        // Añadir otros campos que necesites
+    };
 }
+
 
 interface Role {
     id: number;
@@ -28,6 +92,10 @@ const GestionUsuarios = () => {
 
     const [modalOpen, setModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState({ title: '', message: '', success: false });
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [loadingUser, setLoadingUser] = useState(false);
+    const [modalUserOpen, setModalUserOpen] = useState(false);
+
 
     useEffect(() => {
         fetchUsers();
@@ -82,6 +150,231 @@ const GestionUsuarios = () => {
         setModalOpen(false);
     };
 
+    const handleDownloadPDF = () => {
+        const doc = new jsPDF();
+        let currentY = 10; // Inicializa la posición vertical
+        const margin = 10; // Margen inferior
+        const pageHeight = doc.internal.pageSize.getHeight(); // Altura de la página
+    
+        // Agregar el título "POSTULA" en la esquina izquierda, negrilla y color naranja
+        doc.setFontSize(20);
+        doc.setFont("Helvetica", "bold");
+        doc.setTextColor(255, 165, 0); // Color naranja
+        doc.text("POSTULA", 10, currentY);
+        
+        currentY += 15; // Aumenta el espacio después del título
+    
+        // Detalles del postulante
+        if (selectedUser && selectedUser.postulante) {
+            const { postulante, ubicacion, formaciones, titulos, idiomas } = selectedUser.postulante;
+            const maxWidth = doc.internal.pageSize.getWidth() - 70;
+            doc.setFontSize(18);
+            doc.setFont("Helvetica", "bold");
+            doc.setTextColor(0, 0, 255); // Asegura que los siguientes textos sean en color negro
+            doc.text("Detalles del Postulante", 10, currentY);
+            currentY += 10; // Aumenta la posición
+    
+            // Texto introductorio
+            doc.setFontSize(14);
+            doc.setFont("Helvetica", "normal");
+            doc.setTextColor(0, 0, 0); // Vuelve a color negro
+            doc.text("El usuario ha proporcionado los siguientes datos:", 10, currentY);
+            currentY += 10; // Espacio adicional después del texto
+    
+            // Detalles del postulante
+            const details = [
+                { label: "Nombre:", value: postulante.nombres },
+                { label: "Fecha de Nacimiento:", value: postulante.fecha_nac },
+                { label: "Edad:", value: postulante.edad?.toString() },
+                { label: "Estado Civil:", value: postulante.estado_civil },
+                { label: "Cédula:", value: postulante.cedula },
+                { label: "Teléfono:", value: postulante.telefono },
+                { label: "Género:", value: postulante.genero },
+                { label: "Información Extra:", value: postulante.informacion_extra }
+            ];
+    
+            details.forEach(({ label, value }) => {
+                // Verifica si se necesita nueva página
+                if (currentY > pageHeight - margin) {
+                    doc.addPage();
+                    currentY = 10; // Reinicia la posición vertical
+                }
+    
+                doc.setFont("Helvetica", "bold");
+                doc.text(label, 10, currentY);
+                doc.setFont("Helvetica", "normal");
+    
+                // Ajusta el texto de Información Extra
+                const textValue = value || 'No se ha proporcionado';
+                const maxWidth = doc.internal.pageSize.getWidth() - 70;
+                const textLines = doc.splitTextToSize(textValue, maxWidth);
+                if (textLines.length > 0) {
+                    doc.text(textLines[0], 60, currentY); // Primer línea al lado de los dos puntos
+                    currentY += 10;
+                    for (let i = 1; i < textLines.length; i++) {
+                        if (currentY > pageHeight - margin) {
+                            doc.addPage();
+                            currentY = 10;
+                        }
+                        doc.text(textLines[i], 60, currentY);
+                        currentY += 10;
+                    }
+                }
+                currentY += 10; // Espacio adicional después del campo
+            });
+    
+            // Ajusta el currentY para el siguiente contenido
+            currentY += 10;
+    
+            // Ubicación
+            if (currentY > pageHeight - margin) {
+                doc.addPage();
+                currentY = 10;
+            }
+            doc.setFont("Helvetica", "bold");
+            doc.text("Ubicación:", 10, currentY);
+            doc.setFont("Helvetica", "normal");
+            doc.text(`${ubicacion.provincia}, ${ubicacion.canton}` || 'No se ha proporcionado', 40, currentY);
+            currentY += 10;
+    
+            // Formaciones
+            if (currentY > pageHeight - margin) {
+                doc.addPage();
+                currentY = 10;
+            }
+            doc.setFont("Helvetica", "bold");
+            doc.text("Formaciones:", 10, currentY);
+            currentY += 10;
+            doc.setFont("Helvetica", "normal");
+            formaciones.forEach((formacion) => {
+                if (currentY > pageHeight - margin) {
+                    doc.addPage();
+                    currentY = 10;
+                }
+                const line = ` - ${formacion.titulo_acreditado} en ${formacion.institucion} (${formacion.estado})`;
+                doc.text(line, 10, currentY);
+                currentY += 10;
+            });
+    
+            // Títulos
+            if (currentY > pageHeight - margin) {
+                doc.addPage();
+                currentY = 10;
+            }
+            doc.setFont("Helvetica", "bold");
+            doc.text("Títulos:", 10, currentY);
+            currentY += 10;
+            doc.setFont("Helvetica", "normal");
+            titulos.forEach((titulo) => {
+                if (currentY > pageHeight - margin) {
+                    doc.addPage();
+                    currentY = 10;
+                }
+                const line = ` - ${titulo.titulo} (Nivel: ${titulo.nivel_educacion})`;
+                doc.text(line, 10, currentY);
+                currentY += 10;
+            });
+    
+            // Idiomas
+            if (currentY > pageHeight - margin) {
+                doc.addPage();
+                currentY = 10;
+            }
+            doc.setFont("Helvetica", "bold");
+            doc.text("Idiomas:", 10, currentY);
+            currentY += 10;
+            doc.setFont("Helvetica", "normal");
+            idiomas.forEach((idioma) => {
+                if (currentY > pageHeight - margin) {
+                    doc.addPage();
+                    currentY = 10;
+                }
+                const line = ` - ${idioma.idioma_nombre} (Oral: ${idioma.nivel_oral}, Escrito: ${idioma.nivel_escrito})`;
+                doc.text(line, 10, currentY);
+                currentY += 10;
+            });
+        }
+    
+        // Detalles de la empresa
+        if (selectedUser.empresa) {
+            if (currentY > pageHeight - margin) {
+                doc.addPage();
+                currentY = 10;
+            }
+            doc.setFontSize(18);
+            doc.setFont("Helvetica", "bold");
+            doc.text("Detalles de la Empresa", 10, currentY);
+            currentY += 10; // Aumenta la posición
+    
+            // Texto introductorio
+            doc.setFontSize(14);
+            doc.setFont("Helvetica", "normal");
+            doc.setTextColor(0, 0, 0); // Vuelve a color negro
+            doc.text("El usuario ha proporcionado los siguientes datos:", 10, currentY);
+            currentY += 10; // Espacio adicional después del texto
+    
+            // Detalles de la empresa
+            const companyDetails = [
+                { label: "Nombre Comercial:", value: selectedUser.empresa.nombre_comercial },
+                { label: "RUC:", value: selectedUser.empresa.ruc },
+                { label: "Razón Social:", value: selectedUser.empresa.razon_s },
+                { label: "Sitio Web:", value: selectedUser.empresa.sitio },
+                { label: "Teléfono:", value: selectedUser.empresa.telefono },
+                { label: "Sector:", value: selectedUser.empresa.sector ? selectedUser.empresa.sector.sector : 'No disponible' },
+                { label: "División:", value: selectedUser.empresa.sector ? selectedUser.empresa.sector.division : 'No disponible' },
+                { label: "Ubicación:", value: selectedUser.empresa.ubicacion ? `${selectedUser.empresa.ubicacion.provincia}, ${selectedUser.empresa.ubicacion.canton}` : 'No disponible' }
+            ];
+    
+            companyDetails.forEach(({ label, value }) => {
+                // Verifica si se necesita nueva página
+                if (currentY > pageHeight - margin) {
+                    doc.addPage();
+                    currentY = 10; // Reinicia la posición vertical
+                }
+    
+                doc.setFont("Helvetica", "bold");
+                doc.text(label, 10, currentY);
+                doc.setFont("Helvetica", "normal");
+    
+                // Ajusta el texto de Razón Social, Sector y División
+                const textValue = value || 'No disponible';
+                if (label === "Razón Social:" || label === "Sector:" || label === "División:") {
+                    const maxWidth = doc.internal.pageSize.getWidth() - 70;
+                    const textLines = doc.splitTextToSize(textValue, maxWidth);
+                    doc.text(textLines[0], 60, currentY); // Primer línea al lado de los dos puntos
+                    currentY += 10;
+                    for (let i = 1; i < textLines.length; i++) {
+                        if (currentY > pageHeight - margin) {
+                            doc.addPage();
+                            currentY = 10;
+                        }
+                        doc.text(textLines[i], 60, currentY);
+                        currentY += 10;
+                    }
+                } else {
+                    doc.text(textValue, 60, currentY);
+                    currentY += 10;
+                }
+            });
+        }
+    
+        // Generar el nombre del archivo
+        let fileName = "Detalles_";
+        if (selectedUser && selectedUser.postulante) {
+            fileName += `Postulante_${selectedUser.postulante.postulante.nombres}_${selectedUser.postulante.postulante.apellidos}.pdf`;
+        } else if (selectedUser.empresa) {
+            fileName += `Empresa_${selectedUser.empresa.nombre_comercial}.pdf`;
+        }
+    
+        doc.save(fileName); // Guarda el documento con el nombre generado
+    };
+    
+    
+    
+    
+    
+    
+    
     const grantAccessToUser = async (userId: number) => {
         try {
             const response = await axios.put(`/users/${userId}/grant-access`);
@@ -127,6 +420,20 @@ const GestionUsuarios = () => {
             setModalOpen(true);
         }
     };
+
+    const handleGetUserData = async (userId: number) => {
+        setLoadingUser(true);
+        try {
+            const response = await axios.get(`/users/${userId}`);
+            setSelectedUser(response.data);
+            setModalUserOpen(true); // Abre el modal
+        } catch (error) {
+            console.error('Error fetching user details:', error);
+        } finally {
+            setLoadingUser(false);
+        }
+    };
+    
 
     const handleRoleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const roleId = event.target.value === "null" ? null : parseInt(event.target.value);
@@ -272,19 +579,114 @@ const GestionUsuarios = () => {
                                             </button>
                                         </>
                                     )}
+                                    {/* Condición para mostrar botones solo si no es admin */}
+                                    {user.role?.name !== "admin" && (
+                                        <>
+                                            <button
+                                                className="block w-full px-4 py-2 mt-2 bg-green-500 text-white rounded"
+                                                onClick={() => handleGetUserData(user.id!)}
+                                            >
+                                                Ver Datos
+                                            </button>
 
-                                    <button
-                                        className={`block w-full px-4 py-2 mt-2 text-white ${user.is_active ? 'bg-red-500' : 'bg-green-500'} rounded`}
-                                        onClick={() => updateUserStatus(user.id!, !user.is_active)}
-                                    >
-                                        {user.is_active ? 'Desactivar' : 'Activar'}
-                                    </button>
+                                            <button
+                                                className={`block w-full px-4 py-2 mt-2 text-white ${user.is_active ? 'bg-red-500' : 'bg-green-500'} rounded`}
+                                                onClick={() => updateUserStatus(user.id!, !user.is_active)}
+                                            >
+                                                {user.is_active ? 'Desactivar' : 'Activar'}
+                                            </button>
+                                        </>
+                                    )}
                                 </td>
                             </tr>
                         ))}
                     </tbody>
+
                 </table>
             </div>
+            <Modal show={modalUserOpen} onClose={() => setModalUserOpen(false)} title="Detalles del Usuario" success={true}>
+    {selectedUser && (
+        <div className="mt-4 p-6 border rounded-lg shadow-lg bg-white max-h-[80vh] overflow-y-auto">
+            {selectedUser.empresa && (
+               <div className="mb-4">
+               <h3 className="text-lg font-bold text-gray-800 mt-4">Detalles de la Empresa</h3>
+               <p className="text-gray-700">
+                   <strong>Nombre Comercial:</strong> {selectedUser.empresa.nombre_comercial || 'No disponible'}
+               </p>
+               <p className="text-gray-700"><strong>RUC:</strong> {selectedUser.empresa.ruc || 'No disponible'}</p>
+                <p className="text-gray-700"><strong>Razón Social:</strong> {selectedUser.empresa.razon_s || 'No disponible'}</p>
+                <p className="text-gray-700"><strong>Sitio Web:</strong> {selectedUser.empresa.sitio || 'No disponible'}</p>
+                <p className="text-gray-700"><strong>Teléfono:</strong> {selectedUser.empresa.telefono || 'No disponible'}</p>
+
+               <p className="text-gray-700">
+                   <strong>Sector:</strong> {selectedUser.empresa.sector ? selectedUser.empresa.sector.sector : 'No disponible'}
+               </p>
+               <p className="text-gray-700">
+                   <strong>División:</strong> {selectedUser.empresa.sector ? selectedUser.empresa.sector.division : 'No disponible'}
+               </p>
+               <p className="text-gray-700">
+                   <strong>Ubicación:</strong> {selectedUser.empresa.ubicacion ? `${selectedUser.empresa.ubicacion.provincia}, ${selectedUser.empresa.ubicacion.canton}` : 'No disponible'}
+               </p>
+           </div>
+           
+            )}
+            {selectedUser.postulante && (
+                <div>
+                    <h3 className="text-lg font-bold text-gray-800 mt-4">Detalles del Postulante</h3>
+                    <p className="text-gray-700"><strong>Nombres:</strong> {selectedUser.postulante.postulante.nombres || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Apellidos:</strong> {selectedUser.postulante.postulante.apellidos || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Fecha de Nacimiento:</strong> {selectedUser.postulante.postulante.fecha_nac || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Edad:</strong> {selectedUser.postulante.postulante.edad || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Estado Civil:</strong> {selectedUser.postulante.postulante.estado_civil || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Cédula:</strong> {selectedUser.postulante.postulante.cedula || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Teléfono:</strong> {selectedUser.postulante.postulante.telefono || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Género:</strong> {selectedUser.postulante.postulante.genero || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Información Extra:</strong> {selectedUser.postulante.postulante.informacion_extra || 'No disponible'}</p>
+                    <p className="text-gray-700"><strong>Vigencia:</strong> {selectedUser.postulante.postulante.vigencia ? 'Vigente' : 'No vigente'}</p>
+                    <p className="text-gray-700"><strong>Ubicación:</strong> {selectedUser.postulante.ubicacion ? `${selectedUser.postulante.ubicacion.provincia}, ${selectedUser.postulante.ubicacion.canton}` : 'No disponible'}</p>
+
+                    {/* Formaciones */}
+                    <h4 className="font-semibold mt-4 text-gray-800">Formaciones:</h4>
+                    {selectedUser.postulante.formaciones.length > 0 ? (
+                        selectedUser.postulante.formaciones.map((formacion, index) => (
+                            <p key={index} className="text-gray-600"> - {formacion.titulo_acreditado} en {formacion.institucion} ({formacion.estado})</p>
+                        ))
+                    ) : (
+                        <p className="text-gray-600">No hay formaciones disponibles.</p>
+                    )}
+
+                    {/* Títulos */}
+                    <h4 className="font-semibold mt-4 text-gray-800">Títulos:</h4>
+                    {selectedUser.postulante.titulos.length > 0 ? (
+                        selectedUser.postulante.titulos.map((titulo, index) => (
+                            <p key={index} className="text-gray-600"> - {titulo.titulo} (Nivel: {titulo.nivel_educacion})</p>
+                        ))
+                    ) : (
+                        <p className="text-gray-600">No hay títulos disponibles.</p>
+                    )}
+
+                    {/* Idiomas */}
+                    <h4 className="font-semibold mt-4 text-gray-800">Idiomas:</h4>
+                    {selectedUser.postulante.idiomas.length > 0 ? (
+                        selectedUser.postulante.idiomas.map((idioma, index) => (
+                            <p key={index} className="text-gray-600"> - {idioma.idioma_nombre} (Oral: {idioma.nivel_oral}, Escrito: {idioma.nivel_escrito})</p>
+                        ))
+                    ) : (
+                        <p className="text-gray-600">No hay idiomas disponibles.</p>
+                    )}
+                </div>
+            )}
+
+            <button onClick={handleDownloadPDF} className="mt-6 px-4 py-2 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition duration-200">Descargar PDF</button>
+        </div>
+    )}
+</Modal>
+
+
+
+
+
+
 
             <hr className="my-4" />
 
