@@ -169,31 +169,34 @@ const Home: React.FC = () => {
       try {
         const destacadasResponse = await axios.get('/destacadas');
         const destacadasOfertas = destacadasResponse.data.ofertas;
-  
+
         // Si hay menos de 4 ofertas destacadas, buscar más ofertas
         let ofertasToShow = destacadasOfertas.slice(0, 4);
         if (ofertasToShow.length < 4) {
           const response = await axios.get('ofertaHome');
           const otrasOfertas = response.data.ofertas;
-  
+
           // Combinar ofertas destacadas y otras, asegurando que no haya duplicados
           const combinedOfertas = [...ofertasToShow, ...otrasOfertas.slice(0, 4 - ofertasToShow.length)];
-  
+
           // Filtrar duplicados basándose en `id_oferta`
           ofertasToShow = combinedOfertas.filter(
             (oferta, index, self) => self.findIndex(o => o.id_oferta === oferta.id_oferta) === index
           );
         }
-  
+
         setOfertas(ofertasToShow);
       } catch (error) {
         console.error('Error fetching offers:', error);
       }
     };
-  
+
     fetchOfertas();
   }, []);
 
+  const capitalizeFirstLetter = (text) => {
+    return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
+  };
   return (
     <div className="flex flex-col min-h-screen">
       {isLoading && (
@@ -219,7 +222,7 @@ const Home: React.FC = () => {
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg shadow-md p-16 flex-1 max-w-2xl text-center flex flex-col justify-center">
-            <p className="text-lg font-semibold text-blue-800">¿Qué puedo hacer en Postula.net?</p>
+            <p className="text-lg font-semibold text-blue-800">¿Qué puedo hacer en Postula?</p>
             <div className="flex justify-between">
               <div className="flex flex-col items-center">
                 <hr></hr>
@@ -284,7 +287,7 @@ const Home: React.FC = () => {
                         ? oferta.sector_p.includes('/')
                           ? `${oferta.sector_p.split('/')[0]} de ${oferta.sector_p.split('/')[1]}`
                           : oferta.sector_p
-                        : oferta.empresa.sector.sector}
+                        : capitalizeFirstLetter(oferta.empresa.sector.sector)}
                     </p>
                     <p className="font-semibold mb-1">
                       <strong className="text-cyan-800">Esta buscando:</strong> {oferta.cargo}

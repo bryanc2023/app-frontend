@@ -93,9 +93,9 @@ checkRegistrationStatus();
             </p>
           </div>
           <div className="bg-gray-50 rounded-lg shadow-md p-16 flex-1 max-w-2xl text-left flex flex-col justify-center">
-            <h2 className="text-3xl mb-5">¿Impedimientos para registrarme?</h2>
+            <h2 className="text-3xl mb-5">¿Cómo inicio?</h2>
             <p className="text-lg text-gray-700">
-             No existen, se cuenta con un sistema para que puedas registrarte libremente independientemente sea cual sea tu nivel de conocimiento tanto en educación como en otros aspectos permitiendote que tu puedas destacar con tus bases frente a los demás
+             Registrate dependiendo de lo que desees: Si deseas buscar plaza de trabajo registrate como postulante, si eres una entidad empresarial registrate como empresa para poder publicar nuevas ofertas y encontrar talento nuevo
             </p>
           </div>
           
