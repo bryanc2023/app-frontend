@@ -209,7 +209,7 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
                 <a   onClick={() => {
                     const nombreArchivo = `${postulante.nombres}_CV.pdf`; // O el formato que desees
                     handleDownloadCV(`${postulante.cv}`);
-                  }} target="_blank" rel="noopener noreferrer" className='text-cyan-700'>
+                  }} target="_blank" rel="noopener noreferrer"  className="text-cyan-700 cursor-pointer">
                     Descargar hoja de vida
                 </a>
 
