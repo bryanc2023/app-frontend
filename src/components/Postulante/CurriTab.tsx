@@ -817,19 +817,20 @@ const handleDownloadPoli = async () => {
   try {
 
    
-    const response = await axios.post('/poli/descargar', {
-      responseType: 'blob', // Esto es importante para manejar la respuesta como archivo
+    const response = await axios.get('/poli/descargar', {
+      responseType: 'blob', // Esto permite recibir el archivo como un blob
     });
-    
 
-    // Crear una URL para el archivo que se ha descargado
+    // Crear una URL para el archivo blob descargado
     const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', `Politcas_Postula.pdf`); // Nombre del archivo
+    link.setAttribute('download', 'Politica.pdf');
     document.body.appendChild(link);
     link.click(); // Simula el clic para descargar el archivo
-    link.remove(); // Elimina el enlace después de hacer clic
+    link.remove();
+    
+
 
     // Muestra el mensaje de éxito con Swal
     Swal.fire({
@@ -956,7 +957,7 @@ const handleDownloadPoli = async () => {
                    // O el formato que desees
                     handleDownloadPoli();
                   }} target="_blank" rel="noopener noreferrer"  className="text-cyan-700 cursor-pointer">
-                     Descargar pólitica de protección de datos personales
+                    Descargar pólitica de protección de datos personales
                 </a>
           </p>
           <label className="flex items-center mb-4">
