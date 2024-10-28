@@ -261,6 +261,8 @@ const VerOfertasAll = () => {
     const capitalizeFirstLetter = (text) => {
         return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
     };
+
+    
     return (
         <div className="w-full p-4 flex justify-center">
             <div className="w-full max-w-4xl">
@@ -462,13 +464,16 @@ const VerOfertasAll = () => {
 
                                                 <center>
                                                     <button
-                                                        onClick={() => setSelectedOferta(oferta)}
+                                                       // onClick={() => setSelectedOferta(oferta)}
+                                                        onClick={() => navigate(`/oferta/${oferta.id_oferta}`)}
                                                         className="flex items-center justify-center bg-green-500 text-white p-2 rounded-lg mt-4"
                                                     >
                                                         Ver Oferta <FiEye className="ml-2" />
                                                     </button>
                                                 </center>
                                             </div>
+
+                                            
 
                                             {/* Ubicación de la empresa */}
                                             <div className="absolute top-2 right-2 flex items-center text-gray-700">
@@ -513,6 +518,7 @@ const VerOfertasAll = () => {
                                 </nav>
                             </div>
                         )}
+                        
                         {selectedOferta && <Modal oferta={selectedOferta} onClose={() => setSelectedOferta(null)} userId={user?.id} />}
                     </>
                 )}

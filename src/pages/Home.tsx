@@ -306,11 +306,11 @@ const Home: React.FC = () => {
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleOpenModal(oferta);
+                        navigate(`/oferta/${oferta.id_oferta}`)
                       }}
                       className="mt-2 px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 text-sm"
                     >
-                      Ver Detalles
+                      Ver Oferta
                     </button>
                   </div>
                 </div>

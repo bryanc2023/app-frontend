@@ -76,7 +76,13 @@ const Login = () => {
                 
             } else if (response.type === 'auth/loginUser/fulfilled') {
                 const { user, role } = response.payload;
-      
+                const redirectTo = localStorage.getItem('redirectAfterLogin');
+                if (redirectTo) {
+                    localStorage.removeItem('redirectAfterLogin'); // Limpia la ruta guardada
+                    navigate(redirectTo); // Redirige a la ruta guardada
+                } else {
+                   
+              
                 if (role === 'admin') {
                     navigate("/configuracion");
                 } else if (role === 'postulante') {
@@ -105,6 +111,7 @@ const Login = () => {
                       text: "Este usuario ha solicitado ser parte de la empresa gestora. Porfavor, espere hasta que la administración acepte su solicitud y pueda ingresar",
                     });
                 }
+            }
             }
         
             setSubmitting(false);
