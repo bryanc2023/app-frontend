@@ -951,6 +951,7 @@ const handleDownloadPoli = async () => {
             >
               {' '}términos y condiciones
             </span>.
+            <hr className="my-4" />
             <a   onClick={() => {
                    // O el formato que desees
                     handleDownloadPoli();
