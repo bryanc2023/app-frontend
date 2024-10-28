@@ -1,6 +1,6 @@
 import '../components/css/Footer.css';
 import  { useEffect} from 'react';
-
+import Swal from 'sweetalert2';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUserTie, faBriefcase} from '@fortawesome/free-solid-svg-icons';
 import Navbar from "../components/layout/Navbar";
@@ -66,6 +66,44 @@ const Acerca: React.FC = () => {
 checkRegistrationStatus();
 }, [isLogged, role, user, navigate]);
 
+const handleDownloadPoli = async () => {
+  try {
+
+   
+    const response = await axios.post('/poli/descargar', {
+      responseType: 'blob', // Esto es importante para manejar la respuesta como archivo
+    });
+    
+
+    // Crear una URL para el archivo que se ha descargado
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `Politcas_Postula.pdf`); // Nombre del archivo
+    document.body.appendChild(link);
+    link.click(); // Simula el clic para descargar el archivo
+    link.remove(); // Elimina el enlace después de hacer clic
+
+    // Muestra el mensaje de éxito con Swal
+    Swal.fire({
+      toast: true,
+      position: 'top-end',
+      icon: 'success',
+      title: 'Políticas de postula descargadas con éxito',
+      showConfirmButton: false,
+      timer: 3000,
+      timerProgressBar: true,
+    });
+  } catch (error) {
+    console.error('Error al descargar la política:', error);
+    Swal.fire({
+      icon: 'error',
+      title: 'Oops...',
+      text: 'Hubo un error al intentar descargar la politica',
+    });
+  }
+};
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
@@ -97,6 +135,13 @@ checkRegistrationStatus();
             <p className="text-lg text-gray-700">
              Registrate dependiendo de lo que desees: Si deseas buscar plaza de trabajo registrate como postulante, si eres una entidad empresarial registrate como empresa para poder publicar nuevas ofertas y encontrar talento nuevo
             </p>
+            <hr className="my-4" />
+            <a   onClick={() => {
+                   // O el formato que desees
+                    handleDownloadPoli();
+                  }} target="_blank" rel="noopener noreferrer"  className="text-cyan-700 cursor-pointer">
+                    Descargar pólitica de protección de datos personales
+                </a>
           </div>
           
         </div>
