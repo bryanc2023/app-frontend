@@ -350,19 +350,20 @@ const CompletarE: React.FC = () => {
     try {
   
      
-      const response = await axios.post('/poli/descargar', {
-        responseType: 'blob', // Esto es importante para manejar la respuesta como archivo
+      const response = await axios.get('/poli/descargar', {
+        responseType: 'blob', // Esto permite recibir el archivo como un blob
       });
-      
   
-      // Crear una URL para el archivo que se ha descargado
+      // Crear una URL para el archivo blob descargado
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', `Politcas_Postula.pdf`); // Nombre del archivo
+      link.setAttribute('download', 'Politica.pdf');
       document.body.appendChild(link);
       link.click(); // Simula el clic para descargar el archivo
-      link.remove(); // Elimina el enlace después de hacer clic
+      link.remove();
+      
+  
   
       // Muestra el mensaje de éxito con Swal
       Swal.fire({
@@ -383,6 +384,7 @@ const CompletarE: React.FC = () => {
       });
     }
   };
+  
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-5 bg-gray-100">
