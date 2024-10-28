@@ -40,6 +40,7 @@ import EmailRequest from "../pages/EmailRequest";
 import ResetPassword from "../pages/ResetPassword";
 import Acerca from "../pages/Acerca";
 import GestionOfertas from "../pages/admin/GestionOfertas";
+import OfertaPageP from "../pages/postulante/OfertaPageP";
 
 type TypeRoute = {
     path: string;
@@ -94,6 +95,11 @@ export const routes: TypeRoute[] = [
                 allowedRoles: ['postulante'],
             },
         ],
+    },
+    {
+        path: '/oferta/:id',
+        element: OfertaPageP,
+        
     },
     {
         path: '/verOfertasAll',

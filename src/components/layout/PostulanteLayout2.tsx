@@ -193,6 +193,29 @@ function PostulanteLayout() {
     const [isModalNotify, setIsModalNotify] = useState(false);
     const notifyRef = useRef<HTMLDivElement>(null);
 
+    
+
+    useEffect(() => {
+        const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+            // Llama a la acción de logout cuando el usuario intenta cerrar la pestaña
+            dispatch(logout());
+            // También puedes mostrar un mensaje al usuario, pero es limitado por los navegadores
+            event.preventDefault(); // Evita que se muestre el mensaje
+            return true; // Necesario para algunos navegadores
+        };
+
+        // Solo agregar el evento si el usuario está autenticado
+        if (user) {
+            window.addEventListener('beforeunload', handleBeforeUnload);
+        }
+
+        // Limpieza del efecto
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [dispatch, user]); 
+
+
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -423,122 +446,13 @@ function PostulanteLayout() {
     }, []);
 
     return (
-        <div className="flex h-screen overflow-hidden" onClick={handleContentClick}>
-            {/* Lateral Nav */}
-            <nav ref={sidebarRef} className={`bg-gray-900 text-white p-4 fixed top-16 bottom-0 lg:relative lg:translate-x-0 transition-transform transform ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:w-64 z-20`}>
-                <div className="flex flex-col items-center mb-4">
-                    <img
-                        src={profileData ? profileData.postulante.foto : 'https://via.placeholder.com/100'}
-                        alt="Foto de Perfil"
-                        className="rounded-full profile-image w-24 h-24 object-cover border-4 border-white"
-                    />
-                    <span className="mt-2">{user ? `${user.name} ` : 'Nombre del Usuario'}</span>
-                </div>
-                <div className="w-full relative mb-5">
-                    <div className='bg-white rounded-lg text-gray-700 flex gap-1 p-2 '>
-                        <MagnifyingGlassIcon className='w-5' />
-                        {select === 1 ? (
-                            <input
-                                type='text'
-                                className='w-full focus:outline-none'
-                                placeholder='Buscar'
-                                onChange={(e) => setQuery(e.target.value)}
-                                value={query}
-                            />
-                        ) : (
-                            <input
-                                type='text'
-                                className='w-full focus:outline-none'
-                                placeholder='Buscar '
-                                onChange={(e) => setQueryEmpresa(e.target.value)}
-                                value={queryEmpresa}
-                            />
-                        )}
-                        <select
-                            className='focus:outline-none'
-                            value={select}
-                            onChange={handleSelectChange}
-                        >
-                            <option value={1}>Postulantes</option>
-                            <option value={2}>Empresas</option>
-                        </select>
-                    </div>
-                    {isModal && (
-                        <div className='absolute w-full'>
-                            <div className='bg-white rounded-md p-2 mt-5 shadow-xl'>
-                                <div className='flex justify-between text-gray-700 items-center mb-5'>
-                                    <p className='font-bold text-lg'>Lista de resultados</p>
-                                    <button onClick={closeModal}>
-                                        <XMarkIcon className='w-4' />
-                                    </button>
-                                </div>
-                                {isLoading ? (
-                                    <p className='text-center text-white'>Cargando resultados...</p>
-                                ) : postulantes?.length > 0 ? (
-                                    postulantes?.map(postulante => (
-                                        <ListPostulantes
-                                            key={postulante.id_postulante}
-                                            postulante={postulante}
-                                            getPostulante={getPostulante}
-                                        />
-                                    ))
-                                ) : (
-                                    <p className='text-center font-bold text-red-500'>--------- No hay resultados ---------</p>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                    {isModalEmpresas && (
-                        <div className='absolute w-full'>
-                            <div className='bg-white rounded-md p-2 mt-5 shadow-xl'>
-                                <div className='flex justify-between text-gray-700 items-center mb-5'>
-                                    <p className='font-bold text-lg'>Lista de resultados</p>
-                                    <button onClick={closeModalEmpresa}>
-                                        <XMarkIcon className='w-4' />
-                                    </button>
-                                </div>
-                                {isLoadingEmpresas ? (
-                                    <p className='text-center text-white'>Cargando resultados...</p>
-                                ) : empresas?.length > 0 ? (
-                                    empresas?.map(empresa => (
-                                        <ListEmpresa
-                                            key={empresa.id_empresa}
-                                            empresa={empresa}
-                                            getEmpresa={getEmpresa}
-                                        />
-                                    ))
-                                ) : (
-                                    <p className='text-center font-bold text-red-500'>--------- No hay resultados ---------</p>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                </div>
-                <ul>
-                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/verOfertasAll' ? 'bg-gray-700' : ''}`}>
-                        <Link to="/verOfertasAll" className="flex items-center w-full" onClick={closeSidebar}>
-                            <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
-                            <span>Realizar Postulación</span>
-                        </Link>
-                    </li>
-                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/resultadosP' ? 'bg-gray-700' : ''}`}>
-                        <Link to="/resultadosP" className="flex items-center w-full" onClick={closeSidebar}>
-                            <FontAwesomeIcon icon={faSearch} className="mr-2" />
-                            <span>Consulta de Resultados</span>
-                        </Link>
-                    </li>
-                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/perfilP' ? 'bg-gray-700' : ''}`}>
-                        <Link to="/perfilP" className="flex items-center w-full" onClick={closeSidebar}>
-                            <FontAwesomeIcon icon={faUser} className="mr-2" />
-                            <span>Mi Perfil</span>
-                        </Link>
-                    </li>
-                </ul>
-
-            </nav>
+        <>
+        <header className="bg-gray-800 p-4 flex justify-between items-center fixed w-full z-50">
+         
 
             {/* Main Content */}
             <div className="flex-1 flex flex-col overflow-auto">
+                
                 {/* Top Nav */}
                 <nav className="bg-gray-900 text-white p-4 flex justify-between items-center w-full fixed top-0 left-0 right-0 z-30">
                 <h1 className="text-white text-2xl font-bold">
@@ -613,29 +527,17 @@ function PostulanteLayout() {
                             )}
                         </div>
                     </div>
-                    <button className="lg:hidden flex items-center focus:outline-none" onClick={toggleSidebar}>
-                        <FontAwesomeIcon icon={sidebarOpen ? faTimes : faBars} />
-                    </button>
+                  
                 </nav>
 
-                <div className="flex-1 p-4 mt-16 overflow-auto">
-                    <Outlet />
-                </div>
-                <PerfilPModal
-                    isModalPost={isModalPost}
-                    closeModal={() => setIsModalPost(false)}
-                    dataPost={dataPost}
-                    isLoadingPost={isLoadingPost}
-                />
-
-                <PerfilEModal
-                    isModalEmpresa={isModalEmpresa}
-                    closeModalEmpresa={() => setIsModalEmpresa(false)}
-                    dataEmpresa={dataEmpresa}
-                    isLoadingEmpresa={isLoadingEmpresa}
-                />
+             
+               
             </div>
-        </div>
+        </header>
+         <div className="pt-16">
+         <Outlet />
+       </div>
+      </>
     );
 }
 
