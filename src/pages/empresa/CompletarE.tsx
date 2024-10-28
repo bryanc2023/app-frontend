@@ -346,6 +346,44 @@ const CompletarE: React.FC = () => {
     }
   };
 
+  const handleDownloadPoli = async () => {
+    try {
+  
+     
+      const response = await axios.post('/poli/descargar', {
+        responseType: 'blob', // Esto es importante para manejar la respuesta como archivo
+      });
+      
+  
+      // Crear una URL para el archivo que se ha descargado
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `Politcas_Postula.pdf`); // Nombre del archivo
+      document.body.appendChild(link);
+      link.click(); // Simula el clic para descargar el archivo
+      link.remove(); // Elimina el enlace después de hacer clic
+  
+      // Muestra el mensaje de éxito con Swal
+      Swal.fire({
+        toast: true,
+        position: 'top-end',
+        icon: 'success',
+        title: 'Políticas de postula descargadas con éxito',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
+    } catch (error) {
+      console.error('Error al descargar la política:', error);
+      Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: 'Hubo un error al intentar descargar la politica',
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center p-5 bg-gray-100">
       <h1 className="text-3xl font-bold text-center mb-8">Completar registro de empresa</h1>
@@ -659,6 +697,13 @@ const CompletarE: React.FC = () => {
             >
               {' '}términos y condiciones
             </span>.
+            <hr className="my-4" />
+            <a   onClick={() => {
+                   // O el formato que desees
+                    handleDownloadPoli();
+                  }} target="_blank" rel="noopener noreferrer"  className="text-cyan-700 cursor-pointer">
+                    Descargar pólitica de protección de datos personales
+                </a>
           </p>
           <label className="flex items-center mb-4">
             <input
