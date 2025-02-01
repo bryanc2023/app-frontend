@@ -12,6 +12,7 @@ import Modal from '../components/Postulante/PostulacionModalHome'
 import './home.css';
 import './CarruselOfertas.css';
 import { Link } from 'react-router-dom';
+import Comentario from '../components/Comentario';
 
 
 interface Oferta {
@@ -85,6 +86,7 @@ interface Criterio {
 }
 
 
+
 const Home: React.FC = () => {
   const [ofertas, setOfertas] = useState<Oferta[]>([]);
   const [selectedOferta, setSelectedOferta] = useState<Oferta | null>(null);
@@ -92,6 +94,8 @@ const Home: React.FC = () => {
   const { isLogged, role, user } = useSelector((state: RootState) => state.auth);
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredOfertaId, setHoveredOfertaId] = useState(null);
+  const [comentarios, setComentarios] = useState<Comentario[]>([]);
+  const [nuevoComentario, setNuevoComentario] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -104,6 +108,48 @@ const Home: React.FC = () => {
   const handleCloseModal = () => {
     setSelectedOferta(null);
     setIsModalOpen(false);
+  };
+
+  const handleLike = (id: number) => {
+    setComentarios((prev) =>
+      prev.map((comentario) =>
+        comentario.id === id ? { ...comentario, likes: comentario.likes + 1 } : comentario
+      )
+    );
+  };
+
+  const agregarComentario = () => {
+    if (nuevoComentario.trim()) {
+      setComentarios((prev) => [
+        ...prev,
+        { id: Date.now(), texto: nuevoComentario, likes: 0, dislikes: 0, respuestas: [] },
+      ]);
+      setNuevoComentario('');
+    }
+  };
+
+  const handleDislike = (id: number) => {
+    setComentarios((prev) =>
+      prev.map((comentario) =>
+        comentario.id === id ? { ...comentario, dislikes: comentario.dislikes + 1 } : comentario
+      )
+    );
+  };
+
+  const handleResponder = (id: number, respuesta: string) => {
+    setComentarios((prev) =>
+      prev.map((comentario) =>
+        comentario.id === id
+          ? {
+              ...comentario,
+              respuestas: [
+                ...comentario.respuestas,
+                { id: Date.now(), texto: respuesta, likes: 0, dislikes: 0, respuestas: [] },
+              ],
+            }
+          : comentario
+      )
+    );
   };
 
   useEffect(() => {
@@ -201,6 +247,7 @@ const Home: React.FC = () => {
           <p className="text-xl">El lugar ideal para encontrar tu trabajo ideal</p>
         </div>
       </header>
+<<<<<<< Updated upstream
       <section className={`flex flex-col justify-around items-center py-20 px-10 bg-white mx-10 my-10 rounded-lg flex-grow transition-opacity duration-1000 $`}>
         <div className="flex flex-col md:flex-row justify-around items-center gap-8 w-full">
           <div className="bg-gray-50 rounded-lg shadow-md p-16 flex-1 max-w-2xl text-left flex flex-col justify-center">
@@ -231,13 +278,83 @@ const Home: React.FC = () => {
                 <p className="font-light">▸Ver tus resultados directos</p>
                 <p className="font-light">▸Mejorar tu hoja de vida constantemente</p>
               </div>
+=======
+      <section className="flex flex-col md:flex-row justify-around items-stretch py-20 px-4 sm:px-10 bg-white mx-4 sm:mx-10 my-10 rounded-lg flex-grow transition-opacity duration-1000 gap-8">
+       
+        <div className="bg-gray-50 rounded-lg shadow-md p-6 sm:p-16 flex-1 flex flex-col justify-center">
+          <h2 className="text-3xl mb-5 font-bold text-orange-600">Postula</h2>
+          <p className="text-lg text-gray-700">
+            En un mundo cada vez más digital, la búsqueda de talento ha evolucionado. Nuestra plataforma te permite conectar con candidatos calificados de manera rápida y eficiente, facilitando el proceso de selección. Aquí, puedes explorar perfiles de profesionales de diversas industrias, acceder a herramientas de filtrado avanzadas y gestionar tus ofertas laborales con facilidad. Con nuestra tecnología, puedes optimizar tu búsqueda, reduciendo el tiempo y los costos asociados al reclutamiento tradicional.
+          </p>
+          <p className="text-lg text-gray-700 mt-4">
+            Únete a nosotros y descubre cómo el reclutamiento en línea puede transformar tu manera de encontrar el talento ideal para tu empresa.
+          </p>
+        </div>
+
+
+        <div className="bg-gray-50 rounded-lg shadow-md p-6 sm:p-16 flex-1 flex flex-col justify-center">
+          <p className="text-lg font-semibold text-blue-800 mb-6 text-center">¿Qué puedo hacer en Postula?</p>
+          <div className="flex flex-col md:flex-row justify-between gap-8">
+            {/* Columna 1: Como empresa */}
+            <div className="flex-1 flex flex-col items-center text-center">
+              <hr className="w-16 border-t-2 border-gray-300 mb-4" />
+              <p className="font-semibold mb-4">Como empresa</p>
+              <FaBuilding className="text-gray-700 text-6xl mb-4" />
+              <p className="font-light">▸ Crear ofertas en base a tus parámetros específicos</p>
+              <p className="font-light">▸ Obtener tus postulantes ideales para cada oferta</p>
+              <p className="font-light">▸ Monitorear tu proceso de reclutamiento</p>
+            </div>
+
+            {/* Columna 2: Como postulante */}
+            <div className="flex-1 flex flex-col items-center text-center">
+              <hr className="w-16 border-t-2 border-gray-300 mb-4" />
+              <p className="font-semibold mb-4">Como postulante</p>
+              <FaUser className="text-orange-500 text-6xl mb-4" />
+              <p className="font-light">▸ Postularte a las ofertas publicadas</p>
+              <p className="font-light">▸ Ver tus resultados directos</p>
+              <p className="font-light">▸ Mejorar tu hoja de vida constantemente</p>
+>>>>>>> Stashed changes
             </div>
           </div>
-
         </div>
       </section>
       <Navbar />
 
+      <section
+  className="p-5 bg-white mx-auto my-12 rounded-lg shadow-xl"
+  style={{ maxWidth: '1100px', width: '100%' }}
+>
+  <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Comentarios</h2>
+  <div className="mb-8">
+  <input
+    type="text"
+    value={nuevoComentario}
+    onChange={(e) => setNuevoComentario(e.target.value)}
+    placeholder="Escribe un comentario..."
+    className="w-full px-5 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+  />
+  <div className="flex justify-center mt-4"> {/* Contenedor para centrar el botón */}
+    <button
+      onClick={agregarComentario}
+      className="px-6 py-2 text-sm text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
+    >
+      Agregar Comentario
+    </button>
+  </div>
+</div>
+  <div className="space-y-6">
+    {comentarios.map((comentario) => (
+      <Comentario
+        key={comentario.id}
+        comentario={comentario}
+        onLike={handleLike}
+        onDislike={handleDislike}
+        onResponder={handleResponder}
+      />
+    ))}
+  </div>
+</section>
+      
       <div className="flex-grow flex flex-col items-center bg-gray-100 py-10">
         {ofertas.length === 0 ? (
           <div className="text-center bg-white p-6 rounded-lg shadow-md max-w-md w-full">

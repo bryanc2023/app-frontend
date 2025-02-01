@@ -21,4 +21,7 @@ export default {
     },
   },
   plugins: [],
+  safelist: [
+    'max-w-[900px]', 
+  ],
 }
