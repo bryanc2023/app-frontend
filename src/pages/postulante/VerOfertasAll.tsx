@@ -268,9 +268,9 @@ const VerOfertasAll = () => {
             <div className="w-full max-w-4xl">
                 <div className="flex items-center justify-center mb-4">
                     <FaHandPaper className="text-blue-500 text-2xl mr-2" />
-                    <h1 className="text-2xl font-semibold text-blue-500">REALIZAR POSTULACIÓN</h1>
+                    <h1 className="text-2xl font-semibold text-blue-500">OFERTAS LABORALES</h1>
                 </div>
-                <p>En esta sección te mostramos todos las ofertas publicadas por las empresas, puedes postular en cualquier oferta de interes. Recuerda siempre tener generado tu hoja de vida para poder hacerlo</p>
+                <p>En esta sección te mostramos todos las ofertas publicadas por las empresas, puedes postular en cualquier oferta de interes. Recuerda siempre tener generado tu hoja de vida para poder hacerlo. Si tienes duda acerca de alguna empresa ofertante no olvides consultar información sobre la misma en la barra izquierda (Empresas)</p>
                 <hr className="my-4" />
                 <div className="flex mb-4">
                     <div className="relative flex w-full">

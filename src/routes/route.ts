@@ -41,6 +41,10 @@ import ResetPassword from "../pages/ResetPassword";
 import Acerca from "../pages/Acerca";
 import GestionOfertas from "../pages/admin/GestionOfertas";
 import OfertaPageP from "../pages/postulante/OfertaPageP";
+import PostPagePostulante from "../pages/postulante/PostPagePostulante";
+import PostPageEmpresa from "../pages/empresa/PostPageEmpresa";
+import PostPageEmpresaG from "../pages/empresaG/PostPageEmpresaG";
+import Blog from "../pages/Blog";
 
 type TypeRoute = {
     path: string;
@@ -92,6 +96,20 @@ export const routes: TypeRoute[] = [
             {
                 path: '',
                 element: VerOfertasAll,
+                allowedRoles: ['postulante'],
+            },
+        ],
+    },
+    ,
+    {
+        path: '/PostPostulante',
+        element: PostulanteLayout,
+        isProtected: true,
+        allowedRoles: ['postulante'],
+        children: [
+            {
+                path: '',
+                element: PostPagePostulante,
                 allowedRoles: ['postulante'],
             },
         ],
@@ -272,6 +290,20 @@ export const routes: TypeRoute[] = [
             },
         ],
     },
+    ,
+    {
+        path: '/PostEmpresa',
+        element: EmpresaLayout,
+        isProtected: true,
+        allowedRoles: ['empresa_oferente'],
+        children: [
+            {
+                path: '',
+                element: PostPageEmpresa,
+                allowedRoles: ['empresa_oferente'],
+            },
+        ],
+    },
     {
         path: '/',
         element: AdminLayout,
@@ -351,10 +383,20 @@ export const routes: TypeRoute[] = [
                 element: EditarOG,
                 allowedRoles: ['empresa_gestora'],
             },
+            {
+                path: '/PostEmpresaG',
+                element: PostPageEmpresaG,
+                allowedRoles: ['empresa_gestora'],
+            }
         ],
     },
     {
         path: '/unauthorized',
         element: Unauthorized,
+    },
+    ,
+    {
+        path: '/blog',
+        element: Blog,
     },
 ];

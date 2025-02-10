@@ -25,6 +25,7 @@ function Navbar() {
             <>
               <Link to='/login' className="text-white hover:underline">Iniciar sesión</Link>
               <Link to='/registro' className="text-white hover:underline">Registrarse</Link>
+              <Link to='/blog' className="text-white hover:underline">Blog</Link>
               <Link to='/acerca' className="flex items-center text-white hover:underline">
     <FaInfoCircle className="mr-1" />
   </Link>

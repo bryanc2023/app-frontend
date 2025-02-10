@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faBars, faTimes, faClipboardList, faFileAlt, faUsers, faChartLine, faUser, faCheckCircle, faChessBoard, faCheckToSlot, faFileArchive } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faBars, faTimes, faClipboardList, faFileAlt, faUsers, faChartLine, faUser, faCheckCircle, faChessBoard, faCheckToSlot, faFileArchive, faNewspaper } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/authSlice';
 import axios from '../../services/axios';
@@ -563,6 +563,13 @@ function EmpresaLayout() {
                             <FontAwesomeIcon icon={faFileAlt} className="mr-2" />
 
                             <span className="lg:inline">Reportes</span>
+                        </Link>
+                    </li>
+                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/PostEmpresaG' ? 'bg-gray-700' : ''}`}>
+                        <Link to="/PostEmpresaG" className="flex items-center w-full" onClick={handleLinkClick}>
+                            <FontAwesomeIcon icon={faNewspaper} className="mr-2" />
+
+                            <span className="lg:inline">Blog</span>
                         </Link>
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/PerfilG' ? 'bg-gray-700' : ''}`}>

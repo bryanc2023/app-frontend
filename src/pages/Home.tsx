@@ -13,6 +13,12 @@ import './home.css';
 import './CarruselOfertas.css';
 import { Link } from 'react-router-dom';
 
+interface Post {
+  id: number;
+  titulo: string;
+  content: string;
+  createdAt: string;
+}
 
 interface Oferta {
   id_oferta: number;
@@ -92,8 +98,27 @@ const Home: React.FC = () => {
   const { isLogged, role, user } = useSelector((state: RootState) => state.auth);
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredOfertaId, setHoveredOfertaId] = useState(null);
-
+  const [currentPostIndex, setCurrentPostIndex] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [posts, setPosts] = useState<Post[]>([]); // New state for posts
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await axios.get('/publicacionesPas');
+        console.log(response); // Verifica la estructura de la respuesta
+        if (response.data) {  // Asegúrate de que haya datos
+          const latestPosts = response.data.slice(0, 3); // Obtener los últimos 3 posts
+          setPosts(latestPosts);
+        } else {
+          console.error('No posts found in the response');
+        }
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
+    };
+    fetchPosts();
+  }, []);
 
 
   const handleOpenModal = (oferta: Oferta) => {
@@ -197,6 +222,18 @@ const Home: React.FC = () => {
   const capitalizeFirstLetter = (text) => {
     return text.charAt(0).toUpperCase() + text.slice(1).toLowerCase();
   };
+
+  const nextPost = () => {
+    setCurrentPostIndex((prevIndex) => (prevIndex + 1) % posts.length); // Navegar al siguiente post
+  };
+
+  const prevPost = () => {
+    setCurrentPostIndex((prevIndex) => (prevIndex - 1 + posts.length) % posts.length); // Navegar al anterior post
+  };
+
+  // Si no hay posts, muestra un mensaje
+
+  const currentPost = posts[currentPostIndex]; // Obtén el post actual basado en el índice
   return (
     <div className="flex flex-col min-h-screen">
       {isLoading && (
@@ -246,7 +283,61 @@ const Home: React.FC = () => {
         </div>
       </section>
       <Navbar />
+      <section className="py-10 px-5 bg-gray-200">
+        <div className="section-title">
+          <h2>ULTIMOS POST'S</h2>
+        </div>
+        <div className="flex justify-center items-center">
+          <button
+            onClick={prevPost}
+            className="bg-blue-500 text-white p-4 rounded-full mr-6 transform transition-transform duration-300 hover:scale-110"
+            aria-label="Previous post"
+          >
+            &#8592;
+          </button>
 
+          {/* Verificación si no hay posts */}
+          {posts.length === 0 ? (
+            <div className="carousel-item bg-white p-8 rounded-2xl shadow-2xl w-2/3 h-[300px] transform transition-transform duration-300 hover:scale-105 flex flex-col justify-center items-center">
+              <h3 className="text-2xl font-semibold mb-4 text-gray-800 text-center">
+              Aún no se han publicado ningún post, sé el primero en hacerlo
+              </h3>
+            </div>
+          ) : (
+            <div className="carousel-item bg-white p-8 rounded-2xl shadow-2xl w-2/3 h-[300px] transform transition-transform duration-300 hover:scale-105 flex flex-col justify-center items-center">
+              <h3 className="text-2xl font-semibold mb-4 text-gray-800 text-center">
+                {currentPost.titulo}
+              </h3>
+
+              {/* Ajuste para el contenido del post con barra lateral */}
+              <p className="text-md mb-4 text-gray-700 text-center overflow-y-auto max-h-[150px]">
+                {currentPost.content}
+              </p>
+
+              <p className="text-xs text-gray-500 text-center">
+                {new Date(currentPost.createdAt).toLocaleDateString()}
+              </p>
+            </div>
+          )}
+
+          <button
+            onClick={nextPost}
+            className="bg-blue-500 text-white p-4 rounded-full ml-6 transform transition-transform duration-300 hover:scale-110"
+            aria-label="Next post"
+          >
+            &#8594;
+          </button>
+        </div>
+
+        {/* Botón "Ver más" */}
+        <div className="flex justify-center mt-6">
+          <Link to="/Blog">
+            <button className="bg-blue-500 text-white py-2 px-6 rounded-full hover:bg-blue-600 transform transition-transform duration-300">
+              Ver más
+            </button>
+          </Link>
+        </div>
+      </section>
       <div className="flex-grow flex flex-col items-center bg-gray-100 py-10">
         {ofertas.length === 0 ? (
           <div className="text-center bg-white p-6 rounded-lg shadow-md max-w-md w-full">
@@ -269,7 +360,10 @@ const Home: React.FC = () => {
                     }`}
                   onMouseEnter={() => setHoveredOfertaId(oferta.id_oferta)}
                   onMouseLeave={() => setHoveredOfertaId(null)}
-                  onClick={() => handleOpenModal(oferta)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/oferta/${oferta.id_oferta}`)
+                  }}
                 >
                   <div className="oferta-content flex flex-col w-full">
                     <h3 className="text-orange-500 text-2xl font-bold mb-2">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, KeyboardEvent } from 'react';
 import { Outlet, Link, useNavigate } from 'react-router-dom'; // Importa useNavigate para redireccionar
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faBars, faTimes, faClipboardList, faUsers, faChartLine, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faNewspaper, faChevronDown, faBars, faTimes, faClipboardList, faUsers, faChartLine, faUser } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/authSlice';
 import axios from '../../services/axios';
@@ -233,7 +233,7 @@ function EmpresaLayout() {
         setSelectedNavItem(itemName); // Actualiza el item seleccionado
         navigate(path); // Navega a la ruta seleccionada
     };
-    
+
     const searchPostulante = async () => {
         try {
             setIsLoading(true);
@@ -347,7 +347,7 @@ function EmpresaLayout() {
 
     const getNotificaciones = async () => {
         try {
-      
+
             setLoadNotificaiones(true);
             const { data } = await instance.get<DataNotifyApi[]>('notificaciones');
             const notify = data.map(notification => ({
@@ -386,7 +386,7 @@ function EmpresaLayout() {
     };
 
     useEffect(() => {
-       
+
         getNotificaciones();
     }, []);
 
@@ -533,6 +533,14 @@ function EmpresaLayout() {
                         <button onClick={() => handleLinkClick('/MoniR', 'Control y Monitoreo')} className="flex items-center w-full">
                             <FontAwesomeIcon icon={faChartLine} className="mr-2" />
                             <span>Control y Monitoreo</span>
+                        </button>
+                    </li>
+                    <li
+                        className={`mb-4 flex items-center p-2 rounded-md ${selectedNavItem === 'Blog' ? 'bg-gray-700 text-white' : 'hover:bg-gray-700 hover:text-white'}`}
+                    >
+                        <button onClick={() => handleLinkClick('/PostEmpresa', 'PostEmpresa')} className="flex items-center w-full">
+                            <FontAwesomeIcon icon={faNewspaper} className="mr-2" />
+                            <span>Blog</span>
                         </button>
                     </li>
                     <li

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faBars, faTimes, faEnvelope, faUser, faSearch } from '@fortawesome/free-solid-svg-icons';
+import { faChevronDown, faNewspaper ,faBars, faTimes, faEnvelope, faUser, faSearch } from '@fortawesome/free-solid-svg-icons';
 import { useDispatch, useSelector } from 'react-redux';
 import { logout } from '../../store/authSlice';
 import axios from '../../services/axios';
@@ -459,8 +459,8 @@ function PostulanteLayout() {
                             value={select}
                             onChange={handleSelectChange}
                         >
-                            <option value={1}>Postulantes</option>
                             <option value={2}>Empresas</option>
+                           <option value={1}>Postulantes</option>
                         </select>
                     </div>
                     {isModal && (
@@ -518,13 +518,19 @@ function PostulanteLayout() {
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/verOfertasAll' ? 'bg-gray-700' : ''}`}>
                         <Link to="/verOfertasAll" className="flex items-center w-full" onClick={closeSidebar}>
                             <FontAwesomeIcon icon={faEnvelope} className="mr-2" />
-                            <span>Realizar Postulación</span>
+                            <span>Ofertas Laborales</span>
                         </Link>
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/resultadosP' ? 'bg-gray-700' : ''}`}>
                         <Link to="/resultadosP" className="flex items-center w-full" onClick={closeSidebar}>
                             <FontAwesomeIcon icon={faSearch} className="mr-2" />
-                            <span>Consulta de Resultados</span>
+                            <span>Resultados de postulación</span>
+                        </Link>
+                    </li>
+                    <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/PostPostulante' ? 'bg-gray-700' : ''}`}>
+                        <Link to="/PostPostulante" className="flex items-center w-full" onClick={closeSidebar}>
+                            <FontAwesomeIcon icon={faNewspaper } className="mr-2" />
+                            <span>Blog</span>
                         </Link>
                     </li>
                     <li className={`mb-4 flex items-center hover:bg-gray-700 rounded-md p-2 ${location.pathname === '/perfilP' ? 'bg-gray-700' : ''}`}>

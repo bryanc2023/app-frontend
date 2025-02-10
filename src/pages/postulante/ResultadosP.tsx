@@ -109,10 +109,10 @@ function ResultadosP() {
         <div className="mb-4 text-center max-w-screen-lg mx-auto">
             <div className="flex items-center justify-center mb-4">
                 <FaInfo className="text-blue-500 ml-2" />
-                <h1 className="text-2xl font-semibold text-blue-500">CONSULTA DE RESULTADOS</h1>
+                <h1 className="text-2xl font-semibold text-blue-500">RESULTADOS DE POSTULACIÓN</h1>
 
             </div>
-            <p>En esta sección te mostramos todos las ofertas publicadas por las empresas, puedes postular en cualquier oferta de interes. Recuerda siempre tener generado tu hoja de vida para poder hacerlo </p>
+            <p>En esta sección te mostramos todas las postulaciones realizadas. Si es que existe alguna retroalimentación por parte de la empresa se mostrará</p>
             <hr className="my-4" />
             {/* Filtro por fecha */}
             <div className="mb-4">
