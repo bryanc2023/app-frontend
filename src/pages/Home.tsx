@@ -106,7 +106,7 @@ const Home: React.FC = () => {
     const fetchPosts = async () => {
       try {
         const response = await axios.get('/publicacionesPas');
-        console.log(response); // Verifica la estructura de la respuesta
+       // Verifica la estructura de la respuesta
         if (response.data) {  // Asegúrate de que haya datos
           const latestPosts = response.data.slice(0, 3); // Obtener los últimos 3 posts
           setPosts(latestPosts);

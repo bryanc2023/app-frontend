@@ -98,11 +98,7 @@ const EditCurso: React.FC<EditCursoProps> = ({ isOpen, closeModal, reloadCursos,
         formData.append('certificadoUrl', certificado); // Asegúrate de que la URL no esté vacía
     }
 
-    // Mostrar el contenido del FormData en la consola para depuración
-    for (let pair of formData.entries()) {
-        console.log(`${pair[0]}: ${pair[1]}`);
-    }
-  
+   
 
     try {
       if (curso && curso.id_certificado) {

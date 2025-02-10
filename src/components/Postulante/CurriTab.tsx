@@ -682,9 +682,7 @@ const CurriTab: React.FC = () => {
           formData.append('cv', pdfFile); // Agregar el blob y el nombre del archivo al FormData
           formData.append('url', urlHost);
           // Verifica el contenido del FormData
-          for (const pair of formData.entries()) {
-            console.log(`${pair[0]}: ${pair[1]}`);
-          }
+         
 
           const apiUrl = `/postulantes/${profileData.postulante.id_usuario}/cv`;
           await axios.post(apiUrl, formData, {
@@ -694,7 +692,7 @@ const CurriTab: React.FC = () => {
           });
           // Establecer la URL predeterminada para la vista previa
           const userCVUrl = `${urlHost}cv/${pdfFileName}`; // URL para mostrar el CV
-          console.log(userCVUrl)
+        
           setPreviewUrl(userCVUrl);
 
           Swal.fire({
@@ -748,7 +746,7 @@ const CurriTab: React.FC = () => {
       }, {
         responseType: 'blob', // Esto es importante para manejar la respuesta como archivo
       });
-      console.log(titulo);
+   
 
       // Crear una URL para el archivo que se ha descargado
       const url = window.URL.createObjectURL(new Blob([response.data]));

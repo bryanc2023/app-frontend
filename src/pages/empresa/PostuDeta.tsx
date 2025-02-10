@@ -150,7 +150,7 @@ const PostulanteDetail: React.FC<PostulanteDetailProps> = ({ postulante, idOfert
           }, {
             responseType: 'blob', // Esto es importante para manejar la respuesta como archivo
           });
-          console.log(titulo);
+         
     
           // Crear una URL para el archivo que se ha descargado
           const url = window.URL.createObjectURL(new Blob([response.data]));

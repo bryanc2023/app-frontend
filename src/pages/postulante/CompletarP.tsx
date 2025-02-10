@@ -161,9 +161,7 @@ const CompletarP: React.FC = () => {
         // Verifica si el usuario subió una imagen
         if (data.image && data.image.length > 0) {
           const imageFile = data.image[0];
-          console.log('Image file:', imageFile);
-          console.log('Image type:', imageFile.type);
-          console.log('Image size:', imageFile.size);
+  
           
           // Añade la imagen al FormData
           formData.append('foto', imageFile);

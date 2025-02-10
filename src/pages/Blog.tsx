@@ -56,7 +56,7 @@ const Blog = () => {
       {posts.length === 0 ? (
             <div className="flex justify-center mt-6">
         <h3 className="text-2xl font-semibold mb-4 text-gray-800 text-center">
-                Aún no se han publicado ningún post, sé el primero
+                Aún no se han publicado ningún post, sé el primero en hacerlo
               </h3>
             </div>
           ) : (

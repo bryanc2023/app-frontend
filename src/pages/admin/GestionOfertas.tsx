@@ -175,7 +175,7 @@ const GestionOfertas = () => {
             confirmButtonText: 'Sí, realizar cambio',
             cancelButtonText: 'Cancelar',
         });
-    console.log(fechaCambioMasivo);
+    
         if (result.isConfirmed) {
             try {
                 const response = await axios.put('/ofertas/cambio-masivo', { fecha: fechaCambioMasivo });

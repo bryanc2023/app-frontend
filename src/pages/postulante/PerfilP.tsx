@@ -666,7 +666,7 @@ const Profile: React.FC = () => {
             if (prevData) {
               return { ...prevData, postulante: { ...prevData.postulante, foto: newPhotoURL } };
             }
-            console.log(newPhotoURL)
+            
             return prevData;
           });
         }}
